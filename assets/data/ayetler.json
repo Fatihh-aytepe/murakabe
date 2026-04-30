@@ -1,0 +1,2816 @@
+[
+    {
+        "id": 1,
+        "arabic": "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "turkish": "Şüphesiz zorlukla beraber bir kolaylık vardır.",
+        "surah": "İnşirah Suresi",
+        "ayahNumber": 6
+    },
+    {
+        "id": 2,
+        "arabic": "وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ",
+        "turkish": "Kim Allah'a tevekkül ederse O ona yeter.",
+        "surah": "Talak Suresi",
+        "ayahNumber": 3
+    },
+    {
+        "id": 3,
+        "arabic": "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ",
+        "turkish": "Dikkat edin! Kalpler ancak Allah'ı anmakla huzur bulur.",
+        "surah": "Ra'd Suresi",
+        "ayahNumber": 28
+    },
+    {
+        "id": 4,
+        "arabic": "وَاللَّهُ يُحِبُّ الصَّابِرِينَ",
+        "turkish": "Allah sabredenleri sever.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 146
+    },
+    {
+        "id": 5,
+        "arabic": "فَاذْكُرُونِي أَذْكُرْكُمْ",
+        "turkish": "Siz beni zikredin, ben de sizi zikredeyim.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 152
+    },
+    {
+        "id": 6,
+        "arabic": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا",
+        "turkish": "Rabbimiz! Bizi doğru yola ilettikten sonra kalplerimizi eğriltme.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 8
+    },
+    {
+        "id": 7,
+        "arabic": "إِنَّ رَحْمَتَ اللَّهِ قَرِيبٌ مِّنَ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah'ın rahmeti, iyilik edenlere çok yakındır.",
+        "surah": "A'râf Suresi",
+        "ayahNumber": 56
+    },
+    {
+        "id": 8,
+        "arabic": "وَقُل رَّبِّ زِدْنِي عِلْمًا",
+        "turkish": "De ki: Rabbim, benim ilmimi artır.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 114
+    },
+    {
+        "id": 9,
+        "arabic": "إِنَّ اللَّهَ مَعَ الَّذِينَ اتَّقَوا وَّالَّذِينَ هُم مُّحْسِنُونَ",
+        "turkish": "Şüphesiz Allah, takva sahipleri ve iyilik edenlerle beraberdir.",
+        "surah": "Nahl Suresi",
+        "ayahNumber": 128
+    },
+    {
+        "id": 10,
+        "arabic": "قُلِ اللَّهُ يُنَجِّيكُم مِّنْهَا وَمِن كُلِّ كَرْبٍ",
+        "turkish": "De ki: Sizi ondan ve bütün sıkıntılardan Allah kurtarır.",
+        "surah": "En'âm Suresi",
+        "ayahNumber": 63
+    },
+    {
+        "id": 11,
+        "arabic": "لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ",
+        "turkish": "Allah'ın rahmetinden ümit kesmeyin.",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 53
+    },
+    {
+        "id": 12,
+        "arabic": "وَاعْبُدْ رَبَّكَ حَتَّىٰ يَأْتِيَكَ الْيَقِينُ",
+        "turkish": "Sana ölüm gelinceye kadar Rabbine ibadet et.",
+        "surah": "Hicr Suresi",
+        "ayahNumber": 99
+    },
+    {
+        "id": 13,
+        "arabic": "وَكَانَ اللَّهُ عَلَىٰ كُلِّ شَيْءٍ مُّقْتَدِرًا",
+        "turkish": "Allah, her şey üzerinde mutlak güç sahibidir.",
+        "surah": "Kehf Suresi",
+        "ayahNumber": 45
+    },
+    {
+        "id": 14,
+        "arabic": "إِنَّ اللَّهَ بِالنَّاسِ لَرَؤُوفٌ رَّحِيمٌ",
+        "turkish": "Şüphesiz Allah, insanlara karşı çok şefkatli, çok merhametlidir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 143
+    },
+    {
+        "id": 15,
+        "arabic": "وَاسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ",
+        "turkish": "Sabır ve namazla (Allah'tan) yardım isteyin.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 45
+    },
+    {
+        "id": 16,
+        "arabic": "قُلْ عَسَىٰ أَن يَكُونَ قَرِيبًا",
+        "turkish": "De ki: Belki de (o yardım) yakındır.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 51
+    },
+    {
+        "id": 17,
+        "arabic": "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",
+        "turkish": "Nerede olursanız olun, O sizinle beraberdir.",
+        "surah": "Hadid Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 18,
+        "arabic": "وَمَا كَانَ رَبُّكَ نَسِيًّا",
+        "turkish": "Senin Rabbin asla unutkan değildir.",
+        "surah": "Meryem Suresi",
+        "ayahNumber": 64
+    },
+    {
+        "id": 19,
+        "arabic": "إِنَّ رَبِّي لَسَمِيعُ الدُّعَاءِ",
+        "turkish": "Şüphesiz Rabbim duaları hakkıyla işitendir.",
+        "surah": "İbrahim Suresi",
+        "ayahNumber": 39
+    },
+    {
+        "id": 20,
+        "arabic": "ادْعُونِي أَسْتَجِبْ لَكُمْ",
+        "turkish": "Bana dua edin, size icabet edeyim.",
+        "surah": "Mü'min Suresi",
+        "ayahNumber": 60
+    },
+    {
+        "id": 21,
+        "arabic": "أَلَيْسَ اللَّهُ بِكَافٍ عَبْدَهُ",
+        "turkish": "Allah kuluna kâfi değil mi?",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 36
+    },
+    {
+        "id": 22,
+        "arabic": "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "turkish": "Elbette zorlukla beraber bir kolaylık vardır.",
+        "surah": "İnşirah Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 23,
+        "arabic": "وَقُل لِّعِبَادِي يَقُولُوا الَّتِي هِيَ أَحْسَنُ",
+        "turkish": "Kullarıma söyle, sözün en güzelini söylesinler.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 53
+    },
+    {
+        "id": 24,
+        "arabic": "إِنَّ اللَّهَ يُحِبُّ الْمُتَوَكِّلِينَ",
+        "turkish": "Şüphesiz Allah, kendisine tevekkül edenleri sever.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 159
+    },
+    {
+        "id": 25,
+        "arabic": "وَاخْفِضْ لَهُمَا جَنَاحَ الذُّلِّ مِنَ الرَّحْمَةِ",
+        "turkish": "Anne ve babana merhametle tevazu kanadını indir.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 24
+    },
+    {
+        "id": 26,
+        "arabic": "وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ",
+        "turkish": "Kullarım beni sana soracak olurlarsa, şüphesiz ben onlara çok yakınım.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 186
+    },
+    {
+        "id": 27,
+        "arabic": "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا",
+        "turkish": "Allah hiçbir nefse gücünün yeteceğinden fazlasını yüklemez.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 286
+    },
+    {
+        "id": 28,
+        "arabic": "وَتَزَوَّدُوا فَإِنَّ خَيْرَ الزَّادِ التَّقْوَىٰ",
+        "turkish": "Ahiretiniz için azık hazırlayın; kuşkusuz azığın en hayırlısı takvadır.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 197
+    },
+    {
+        "id": 29,
+        "arabic": "وَأَحْسِنُوا إِنَّ اللَّهَ يُحِبُّ الْمُحْسِنِينَ",
+        "turkish": "İyilik edin, şüphesiz Allah iyilik edenleri sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 195
+    },
+    {
+        "id": 30,
+        "arabic": "إِنَّ اللَّهَ لَا يُضِيعُ أَجْرَ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah, iyilik edenlerin mükafatını zayi etmez.",
+        "surah": "Tevbe Suresi",
+        "ayahNumber": 120
+    },
+    {
+        "id": 31,
+        "arabic": "قُل لَّن يُصِيبَنَا إِلَّا مَا كَتَبَ اللَّهُ لَنَا",
+        "turkish": "De ki: Allah'ın bizim için yazdığından başkası başımıza gelmez.",
+        "surah": "Tevbe Suresi",
+        "ayahNumber": 51
+    },
+    {
+        "id": 32,
+        "arabic": "فَاصْبِرْ صَبْرًا جَمِيلًا",
+        "turkish": "Öyleyse güzel bir sabırla sabret.",
+        "surah": "Meâric Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 33,
+        "arabic": "عَسَىٰ رَبُّكُمْ أَن يَرْحَمَكُمْ",
+        "turkish": "Umulur ki Rabbiniz size merhamet eder.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 8
+    },
+    {
+        "id": 34,
+        "arabic": "وَجَعَلْنَا بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",
+        "turkish": "Aranıza sevgi ve merhamet koyduk.",
+        "surah": "Rum Suresi",
+        "ayahNumber": 21
+    },
+    {
+        "id": 35,
+        "arabic": "إِنَّ رَبِّي قَرِيبٌ مُّجِيبٌ",
+        "turkish": "Şüphesiz Rabbim yakındır ve dualara icabet edendir.",
+        "surah": "Hud Suresi",
+        "ayahNumber": 61
+    },
+    {
+        "id": 36,
+        "arabic": "وَاعْتَصِمُوا بِحَبْلِ اللَّهِ جَمِيعًا",
+        "turkish": "Hep birlikte Allah'ın ipine (Kur'an'a) sımsıkı sarılın.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 103
+    },
+    {
+        "id": 37,
+        "arabic": "وَمَا تَفْعَلُوا مِنْ خَيْرٍ يَعْلَمْهُ اللَّهُ",
+        "turkish": "Hayır olarak ne yaparsanız Allah onu bilir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 197
+    },
+    {
+        "id": 38,
+        "arabic": "إِنَّ أَكْرَمَكُمْ عِندَ اللَّهِ أَتْقَاكُمْ",
+        "turkish": "Allah katında en değerli olanınız, O'na karşı gelmekten en çok sakınanınızdır.",
+        "surah": "Hucurât Suresi",
+        "ayahNumber": 13
+    },
+    {
+        "id": 39,
+        "arabic": "وَاصْبِرْ لِحُكْمِ رَبِّكَ فَإِنَّكَ بِأَعْيُنِنَا",
+        "turkish": "Rabbinin hükmüne sabret; çünkü sen bizim gözetimimiz altındasın.",
+        "surah": "Tûr Suresi",
+        "ayahNumber": 48
+    },
+    {
+        "id": 40,
+        "arabic": "وَاللَّهُ يَعْلَمُ مَا فِي قُلُوبِكُمْ",
+        "turkish": "Allah, kalplerinizde olanı bilir.",
+        "surah": "Ahzâb Suresi",
+        "ayahNumber": 51
+    },
+    {
+        "id": 41,
+        "arabic": "لَّا خَوْفٌ عَلَيْهِمْ وَلَا هُمْ يَحْزَنُونَ",
+        "turkish": "Onlara korku yoktur ve onlar üzülmeyeceklerdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 62
+    },
+    {
+        "id": 42,
+        "arabic": "وَإِن تَصْبِرُوا وَتَتَّقُوا فَإِنَّ ذَٰلِكَ مِنْ عَزْمِ الْأُمُورِ",
+        "turkish": "Eğer sabreder ve sakınırsanız, işte bu azmedilmeye değer işlerdendir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 186
+    },
+    {
+        "id": 43,
+        "arabic": "وَاللَّهُ غَفُورٌ رَّحِيمٌ",
+        "turkish": "Allah çok bağışlayan, çok merhamet edendir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 31
+    },
+    {
+        "id": 44,
+        "arabic": "وَتَوَكَّلْ عَلَى الْعَزِيزِ الرَّحِيمِ",
+        "turkish": "O mutlak galip ve engin merhamet sahibi Allah'a tevekkül et.",
+        "surah": "Şuarâ Suresi",
+        "ayahNumber": 217
+    },
+    {
+        "id": 45,
+        "arabic": "إِنَّ اللَّهَ كَانَ عَلَيْكُمْ رَقِيبًا",
+        "turkish": "Şüphesiz Allah, sizin üzerinizde tam bir gözeticidir.",
+        "surah": "Nisâ Suresi",
+        "ayahNumber": 1
+    },
+    {
+        "id": 46,
+        "arabic": "وَاللَّهُ مَعَ الصَّابِرِينَ",
+        "turkish": "Allah sabredenlerle beraberdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 249
+    },
+    {
+        "id": 47,
+        "arabic": "رَبِّ اشْرَحْ لِي صَدْرِي",
+        "turkish": "Rabbim! Göğsümü genişlet.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 25
+    },
+    {
+        "id": 48,
+        "arabic": "وَيَسِّرْ لِي أَمْرِي",
+        "turkish": "İşimi bana kolaylaştır.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 26
+    },
+    {
+        "id": 49,
+        "arabic": "وَجَاءَهُمُ الْغَيْثُ",
+        "turkish": "Onlara bolca yağmur (rahmet) geldi.",
+        "surah": "Yunus Suresi",
+        "ayahNumber": 22
+    },
+    {
+        "id": 50,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ بَصِيرٌ",
+        "turkish": "Allah, yaptıklarınızı hakkıyla görendir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 51,
+        "arabic": "وَمَا رَبُّكَ بِظَلَّامٍ لِّلْعَبِيدِ",
+        "turkish": "Rabbin, kullarına asla zulmedici değildir.",
+        "surah": "Fussilet Suresi",
+        "ayahNumber": 46
+    },
+    {
+        "id": 52,
+        "arabic": "إِنَّ مَعِيَ رَبِّي سَيَهْدِينِ",
+        "turkish": "Şüphesiz Rabbim benimledir, O bana yol gösterecektir.",
+        "surah": "Şuarâ Suresi",
+        "ayahNumber": 62
+    },
+    {
+        "id": 53,
+        "arabic": "وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
+        "turkish": "O, her şeye kadirdir (gücü her şeye yeter).",
+        "surah": "Mülk Suresi",
+        "ayahNumber": 1
+    },
+    {
+        "id": 54,
+        "arabic": "وَمَا الْحَيَاةُ الدُّنْيَا إِلَّا مَتَاعُ الْغُرُورِ",
+        "turkish": "Dünya hayatı, aldatıcı bir faydalanmadan başka bir şey değildir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 185
+    },
+    {
+        "id": 55,
+        "arabic": "إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ وَيُحِبُّ الْمُتَطَهِّرِينَ",
+        "turkish": "Şüphesiz Allah çokça tövbe edenleri sever ve temizlenenleri de sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 222
+    },
+    {
+        "id": 56,
+        "arabic": "أَلَا لَهُ الْخَلْقُ وَالْأَمْرُ",
+        "turkish": "Bilesiniz ki, yaratmak da emretmek de sadece O'na aittir.",
+        "surah": "A'râf Suresi",
+        "ayahNumber": 54
+    },
+    {
+        "id": 57,
+        "arabic": "وَاللَّهُ يَهْدِي مَن يَشَاءُ إِلَىٰ صِرَاطٍ مُّسْتَقِيمٍ",
+        "turkish": "Allah, dilediğini doğru yola iletir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 213
+    },
+    {
+        "id": 58,
+        "arabic": "رَبِّ هَبْ لِي مِن لَّدُنكَ ذُرِّيَّةً طَيِّبَةً",
+        "turkish": "Rabbim! Bana katından temiz bir nesil bahşet.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 38
+    },
+    {
+        "id": 59,
+        "arabic": "وَإِن تَعُدُّوا نِعْمَةَ اللَّهِ لَا تُحْصُوهَا",
+        "turkish": "Eğer Allah'ın nimetini saymaya kalksanız, onu sayamazsınız.",
+        "surah": "Nahl Suresi",
+        "ayahNumber": 18
+    },
+    {
+        "id": 60,
+        "arabic": "إِنَّ أَكْرَمَكُمْ عِندَ اللَّهِ أَتْقَاكُمْ",
+        "turkish": "Şüphesiz Allah katında en üstün olanınız, en çok takva sahibi olanınızdır.",
+        "surah": "Hucurât Suresi",
+        "ayahNumber": 13
+    },
+    {
+        "id": 61,
+        "arabic": "وَلَا تَمْشِ فِي الْأَرْضِ مَرَحًا",
+        "turkish": "Yeryüzünde böbürlenerek yürüme.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 37
+    },
+    {
+        "id": 62,
+        "arabic": "وَاللَّهُ بِكُلِّ شَيْءٍ عَلِيمٌ",
+        "turkish": "Allah, her şeyi hakkıyla bilendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 282
+    },
+    {
+        "id": 63,
+        "arabic": "وَمَا لَكُم مِّن دُونِ اللَّهِ مِن وَلِيٍّ وَلَا نَصِيرٍ",
+        "turkish": "Sizin için Allah'tan başka ne bir dost ne de bir yardımcı vardır.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 107
+    },
+    {
+        "id": 64,
+        "arabic": "إِنَّ اللَّهَ عَلَىٰ كُلِّ شَيْءٍ شَهِيدٌ",
+        "turkish": "Şüphesiz Allah, her şeye şahittir.",
+        "surah": "Hac Suresi",
+        "ayahNumber": 17
+    },
+    {
+        "id": 65,
+        "arabic": "وَقُولُوا لِلنَّاسِ حُسْنًا",
+        "turkish": "İnsanlara güzel söz söyleyin.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 83
+    },
+    {
+        "id": 66,
+        "arabic": "كُلُّ نَفْسٍ ذَائِقَةُ الْمَوْتِ",
+        "turkish": "Her nefis ölümü tadacaktır.",
+        "surah": "Ankebût Suresi",
+        "ayahNumber": 57
+    },
+    {
+        "id": 67,
+        "arabic": "وَاللَّهُ يَرْزُقُ مَن يَشَاءُ بِغَيْرِ حِسَابٍ",
+        "turkish": "Allah dilediğine hesapsız rızık verir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 212
+    },
+    {
+        "id": 68,
+        "arabic": "إِنَّ اللَّهَ غَفُورٌ حَلِيمٌ",
+        "turkish": "Şüphesiz Allah çok bağışlayandır, çok halimdir (hemen cezalandırmaz).",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 225
+    },
+    {
+        "id": 69,
+        "arabic": "وَمَا تَوْفِيقِي إِلَّا بِاللَّهِ",
+        "turkish": "Başarım ancak Allah'ın yardımıyladır.",
+        "surah": "Hud Suresi",
+        "ayahNumber": 88
+    },
+    {
+        "id": 70,
+        "arabic": "فَاصْبِرْ إِنَّ وَعْدَ اللَّهِ حَقٌّ",
+        "turkish": "Sabret, şüphesiz Allah'ın vaadi haktır.",
+        "surah": "Rûm Suresi",
+        "ayahNumber": 60
+    },
+    {
+        "id": 71,
+        "arabic": "وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا",
+        "turkish": "Kim Allah'tan sakınırsa, Allah ona bir çıkış yolu açar.",
+        "surah": "Talak Suresi",
+        "ayahNumber": 2
+    },
+    {
+        "id": 72,
+        "arabic": "وَاللَّهُ يُحِبُّ الصَّابِرِينَ",
+        "turkish": "Allah sabredenleri sever.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 146
+    },
+    {
+        "id": 73,
+        "arabic": "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ",
+        "turkish": "Bilin ki, kalpler ancak Allah'ı zikrederek huzur bulur.",
+        "surah": "Ra'd Suresi",
+        "ayahNumber": 28
+    },
+    {
+        "id": 74,
+        "arabic": "وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ",
+        "turkish": "Kim Allah'a tevekkül ederse, O ona yeter.",
+        "surah": "Talak Suresi",
+        "ayahNumber": 3
+    },
+    {
+        "id": 75,
+        "arabic": "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ",
+        "turkish": "Biz şüphesiz Allah'a aitiz ve şüphesiz O'na döneceğiz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 76,
+        "arabic": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً",
+        "turkish": "Rabbimiz! Bize dünyada da iyilik ver, ahirette de iyilik ver.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 201
+    },
+    {
+        "id": 77,
+        "arabic": "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا",
+        "turkish": "Allah hiç kimseye gücünün yeteceğinden fazlasını yüklemez.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 286
+    },
+    {
+        "id": 78,
+        "arabic": "وَقُل رَّبِّ اغْفِرْ وَارْحَمْ وَأَنتَ خَيْرُ الرَّاحِمِينَ",
+        "turkish": "De ki: Rabbim, bağışla, merhamet et; Sen merhamet edenlerin en hayırlısısın.",
+        "surah": "Mü'minûn Suresi",
+        "ayahNumber": 118
+    },
+    {
+        "id": 79,
+        "arabic": "إِنَّ رَبِّي لَطِيفٌ لِّمَا يَشَاءُ",
+        "turkish": "Şüphesiz Rabbim, dilediği şeye karşı lütuf sahibidir.",
+        "surah": "Yusuf Suresi",
+        "ayahNumber": 100
+    },
+    {
+        "id": 80,
+        "arabic": "وَاللَّهُ سَمِيعٌ عَلِيمٌ",
+        "turkish": "Allah hakkıyla işitendir, hakkıyla bilendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 224
+    },
+    {
+        "id": 81,
+        "arabic": "وَاعْتَصِمُوا بِحَبْلِ اللَّهِ جَمِيعًا",
+        "turkish": "Hep birlikte Allah'ın ipine sımsıkı sarılın.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 103
+    },
+    {
+        "id": 82,
+        "arabic": "وَمَا كَانَ اللَّهُ مُعَذِّبَهُمْ وَهُمْ يَسْتَغْفِرُونَ",
+        "turkish": "Onlar bağışlanma dilerken, Allah onlara azap edecek değildir.",
+        "surah": "Enfâl Suresi",
+        "ayahNumber": 33
+    },
+    {
+        "id": 83,
+        "arabic": "إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ",
+        "turkish": "Şüphesiz namaz, hayâsızlıktan ve kötülükten alıkoyar.",
+        "surah": "Ankebût Suresi",
+        "ayahNumber": 45
+    },
+    {
+        "id": 84,
+        "arabic": "وَتَعَاوَنُوا عَلَى الْبِرِّ وَالتَّقْوَىٰ",
+        "turkish": "İyilik ve takva üzere birbirinizle yardımlaşın.",
+        "surah": "Mâide Suresi",
+        "ayahNumber": 2
+    },
+    {
+        "id": 85,
+        "arabic": "إِنَّ رَحْمَتَ اللَّهِ قَرِيبٌ مِّنَ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah'ın rahmeti, iyilik edenlere çok yakındır.",
+        "surah": "A'râf Suresi",
+        "ayahNumber": 56
+    },
+    {
+        "id": 86,
+        "arabic": "فَاسْتَقِمْ كَمَا أُمِرْتَ",
+        "turkish": "Emrolunduğun gibi dosdoğru ol.",
+        "surah": "Hud Suresi",
+        "ayahNumber": 112
+    },
+    {
+        "id": 87,
+        "arabic": "وَأَقِيمُوا الصَّلَاةَ وَآتُوا الزَّكَاةَ",
+        "turkish": "Namazı kılın, zekatı verin.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 43
+    },
+    {
+        "id": 88,
+        "arabic": "وَإِذَا مَرِضْتُ فَهُوَ يَشْفِينِ",
+        "turkish": "Hastalandığım zaman bana şifa veren O'dur.",
+        "surah": "Şuarâ Suresi",
+        "ayahNumber": 80
+    },
+    {
+        "id": 89,
+        "arabic": "إِنَّ اللَّهَ يَرْزُقُ مَن يَشَاءُ بِغَيْرِ حِسَابٍ",
+        "turkish": "Şüphesiz Allah, dilediğine hesapsız rızık verir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 37
+    },
+    {
+        "id": 90,
+        "arabic": "وَقُل رَّبِّ أَدْخِلْنِي مُدْخَلَ صِدْقٍ",
+        "turkish": "De ki: Rabbim, gireceğim yere doğrulukla girmemi nasip et.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 80
+    },
+    {
+        "id": 91,
+        "arabic": "وَاللَّهُ عَلَىٰ كُلِّ شَيْءٍ شَهِيدٌ",
+        "turkish": "Allah, her şeye şahittir.",
+        "surah": "Burûc Suresi",
+        "ayahNumber": 9
+    },
+    {
+        "id": 92,
+        "arabic": "فَاذْكُرُونِي أَذْكُرْكُمْ",
+        "turkish": "Siz beni zikredin (anın), ben de sizi zikredeyim.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 152
+    },
+    {
+        "id": 93,
+        "arabic": "إِنَّ اللَّهَ عَلِيمٌ بِذَاتِ الصُّدُورِ",
+        "turkish": "Şüphesiz Allah, kalplerin içinde olanı hakkıyla bilendir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 119
+    },
+    {
+        "id": 94,
+        "arabic": "وَأَوْفُوا بِالْعَهْدِ",
+        "turkish": "Verdiğiniz sözü yerine getirin.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 34
+    },
+    {
+        "id": 95,
+        "arabic": "إِنَّ اللَّهَ كَانَ تَوَّابًا رَّحِيمًا",
+        "turkish": "Şüphesiz Allah, tövbeleri çokça kabul eden ve çok merhamet edendir.",
+        "surah": "Nisâ Suresi",
+        "ayahNumber": 16
+    },
+    {
+        "id": 96,
+        "arabic": "وَاللَّهُ يَعْلَمُ وَأَنتُمْ لَا تَعْلَمُونَ",
+        "turkish": "Allah bilir, siz bilmezsiniz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 216
+    },
+    {
+        "id": 97,
+        "arabic": "وَمَا كَانَ اللَّهُ لِيُضِيعَ إِيمَانَكُمْ",
+        "turkish": "Allah sizin imanınızı (ibadetlerinizi) asla zayi edecek değildir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 143
+    },
+    {
+        "id": 98,
+        "arabic": "إِنَّ أَوَّلَ بَيْتٍ وُضِعَ لِلنَّ",
+        "turkish": "Şüphesiz, insanlar için kurulan ilk ev (Mekke'deki Kâbe'dir).",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 96
+    },
+    {
+        "id": 99,
+        "arabic": "وَاللَّهُ وَلِيُّ الْمُؤْمِنِينَ",
+        "turkish": "Allah müminlerin dostudur.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 68
+    },
+    {
+        "id": 100,
+        "arabic": "وَإِلَيْهِ تُرْجَعُونَ",
+        "turkish": "Ve ancak O'na döndürüleceksiniz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 245
+    },
+    {
+        "id": 101,
+        "arabic": "وَمَا نُنَزِّلُهُ إِلَّا بِقَدَرٍ مَّعْلُومٍ",
+        "turkish": "Biz onu ancak belli bir ölçüye göre indiririz.",
+        "surah": "Hicr Suresi",
+        "ayahNumber": 21
+    },
+    {
+        "id": 102,
+        "arabic": "إِنَّ رَبِّي رَحِيمٌ وَدُودٌ",
+        "turkish": "Şüphesiz Rabbim çok merhametlidir, çok sevendir.",
+        "surah": "Hud Suresi",
+        "ayahNumber": 90
+    },
+    {
+        "id": 103,
+        "arabic": "وَهُوَ الْغَفُورُ الْوَدُودُ",
+        "turkish": "O, çok bağışlayandır, çok sevendir.",
+        "surah": "Burûc Suresi",
+        "ayahNumber": 14
+    },
+    {
+        "id": 104,
+        "arabic": "يَمْحُو اللَّهُ مَا يَشَاءُ وَيُثْبِتُ",
+        "turkish": "Allah dilediğini siler, dilediğini de sabit bırakır.",
+        "surah": "Ra'd Suresi",
+        "ayahNumber": 39
+    },
+    {
+        "id": 105,
+        "arabic": "وَاللَّهُ يَقْضِي بِالْحَقِّ",
+        "turkish": "Allah, adaletle hükmeder.",
+        "surah": "Mü'min Suresi",
+        "ayahNumber": 20
+    },
+    {
+        "id": 106,
+        "arabic": "إِنَّ رَبِّي لَطِيفٌ لِّمَا يَشَاءُ",
+        "turkish": "Şüphesiz Rabbim, dilediği şeye karşı lütuf sahibidir.",
+        "surah": "Yusuf Suresi",
+        "ayahNumber": 100
+    },
+    {
+        "id": 107,
+        "arabic": "وَمَا كَانَ رَبُّكَ مُهْلِكَ الْقُرَىٰ حَتَّىٰ يَبْعَثَ فِي أُمِّهَا رَسُولًا",
+        "turkish": "Rabbin, ana merkezlerine bir peygamber göndermedikçe memleketleri helâk edici değildir.",
+        "surah": "Kasas Suresi",
+        "ayahNumber": 59
+    },
+    {
+        "id": 108,
+        "arabic": "وَإِن تَعْفُوا وَتَصْفَحُوا وَتغْفِرُوا فَإِنَّ اللَّهَ غَفُورٌ رَّحِيمٌ",
+        "turkish": "Eğer affeder, kusurlarına bakmaz ve bağışlarsanız, şüphesiz Allah çok bağışlayandır, çok merhamet edendir.",
+        "surah": "Tegâbun Suresi",
+        "ayahNumber": 14
+    },
+    {
+        "id": 109,
+        "arabic": "لَا تَحْزَنْ إِنَّ اللَّهَ مَعَنَا",
+        "turkish": "Üzülme, çünkü Allah bizimle beraberdir.",
+        "surah": "Tevbe Suresi",
+        "ayahNumber": 40
+    },
+    {
+        "id": 110,
+        "arabic": "وَاللَّهُ غَنِيٌّ حَلِيمٌ",
+        "turkish": "Allah çok zengindir (hiçbir şeye muhtaç değildir), çok halimdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 263
+    },
+    {
+        "id": 111,
+        "arabic": "إِنَّ رَبَّكَ وَاسِعُ الْمَغْفِرَةِ",
+        "turkish": "Şüphesiz Rabbinin mağfireti (bağışlaması) çok geniştir.",
+        "surah": "Necm Suresi",
+        "ayahNumber": 32
+    },
+    {
+        "id": 112,
+        "arabic": "فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى اللَّهِ",
+        "turkish": "Kararını verdiğin zaman artık Allah'a tevekkül et.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 159
+    },
+    {
+        "id": 113,
+        "arabic": "وَاللَّهُ عَزِيزٌ ذُو انتِقَامٍ",
+        "turkish": "Allah, mutlak güç sahibidir, intikam alandır (zalimin cezasını verendir).",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 114,
+        "arabic": "قُلْ إِن كُنتُمْ تُحِبُّونَ اللَّهَ فَاتَّبِعُونِي يُحْبِبْكُمُ اللَّهُ",
+        "turkish": "De ki: Eğer Allah'ı seviyorsanız bana uyun ki Allah da sizi sevsin.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 31
+    },
+    {
+        "id": 115,
+        "arabic": "وَأَقْرِضُوا اللَّهَ قَرْضًا حَسَنًا",
+        "turkish": "Allah'a güzel bir borç (karşılıksız iyilik) verin.",
+        "surah": "Hadid Suresi",
+        "ayahNumber": 18
+    },
+    {
+        "id": 116,
+        "arabic": "إِنَّمَا أَمْرُهُ إِذَا أَرَادَ شَيْئًا أَن يَقُولَ لَهُ كُن فَيَكُونُ",
+        "turkish": "O, bir şeyi dilediği zaman, O'nun emri ancak ona 'Ol' demektir, o da hemen oluverir.",
+        "surah": "Yâsîn Suresi",
+        "ayahNumber": 82
+    },
+    {
+        "id": 117,
+        "arabic": "فَبِأَيِّ آلَاءِ رَبِّكُمَا تُكَذِّبَانِ",
+        "turkish": "Öyleyken Rabbinizin hangi nimetlerini yalanlayabilirsiniz?",
+        "surah": "Rahmân Suresi",
+        "ayahNumber": 13
+    },
+    {
+        "id": 118,
+        "arabic": "رَبَّنَا لَا تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا",
+        "turkish": "Rabbimiz! Eğer unutur veya hata edersek bizi hesaba çekme.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 286
+    },
+    {
+        "id": 119,
+        "arabic": "وَمَن يَبْتَغِ غَيْرَ الْإِسْلَامِ دِينًا فَلَن يُقْبَلَ مِنْهُ",
+        "turkish": "Kim İslâm'dan başka bir din ararsa, bilsin ki kendisinden asla kabul edilmeyecektir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 85
+    },
+    {
+        "id": 120,
+        "arabic": "وَاللَّهُ يُحِبُّ الْمُحْسِنِينَ",
+        "turkish": "Allah, iyilik edenleri sever.",
+        "surah": "Mâide Suresi",
+        "ayahNumber": 13
+    },
+    {
+        "id": 121,
+        "arabic": "إِنَّ الشِّرْكَ لَظُلْمٌ عَظِيمٌ",
+        "turkish": "Şüphesiz şirk (Allah'a ortak koşmak), çok büyük bir zulümdür.",
+        "surah": "Lokman Suresi",
+        "ayahNumber": 13
+    },
+    {
+        "id": 122,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ خَبِيرٌ",
+        "turkish": "Allah, yaptıklarınızdan hakkıyla haberdardır.",
+        "surah": "Hadid Suresi",
+        "ayahNumber": 10
+    },
+    {
+        "id": 123,
+        "arabic": "وَلَا تَهِنُوا وَلَا تَحْزَنُوا وَأَنتُمُ الْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ",
+        "turkish": "Gevşemeyin, üzülmeyin; eğer (gerçekten) inanıyorsanız en üstün olan sizsiniz.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 139
+    },
+    {
+        "id": 124,
+        "arabic": "وَتَوَكَّلْ عَلَى اللَّهِ وَكَفَىٰ بِاللَّهِ وَكِيلًا",
+        "turkish": "Allah'a tevekkül et; vekil olarak Allah yeter.",
+        "surah": "Ahzâb Suresi",
+        "ayahNumber": 3
+    },
+    {
+        "id": 125,
+        "arabic": "إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا",
+        "turkish": "Şüphesiz namaz, müminler üzerine belirli vakitlere bağlanmış bir farzdır.",
+        "surah": "Nisâ Suresi",
+        "ayahNumber": 103
+    },
+    {
+        "id": 126,
+        "arabic": "وَالْآخِرَةُ خَيْرٌ وَأَبْقَىٰ",
+        "turkish": "Oysa ahiret daha hayırlı ve daha süreklidir.",
+        "surah": "A'lâ Suresi",
+        "ayahNumber": 17
+    },
+    {
+        "id": 127,
+        "arabic": "وَتِلْكَ الْأَيَّامُ نُدَاوِلُهَا بَيْنَ النَّاسِ",
+        "turkish": "Biz o günleri insanlar arasında (kah sevinç kah keder olarak) döndürüp dururuz.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 140
+    },
+    {
+        "id": 128,
+        "arabic": "إِنَّ أَكْرَمَكُمْ عِندَ اللَّهِ أَتْقَاكُمْ",
+        "turkish": "Allah katında en değerli olanınız, O'na karşı gelmekten en çok sakınanınızdır.",
+        "surah": "Hucurât Suresi",
+        "ayahNumber": 13
+    },
+    {
+        "id": 129,
+        "arabic": "وَاللَّهُ سَرِيعُ الْحِسَابِ",
+        "turkish": "Allah, hesabı çok süratli görendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 202
+    },
+    {
+        "id": 130,
+        "arabic": "وَمَن يَقْنطُ مِن رَّحْمَةِ رَبِّهِ إِلَّا الضَّالُّونَ",
+        "turkish": "Rabbinin rahmetinden sapıklardan başka kim ümit keser?",
+        "surah": "Hicr Suresi",
+        "ayahNumber": 56
+    },
+    {
+        "id": 131,
+        "arabic": "وَقُلِ الْحَقُّ مِن رَّبِّكُمْ",
+        "turkish": "De ki: Hak, Rabbinizdendir.",
+        "surah": "Kehf Suresi",
+        "ayahNumber": 29
+    },
+    {
+        "id": 132,
+        "arabic": "إِنَّ اللَّهَ يُحِبُّ الْمُقْسِطِينَ",
+        "turkish": "Şüphesiz Allah, adaletli davrananları sever.",
+        "surah": "Hucurât Suresi",
+        "ayahNumber": 9
+    },
+    {
+        "id": 133,
+        "arabic": "وَمَا الْحَيَاةُ الدُّنْيَا إِلَّا لَعِبٌ وَلَهْوٌ",
+        "turkish": "Dünya hayatı ancak bir oyun ve bir eğlencedir.",
+        "surah": "En'âm Suresi",
+        "ayahNumber": 32
+    },
+    {
+        "id": 134,
+        "arabic": "وَاللَّهُ يَعْلَمُ مَا تُسِرُّونَ وَمَا تُعْلِنُونَ",
+        "turkish": "Allah, gizlediklerinizi de açıkladıklarınızı da bilir.",
+        "surah": "Nahl Suresi",
+        "ayahNumber": 19
+    },
+    {
+        "id": 135,
+        "arabic": "رَبِّ اجْعَلْنِي مُقِيمَ الصَّلَاةِ وَمِن ذُرِّيَّتِي",
+        "turkish": "Rabbim! Beni ve soyumdan gelecekleri namazı devamlı kılanlardan eyle.",
+        "surah": "İbrahim Suresi",
+        "ayahNumber": 40
+    },
+    {
+        "id": 136,
+        "arabic": "وَأَحْسِن كَمَا أَحْسَنَ اللَّهُ إِلَيْكَ",
+        "turkish": "Allah'ın sana iyilik yaptığı gibi, sen de iyilik yap.",
+        "surah": "Kasas Suresi",
+        "ayahNumber": 77
+    },
+    {
+        "id": 137,
+        "arabic": "إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ",
+        "turkish": "Şüphesiz bu Kur'an, en doğru yola iletir.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 9
+    },
+    {
+        "id": 138,
+        "arabic": "وَلَا تَقْفُ مَا لَيْسَ لَكَ بِهِ عِلْمٌ",
+        "turkish": "Hakkında bilgin olmayan şeyin ardına düşme.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 36
+    },
+    {
+        "id": 139,
+        "arabic": "وَاللَّهُ يَقُولُ الْحَقَّ وَهُوَ يَهْدِي السَّبِيلَ",
+        "turkish": "Allah gerçeği söyler ve O, doğru yolu gösterir.",
+        "surah": "Ahzâb Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 140,
+        "arabic": "وَأَن لَّيْسَ لِلْإِنسَانِ إِلَّا مَا سَعَىٰ",
+        "turkish": "İnsan için ancak çalıştığının karşılığı vardır.",
+        "surah": "Necm Suresi",
+        "ayahNumber": 39
+    },
+    {
+        "id": 141,
+        "arabic": "وَاللَّهُ يَدْعُو إِلَىٰ دَارِ السَّلَامِ",
+        "turkish": "Allah, esenlik yurduna (cennete) çağırır.",
+        "surah": "Yunus Suresi",
+        "ayahNumber": 25
+    },
+    {
+        "id": 142,
+        "arabic": "إِنَّ اللَّهَ لَا يَخْفَىٰ عَلَيْهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ",
+        "turkish": "Şüphesiz yerde ve gökte hiçbir şey Allah'a gizli kalmaz.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 143,
+        "arabic": "وَاصْبِرْ فَإِنَّ اللَّهَ لَا يُضِيعُ أَجْرَ الْمُحْسِنِينَ",
+        "turkish": "Sabret; çünkü Allah iyilik edenlerin mükafatını zayi etmez.",
+        "surah": "Hud Suresi",
+        "ayahNumber": 115
+    },
+    {
+        "id": 144,
+        "arabic": "وَسَارِعُوا إِلَىٰ مَغْفِرَةٍ مِّن رَّبِّكُمْ",
+        "turkish": "Rabbinizin bağışlamasına koşun.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 133
+    },
+    {
+        "id": 145,
+        "arabic": "وَهُوَ عَلَىٰ جَمْعِهِمْ إِذَا يَشَاءُ قَدِيرٌ",
+        "turkish": "O, dilediği zaman onları toplamaya kadirdir.",
+        "surah": "Şuarâ Suresi",
+        "ayahNumber": 29
+    },
+    {
+        "id": 146,
+        "arabic": "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
+        "turkish": "Şüphesiz Allah sabredenlerle beraberdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 153
+    },
+    {
+        "id": 147,
+        "arabic": "وَاللَّهُ يَعْلَمُ مَفْسِدًا مِنَ الْمُصْلِحِ",
+        "turkish": "Allah, bozguncu olanı düzeltici olandan ayırt etmesini bilir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 220
+    },
+    {
+        "id": 148,
+        "arabic": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا",
+        "turkish": "Rabbimiz! Bizi doğru yola ilettikten sonra kalplerimizi eğriltme.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 8
+    },
+    {
+        "id": 149,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ بَصِيرٌ",
+        "turkish": "Allah yaptıklarınızı hakkıyla görendir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 150,
+        "arabic": "فَسُبْحَانَ اللَّهِ حِينَ تُمْسُونَ وَحِينَ تُصْبِحُونَ",
+        "turkish": "Akşama erdiğinizde ve sabaha çıktığınızda Allah'ı tesbih edin.",
+        "surah": "Rum Suresi",
+        "ayahNumber": 17
+    },
+    {
+        "id": 151,
+        "arabic": "وَتَوَكَّلْ عَلَى الْحَيِّ الَّذِي لَا يَمُوتُ",
+        "turkish": "Ölümsüz ve daima diri olan Allah'a güvenip dayan.",
+        "surah": "Furkân Suresi",
+        "ayahNumber": 58
+    },
+    {
+        "id": 152,
+        "arabic": "إِنَّ رَبِّي قَرِيبٌ مُّجِيبٌ",
+        "turkish": "Şüphesiz Rabbim yakındır, dualara cevap verendir.",
+        "surah": "Hûd Suresi",
+        "ayahNumber": 61
+    },
+    {
+        "id": 153,
+        "arabic": "وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مِنْ أَمْرِهِ يُسْرًا",
+        "turkish": "Kim Allah’a karşı gelmekten sakınırsa, Allah ona işinde bir kolaylık verir.",
+        "surah": "Talâk Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 154,
+        "arabic": "وَاللَّهُ يُحِبُّ الْمُطَّهِّرِينَ",
+        "turkish": "Allah, tertemiz olanları sever.",
+        "surah": "Tevbe Suresi",
+        "ayahNumber": 108
+    },
+    {
+        "id": 155,
+        "arabic": "قُلِ اللَّهُمَّ مَالِكَ الْمُلْكِ تُؤْتِي الْمُلْكَ مَن تَشَاءُ",
+        "turkish": "De ki: Ey mülkün sahibi olan Allah'ım! Sen mülkü dilediğine verirsin.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 26
+    },
+    {
+        "id": 156,
+        "arabic": "وَمَا لَنَا أَلَّا نَتَوَكَّلَ عَلَى اللَّهِ وَقَدْ هَدَانَا سُبُلَنَا",
+        "turkish": "Bize yollarımızı göstermişken, neden Allah’a tevekkül etmeyelim?",
+        "surah": "İbrâhîm Suresi",
+        "ayahNumber": 12
+    },
+    {
+        "id": 157,
+        "arabic": "إِنَّ اللَّهَ بِعِبَادِهِ لَخَبِيرٌ بَصِيرٌ",
+        "turkish": "Şüphesiz Allah, kullarından hakkıyla haberdardır, onları hakkıyla görendir.",
+        "surah": "Fâtır Suresi",
+        "ayahNumber": 31
+    },
+    {
+        "id": 158,
+        "arabic": "وَاللَّهُ يَعْلَمُ مَا تُبْدُونَ وَmَا تَكْتُمُونَ",
+        "turkish": "Allah, açığa vurduğunuzu da, gizlediğinizi de bilir.",
+        "surah": "Mâide Suresi",
+        "ayahNumber": 99
+    },
+    {
+        "id": 159,
+        "arabic": "فَاصْبِرْ لِحُكْمِ رَبِّكَ",
+        "turkish": "Rabbinin hükmüne sabret.",
+        "surah": "İnsân Suresi",
+        "ayahNumber": 24
+    },
+    {
+        "id": 160,
+        "arabic": "وَسَبِّحْ بِحَمْدِ رَبِّكَ قَبْلَ طُلُوعِ الشَّمْسِ وَقَبْلَ غُرُوبِهَا",
+        "turkish": "Güneş doğmadan önce de, batmadan önce de Rabbini hamd ile tesbih et.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 130
+    },
+    {
+        "id": 161,
+        "arabic": "إِنَّ اللَّهَ لَا يُخْلِفُ الْمِيعَادَ",
+        "turkish": "Şüphesiz Allah, vaadinden dönmez.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 9
+    },
+    {
+        "id": 162,
+        "arabic": "وَاللَّهُ يَهْدِي مَن يَشَاءُ إِلَىٰ نُورِهِ",
+        "turkish": "Allah, dilediği kimseyi nuruna iletir.",
+        "surah": "Nûr Suresi",
+        "ayahNumber": 35
+    },
+    {
+        "id": 163,
+        "arabic": "وَمَا كَانَ اللَّهُ لِيُعْجِزَهُ مِن شَيْءٍ فِي السَّمَاوَاتِ وَلَا فِي الْأَرْضِ",
+        "turkish": "Ne göklerde ne de yerde Allah’ı aciz bırakacak hiçbir şey yoktur.",
+        "surah": "Fâtır Suresi",
+        "ayahNumber": 44
+    },
+    {
+        "id": 164,
+        "arabic": "إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ",
+        "turkish": "Şüphesiz Allah, çokça tövbe edenleri sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 222
+    },
+    {
+        "id": 165,
+        "arabic": "وَاللَّهُ خَيْرُ الرَّازِقِينَ",
+        "turkish": "Allah, rızık verenlerin en hayırlısıdır.",
+        "surah": "Cuma Suresi",
+        "ayahNumber": 11
+    },
+    {
+        "id": 166,
+        "arabic": "وَمَا نُرْسِلُ بِالْآيَاتِ إِلَّا تَخْوِيفًا",
+        "turkish": "Biz mucizeleri (ayetleri) ancak korkutup uyarmak için göndeririz.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 59
+    },
+    {
+        "id": 167,
+        "arabic": "إِنَّ اللَّهَ مَعَ الَّذِينَ اتَّقَوا",
+        "turkish": "Şüphesiz Allah, takva sahipleriyle beraberdir.",
+        "surah": "Nahl Suresi",
+        "ayahNumber": 128
+    },
+    {
+        "id": 168,
+        "arabic": "وَقُلِ الْحَمْدُ لِلَّهِ",
+        "turkish": "De ki: Hamd Allah'a mahsustur.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 111
+    },
+    {
+        "id": 169,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ بَصِيرٌ",
+        "turkish": "Allah, yaptıklarınızı hakkıyla görendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 265
+    },
+    {
+        "id": 170,
+        "arabic": "إِنَّ رَبَّكَ هُوَ الْخَلَّاقُ الْعَلِيمُ",
+        "turkish": "Şüphesiz senin Rabbin, her şeyi yaratan ve her şeyi bilendir.",
+        "surah": "Hicr Suresi",
+        "ayahNumber": 86
+    },
+    {
+        "id": 171,
+        "arabic": "وَمَن يَبْخَلْ فَإِنَّمَا يَبْخَلُ عَن نَّفْسِهِ",
+        "turkish": "Kim cimrilik ederse, ancak kendi zararına cimrilik etmiş olur.",
+        "surah": "Muhammed Suresi",
+        "ayahNumber": 38
+    },
+    {
+        "id": 172,
+        "arabic": "وَإِن يَمْسَسْكَ اللَّهُ بِضُرٍّ فَلَا كَاشِفَ لَهُ إِلَّا هُوَ",
+        "turkish": "Eğer Allah sana bir zarar dokunduracak olsa, onu O’ndan başka giderecek yoktur.",
+        "surah": "En'âm Suresi",
+        "ayahNumber": 17
+    },
+    {
+        "id": 173,
+        "arabic": "إِنَّ اللَّهَ لَا يُغَيِّرُ مَا بِقَوْمٍ حَتَّىٰ يُغَيِّرُوا مَا بِأَنفُسِهِمْ",
+        "turkish": "Şüphesiz bir toplum kendi halini değiştirmedikçe, Allah onlarda olanı değiştirmez.",
+        "surah": "Ra'd Suresi",
+        "ayahNumber": 11
+    },
+    {
+        "id": 174,
+        "arabic": "وَاللَّهُ يَعْلَمُ وَأَنتُمْ لَا تَعْلَمُونَ",
+        "turkish": "Allah bilir, siz bilmezsiniz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 232
+    },
+    {
+        "id": 175,
+        "arabic": "إِنَّ رَبِّي رَحِيمٌ وَدُودٌ",
+        "turkish": "Şüphesiz Rabbim çok merhametlidir, çok sevendir.",
+        "surah": "Hûd Suresi",
+        "ayahNumber": 90
+    },
+    {
+        "id": 176,
+        "arabic": "وَمَا الْحَيَاةُ الدُّنْيَا إِلَّا لَعِبٌ وَلَهْوٌ",
+        "turkish": "Dünya hayatı ancak bir oyun ve bir eğlencedir.",
+        "surah": "En'âm Suresi",
+        "ayahNumber": 32
+    },
+    {
+        "id": 177,
+        "arabic": "وَقُولُوا لِلنَّاسِ حُسْنًا",
+        "turkish": "İnsanlara güzel söz söyleyin.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 83
+    },
+    {
+        "id": 178,
+        "arabic": "إِنَّ اللَّهَ لَا يَظْلِمُ النَّاسَ شَيْئًا",
+        "turkish": "Şüphesiz Allah, insanlara hiçbir şekilde zulmetmez.",
+        "surah": "Yûnus Suresi",
+        "ayahNumber": 44
+    },
+    {
+        "id": 179,
+        "arabic": "وَاللَّهُ يَدْعُو إِلَىٰ دَارِ السَّلَامِ",
+        "turkish": "Allah, esenlik yurduna (cennete) çağırır.",
+        "surah": "Yûnus Suresi",
+        "ayahNumber": 25
+    },
+    {
+        "id": 180,
+        "arabic": "إِنَّ رَبَّكَ لَبِالْمِرْصَادِ",
+        "turkish": "Şüphesiz Rabbin her an gözetlemektedir.",
+        "surah": "Fecr Suresi",
+        "ayahNumber": 14
+    },
+    {
+        "id": 181,
+        "arabic": "وَتَوَكَّلْ عَلَى الْعَزِيزِ الرَّحِيمِ",
+        "turkish": "Mutlak güç sahibi ve çok merhametli olan Allah'a tevekkül et.",
+        "surah": "Şuarâ Suresi",
+        "ayahNumber": 217
+    },
+    {
+        "id": 182,
+        "arabic": "وَمَا أَنفَقْتُم مِّن شَيْءٍ فَهُوَ يُخْلِفُهُ",
+        "turkish": "Siz hayır yolunda ne harcarsanız, Allah onun yerini doldurur.",
+        "surah": "Sebe' Suresi",
+        "ayahNumber": 39
+    },
+    {
+        "id": 183,
+        "arabic": "إِنَّ اللَّهَ غَفُورٌ حَلِيمٌ",
+        "turkish": "Şüphesiz Allah çok bağışlayandır, çok halimdir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 155
+    },
+    {
+        "id": 184,
+        "arabic": "وَاللَّهُ يُحِبُّ الْمُقْسِطِينَ",
+        "turkish": "Allah, adaletli davrananları sever.",
+        "surah": "Mâide Suresi",
+        "ayahNumber": 42
+    },
+    {
+        "id": 185,
+        "arabic": "وَمَا كَانَ رَبُّكَ نَسِيًّا",
+        "turkish": "Senin Rabbin asla unutkan değildir.",
+        "surah": "Meryem Suresi",
+        "ayahNumber": 64
+    },
+    {
+        "id": 186,
+        "arabic": "إِنَّ اللَّهَ عَلَىٰ كُلِّ شَيْءٍ شَهِيدٌ",
+        "turkish": "Şüphesiz Allah, her şeye şahittir.",
+        "surah": "Hac Suresi",
+        "ayahNumber": 17
+    },
+    {
+        "id": 187,
+        "arabic": "وَاسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ",
+        "turkish": "Sabır ve namazla yardım dileyin.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 45
+    },
+    {
+        "id": 188,
+        "arabic": "فَاذْكُرُونِي أَذْكُرْكُمْ",
+        "turkish": "Siz beni anın ki, ben de sizi anayım.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 152
+    },
+    {
+        "id": 189,
+        "arabic": "وَاللَّهُ يَعْلَمُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ",
+        "turkish": "Allah, göklerde olanı da yerde olanı da bilir.",
+        "surah": "Hucurât Suresi",
+        "ayahNumber": 16
+    },
+    {
+        "id": 190,
+        "arabic": "إِنَّ الشَّيْطَانَ لَكُمْ عَدُوٌّ فَاتَّخِذُوهُ عَدُوًّا",
+        "turkish": "Şüphesiz şeytan sizin düşmanınızdır, siz de onu düşman edinin.",
+        "surah": "Fâtır Suresi",
+        "ayahNumber": 6
+    },
+    {
+        "id": 191,
+        "arabic": "وَسَبِّحْ بِحَمْدِ رَبِّكَ الْعَظِيمِ",
+        "turkish": "Öyleyse yüce Rabbinin adını tesbih et.",
+        "surah": "Vâkıa Suresi",
+        "ayahNumber": 74
+    },
+    {
+        "id": 192,
+        "arabic": "إِنَّ اللَّهَ لَا يُضِيعُ أَجْرَ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah, iyilik edenlerin mükafatını zayi etmez.",
+        "surah": "Tevbe Suresi",
+        "ayahNumber": 120
+    },
+    {
+        "id": 193,
+        "arabic": "وَاللَّهُ مَعَ الصَّابِرِينَ",
+        "turkish": "Allah sabredenlerle beraberdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 153
+    },
+    {
+        "id": 194,
+        "arabic": "فَاصْبِرْ صَبْرًا جَمِيلًا",
+        "turkish": "Güzel bir sabırla sabret.",
+        "surah": "Meâric Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 195,
+        "arabic": "إِنَّ رَحْمَتَ اللَّهِ قَرِيبٌ مِّنَ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah'ın rahmeti, iyilik edenlere çok yakındır.",
+        "surah": "A'râf Suresi",
+        "ayahNumber": 56
+    },
+    {
+        "id": 196,
+        "arabic": "وَهُوَ عَلَىٰ كُلِّ شَيْءٍ بَصِيرٌ",
+        "turkish": "O, her şeyi hakkıyla görendir.",
+        "surah": "Şûrâ Suresi",
+        "ayahNumber": 27
+    },
+    {
+        "id": 197,
+        "arabic": "وَقُلِ الْحَقُّ مِن رَّبِّكُمْ",
+        "turkish": "De ki: Hak, Rabbinizdendir.",
+        "surah": "Kehf Suresi",
+        "ayahNumber": 29
+    },
+    {
+        "id": 198,
+        "arabic": "إِنَّ اللَّهَ يَرْزُقُ مَن يَشَاءُ بِغَيْرِ حِسَابٍ",
+        "turkish": "Allah dilediğine hesapsız rızık verir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 37
+    },
+    {
+        "id": 199,
+        "arabic": "وَاللَّهُ وَلِيُّ الْمُؤْمِنِينَ",
+        "turkish": "Allah müminlerin dostudur.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 68
+    },
+    {
+        "id": 200,
+        "arabic": "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ",
+        "turkish": "Biz şüphesiz Allah’a aitiz ve şüphesiz O’na döneceğiz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 201,
+        "arabic": "وَاللَّهُ يَعْلَمُ مَا فِي قُلُوبِكُمْ",
+        "turkish": "Allah, kalplerinizde olanı bilir.",
+        "surah": "Ahzâb Suresi",
+        "ayahNumber": 51
+    },
+    {
+        "id": 202,
+        "arabic": "إِنَّ اللَّهَ كَانَ عَلِيمًا حَكِيمًا",
+        "turkish": "Şüphesiz Allah hakkıyla bilendir, hüküm ve hikmet sahibidir.",
+        "surah": "İnsân Suresi",
+        "ayahNumber": 30
+    },
+    {
+        "id": 203,
+        "arabic": "وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ",
+        "turkish": "Kim Allah'a tevekkül ederse, O ona yeter.",
+        "surah": "Talâk Suresi",
+        "ayahNumber": 3
+    },
+    {
+        "id": 204,
+        "arabic": "وَكَانَ اللَّهُ عَلَىٰ كُلِّ شَيْءٍ مُّقْتَدِرًا",
+        "turkish": "Allah, her şey üzerinde mutlak güç sahibidir.",
+        "surah": "Kehf Suresi",
+        "ayahNumber": 45
+    },
+    {
+        "id": 205,
+        "arabic": "إِنَّ رَبِّي لَسَمِيعُ الدُّعَاءِ",
+        "turkish": "Şüphesiz Rabbim duaları hakkıyla işitendir.",
+        "surah": "İbrâhîm Suresi",
+        "ayahNumber": 39
+    },
+    {
+        "id": 206,
+        "arabic": "وَمَا كَانَ اللَّهُ لِيُضِيعَ إِيمَانَكُمْ",
+        "turkish": "Allah, sizin imanınızı asla zayi edecek değildir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 143
+    },
+    {
+        "id": 207,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ خَبِيرٌ",
+        "turkish": "Allah, yaptıklarınızdan hakkıyla haberdardır.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 234
+    },
+    {
+        "id": 208,
+        "arabic": "إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ",
+        "turkish": "Şüphesiz Allah çokça tövbe edenleri sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 222
+    },
+    {
+        "id": 209,
+        "arabic": "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "turkish": "Şüphesiz zorlukla beraber bir kolaylık vardır.",
+        "surah": "İnşirah Suresi",
+        "ayahNumber": 6
+    },
+    {
+        "id": 210,
+        "arabic": "وَاللَّهُ سَمِيعٌ عَلِيمٌ",
+        "turkish": "Allah hakkıyla işitendir, hakkıyla bilendir.",
+        "surah": "Nisâ Suresi",
+        "ayahNumber": 148
+    },
+    {
+        "id": 211,
+        "arabic": "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
+        "turkish": "Şüphesiz Allah sabredenlerle beraberdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 153
+    },
+    {
+        "id": 212,
+        "arabic": "وَقُل رَّبِّ زِدْنِي عِلْمًا",
+        "turkish": "De ki: Rabbim, benim ilmimi artır.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 114
+    },
+    {
+        "id": 213,
+        "arabic": "إِنَّ رَبِّي قَرِيبٌ مُّجِيبٌ",
+        "turkish": "Şüphesiz Rabbim yakındır, dualara icabet edendir.",
+        "surah": "Hûd Suresi",
+        "ayahNumber": 61
+    },
+    {
+        "id": 214,
+        "arabic": "وَاللَّهُ يَعْلَمُ وَأَنتُمْ لَا تَعْلَمُونَ",
+        "turkish": "Allah bilir, siz bilmezsiniz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 216
+    },
+    {
+        "id": 215,
+        "arabic": "فَاذْكُرُونِي أَذْكُرْكُمْ",
+        "turkish": "Siz beni anın ki, ben de sizi anayım.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 152
+    },
+    {
+        "id": 216,
+        "arabic": "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",
+        "turkish": "Nerede olursanız olun, O sizinle beraberdir.",
+        "surah": "Hadid Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 217,
+        "arabic": "لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ",
+        "turkish": "Allah'ın rahmetinden ümit kesmeyin.",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 53
+    },
+    {
+        "id": 218,
+        "arabic": "وَاسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ",
+        "turkish": "Sabır ve namazla yardım dileyin.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 45
+    },
+    {
+        "id": 219,
+        "arabic": "أَلَيْسَ اللَّهُ بِكَافٍ عَبْدَهُ",
+        "turkish": "Allah kuluna kâfi değil mi?",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 36
+    },
+    {
+        "id": 220,
+        "arabic": "إِنَّ رَحْمَتَ اللَّهِ قَرِيبٌ مِّنَ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah'ın rahmeti, iyilik edenlere çok yakındır.",
+        "surah": "A'râf Suresi",
+        "ayahNumber": 56
+    },
+    {
+        "id": 221,
+        "arabic": "وَاللَّهُ يَرْزُقُ مَن يَشَاءُ بِغَيْرِ حِسَابٍ",
+        "turkish": "Allah dilediğine hesapsız rızık verir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 212
+    },
+    {
+        "id": 222,
+        "arabic": "رَبِّ اشْرَحْ لِي صَدْرِي",
+        "turkish": "Rabbim! Göğsümü genişlet.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 25
+    },
+    {
+        "id": 223,
+        "arabic": "وَمَا كَانَ رَبُّكَ نَسِيًّا",
+        "turkish": "Senin Rabbin asla unutkan değildir.",
+        "surah": "Meryem Suresi",
+        "ayahNumber": 64
+    },
+    {
+        "id": 224,
+        "arabic": "فَاصْبِرْ صَبْرًا جَمِيلًا",
+        "turkish": "Güzel bir sabırla sabret.",
+        "surah": "Meâric Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 225,
+        "arabic": "وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
+        "turkish": "O, her şeye kadirdir.",
+        "surah": "Mülk Suresi",
+        "ayahNumber": 1
+    },
+    {
+        "id": 226,
+        "arabic": "ادْعُونِي أَسْتَجِبْ لَكُمْ",
+        "turkish": "Bana dua edin, size icabet edeyim.",
+        "surah": "Mü'min Suresi",
+        "ayahNumber": 60
+    },
+    {
+        "id": 227,
+        "arabic": "وَاللَّهُ غَفُورٌ رَّحِيمٌ",
+        "turkish": "Allah çok bağışlayan, çok merhamet edendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 218
+    },
+    {
+        "id": 228,
+        "arabic": "إِنَّ اللَّهَ لَا يُضِيعُ أَجْرَ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah, iyilik edenlerin mükafatını zayi etmez.",
+        "surah": "Tevbe Suresi",
+        "ayahNumber": 120
+    },
+    {
+        "id": 229,
+        "arabic": "وَأَحْسِنُوا إِنَّ اللَّهَ يُحِبُّ الْمُحْسِنِينَ",
+        "turkish": "İyilik edin, şüphesiz Allah iyilik edenleri sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 195
+    },
+    {
+        "id": 230,
+        "arabic": "وَاللَّهُ يَهْدِي مَن يَشَاءُ إِلَىٰ صِرَاطٍ مُّسْتَقِيمٍ",
+        "turkish": "Allah, dilediğini doğru yola iletir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 213
+    },
+    {
+        "id": 231,
+        "arabic": "وَتَوَكَّلْ عَلَى الْعَزِيزِ الرَّحِيمِ",
+        "turkish": "Mutlak güç sahibi ve çok merhametli olan Allah'a tevekkül et.",
+        "surah": "Şuarâ Suresi",
+        "ayahNumber": 217
+    },
+    {
+        "id": 232,
+        "arabic": "إِنَّ اللَّهَ بِالنَّاسِ لَرَؤُوفٌ رَّحِيمٌ",
+        "turkish": "Şüphesiz Allah, insanlara karşı çok şefkatli, çok merhametlidir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 143
+    },
+    {
+        "id": 233,
+        "arabic": "وَسَبِّحْ بِحَمْدِ رَبِّكَ قَبْلَ طُلُوعِ الشَّمْسِ وَقَبْلَ غُرُوبِهَا",
+        "turkish": "Güneş doğmadan önce de, batmadan önce de Rabbini hamd ile tesbih et.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 130
+    },
+    {
+        "id": 234,
+        "arabic": "وَمَا الْحَيَاةُ الدُّنْيَا إِلَّا مَتَاعُ الْغُرُورِ",
+        "turkish": "Dünya hayatı, aldatıcı bir faydalanmadan başka bir şey değildir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 185
+    },
+    {
+        "id": 235,
+        "arabic": "إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ",
+        "turkish": "Şüphesiz namaz, hayâsızlıktan ve kötülükten alıkoyar.",
+        "surah": "Ankebût Suresi",
+        "ayahNumber": 45
+    },
+    {
+        "id": 236,
+        "arabic": "وَقُولُوا لِلنَّاسِ حُسْنًا",
+        "turkish": "İnsanlara güzel söz söyleyin.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 83
+    },
+    {
+        "id": 237,
+        "arabic": "وَاللَّهُ يَدْعُو إِلَىٰ دَارِ السَّلَامِ",
+        "turkish": "Allah, esenlik yurduna (cennete) çağırır.",
+        "surah": "Yûnus Suresi",
+        "ayahNumber": 25
+    },
+    {
+        "id": 238,
+        "arabic": "كُلُّ نَفْسٍ ذَائِقَةُ الْمَوْتِ",
+        "turkish": "Her nefis ölümü tadacaktır.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 185
+    },
+    {
+        "id": 239,
+        "arabic": "إِنَّ اللَّهَ عَلَىٰ كُلِّ شَيْءٍ شَهِيدٌ",
+        "turkish": "Şüphesiz Allah, her şeye şahittir.",
+        "surah": "Hac Suresi",
+        "ayahNumber": 17
+    },
+    {
+        "id": 240,
+        "arabic": "وَتَعَاوَنُوا عَلَى الْبِرِّ وَالتَّقْوَىٰ",
+        "turkish": "İyilik ve takva üzere birbirinizle yardımlaşın.",
+        "surah": "Mâide Suresi",
+        "ayahNumber": 2
+    },
+    {
+        "id": 241,
+        "arabic": "وَأَقِيمُوا الصَّلَاةَ وَآتُوا الزَّكَاةَ",
+        "turkish": "Namazı kılın, zekatı verin.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 43
+    },
+    {
+        "id": 242,
+        "arabic": "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ",
+        "turkish": "Biz şüphesiz Allah'a aitiz ve şüphesiz O'na döneceğiz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 243,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ بَصِيرٌ",
+        "turkish": "Allah yaptıklarınızı hakkıyla görendir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 244,
+        "arabic": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً",
+        "turkish": "Rabbimiz! Bize dünyada da iyilik ver, ahirette de iyilik ver.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 201
+    },
+    {
+        "id": 245,
+        "arabic": "إِنَّ اللَّهَ كَانَ تَوَّابًا رَّحِيمًا",
+        "turkish": "Şüphesiz Allah, tövbeleri çokça kabul eden ve çok merhamet edendir.",
+        "surah": "Nisâ Suresi",
+        "ayahNumber": 16
+    },
+    {
+        "id": 246,
+        "arabic": "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا",
+        "turkish": "Allah hiçbir nefse gücünün yeteceğinden fazlasını yüklemez.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 286
+    },
+    {
+        "id": 247,
+        "arabic": "وَأَوْفُوا بِالْعَهْدِ",
+        "turkish": "Verdiğiniz sözü yerine getirin.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 34
+    },
+    {
+        "id": 248,
+        "arabic": "إِنَّ رَبِّي لَطِيفٌ لِّمَا يَشَاءُ",
+        "turkish": "Şüphesiz Rabbim, dilediği şeye karşı lütuf sahibidir.",
+        "surah": "Yusuf Suresi",
+        "ayahNumber": 100
+    },
+    {
+        "id": 249,
+        "arabic": "وَاللَّهُ وَلِيُّ الْمُؤْمِنِينَ",
+        "turkish": "Allah müminlerin dostudur.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 68
+    },
+    {
+        "id": 250,
+        "arabic": "فَسُبْحَانَ اللَّهِ حِينَ تُمْسُونَ وَحِينَ تُصْبِحُونَ",
+        "turkish": "Akşama erdiğinizde ve sabaha çıktığınızda Allah'ı tesbih edin.",
+        "surah": "Rum Suresi",
+        "ayahNumber": 17
+    },
+    {
+        "id": 251,
+        "arabic": "وَاعْتَصِمُوا بِحَبْلِ اللَّهِ جَمِيعًا وَلَا تَفَرَّقُوا",
+        "turkish": "Hep birlikte Allah'ın ipine (Kur'an'a) sımsıkı sarılın ve parçalanıp bölünmeyin.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 103
+    },
+    {
+        "id": 252,
+        "arabic": "وَمَا تَفْعَلُوا مِنْ خَيْرٍ فَإِنَّ اللَّهَ بِهِ عَلِيمٌ",
+        "turkish": "Hayır olarak her ne yaparsanız, şüphesiz Allah onu hakkıyla bilir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 92
+    },
+    {
+        "id": 253,
+        "arabic": "إِنَّ رَبَّكَ هُوَ أَعْلَمُ بِمَن ضَلَّ عَن سَبِيلِهِ",
+        "turkish": "Şüphesiz Rabbin, yolundan sapanları en iyi bilendir.",
+        "surah": "Nahl Suresi",
+        "ayahNumber": 125
+    },
+    {
+        "id": 254,
+        "arabic": "وَقُلِ الْحَمْدُ لِلَّهِ سَيُرِيكُمْ آيَاتِهِ فَتَعْرِفُونَهَا",
+        "turkish": "De ki: Hamd Allah'a mahsustur. O size ayetlerini gösterecek, siz de onları tanıyacaksınız.",
+        "surah": "Neml Suresi",
+        "ayahNumber": 93
+    },
+    {
+        "id": 255,
+        "arabic": "إِنَّ اللَّهَ لَا يُخْلِفُ الْمِيعَادَ",
+        "turkish": "Şüphesiz Allah vaadinden asla dönmez.",
+        "surah": "Ra'd Suresi",
+        "ayahNumber": 31
+    },
+    {
+        "id": 256,
+        "arabic": "وَاسْتَغْفِرُوا اللَّهَ إِنَّ اللَّهَ غَفُورٌ رَّحِيمٌ",
+        "turkish": "Allah'tan bağışlanma dileyin. Şüphesiz Allah çok bağışlayandır, çok merhamet edendir.",
+        "surah": "Müzzemmil Suresi",
+        "ayahNumber": 20
+    },
+    {
+        "id": 257,
+        "arabic": "وَمَا تَوْفِيقِي إِلَّا بِاللَّهِ عَلَيْهِ تَوَكَّلْتُ",
+        "turkish": "Benim başarım ancak Allah'ın yardımıyladır. Ben sadece O'na tevekkül ettim.",
+        "surah": "Hûd Suresi",
+        "ayahNumber": 88
+    },
+    {
+        "id": 258,
+        "arabic": "أَلَا لَعْنَةُ اللَّهِ عَلَى الظَّالِمِينَ",
+        "turkish": "Bilesiniz ki, Allah'ın laneti zalimlerin üzerinedir.",
+        "surah": "Hûd Suresi",
+        "ayahNumber": 18
+    },
+    {
+        "id": 259,
+        "arabic": "وَاصْبِرْ لِحُكْمِ رَبِّكَ فَإِنَّكَ بِأَعْيُنِنَا",
+        "turkish": "Rabbinin hükmüne sabret; çünkü sen bizim gözetimimiz altındasın.",
+        "surah": "Tûr Suresi",
+        "ayahNumber": 48
+    },
+    {
+        "id": 260,
+        "arabic": "إِنَّ رَبِّي لَسَمِيعُ الدُّعَاءِ",
+        "turkish": "Şüphesiz Rabbim duaları hakkıyla işitendir.",
+        "surah": "İbrâhîm Suresi",
+        "ayahNumber": 39
+    },
+    {
+        "id": 261,
+        "arabic": "وَاللَّهُ يَعْلَمُ مَا تُبْدُونَ وَمَا تَكْتُمُونَ",
+        "turkish": "Allah, açığa vurduğunuzu da, gizlediğinizi de bilir.",
+        "surah": "Mâide Suresi",
+        "ayahNumber": 99
+    },
+    {
+        "id": 262,
+        "arabic": "وَسَارِعُوا إِلَىٰ مَغْفِرَةٍ مِّن رَّبِّكُمْ وَجَنَّةٍ",
+        "turkish": "Rabbinizin bağışlamasına ve genişliği göklerle yer arası kadar olan cennete koşun.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 133
+    },
+    {
+        "id": 263,
+        "arabic": "إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ",
+        "turkish": "Şüphesiz Allah, çokça tövbe edenleri sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 222
+    },
+    {
+        "id": 264,
+        "arabic": "وَمَا لَكُم مِّن دُونِ اللَّهِ مِن وَلِيٍّ وَلَا نَصِيرٍ",
+        "turkish": "Sizin için Allah'tan başka ne bir dost ne de bir yardımcı vardır.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 107
+    },
+    {
+        "id": 265,
+        "arabic": "وَقُولُوا لِلنَّاسِ حُسْنًا",
+        "turkish": "İnsanlara güzel söz söyleyin.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 83
+    },
+    {
+        "id": 266,
+        "arabic": "فَاصْبِرْ إِنَّ وَعْدَ اللَّهِ حَقٌّ",
+        "turkish": "Sabret, şüphesiz Allah'ın vaadi haktır.",
+        "surah": "Rûm Suresi",
+        "ayahNumber": 60
+    },
+    {
+        "id": 267,
+        "arabic": "أَلَيْسَ اللَّهُ بِكَافٍ عَبْدَهُ",
+        "turkish": "Allah kuluna kâfi değil mi?",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 36
+    },
+    {
+        "id": 268,
+        "arabic": "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",
+        "turkish": "Nerede olursanız olun, O sizinle beraberdir.",
+        "surah": "Hadid Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 269,
+        "arabic": "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "turkish": "Şüphesiz zorlukla beraber bir kolaylık vardır.",
+        "surah": "İnşirah Suresi",
+        "ayahNumber": 6
+    },
+    {
+        "id": 270,
+        "arabic": "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي",
+        "turkish": "Rabbim! Göğsümü genişlet ve işimi bana kolaylaştır.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 25
+    },
+    {
+        "id": 271,
+        "arabic": "إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ",
+        "turkish": "Şüphesiz namaz, hayâsızlıktan ve kötülükten alıkoyar.",
+        "surah": "Ankebût Suresi",
+        "ayahNumber": 45
+    },
+    {
+        "id": 272,
+        "arabic": "وَتَزَوَّدُوا فَإِن- خَيْرَ الزَّادِ التَّقْوَىٰ",
+        "turkish": "Azık hazırlayın; kuşkusuz azığın en hayırlısı takvadır.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 197
+    },
+    {
+        "id": 273,
+        "arabic": "وَاللَّهُ يَعْلَمُ وَأَنتُمْ لَا تَعْلَمُونَ",
+        "turkish": "Allah bilir, siz bilmezsiniz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 216
+    },
+    {
+        "id": 274,
+        "arabic": "إِنَّ أَكْرَمَكُمْ عِندَ اللَّهِ أَتْقَاكُمْ",
+        "turkish": "Allah katında en değerli olanınız, O'na karşı gelmekten en çok sakınanınızdır.",
+        "surah": "Hucurât Suresi",
+        "ayahNumber": 13
+    },
+    {
+        "id": 275,
+        "arabic": "وَاللَّهُ مَعَ الصَّابِرِينَ",
+        "turkish": "Allah sabredenlerle beraberdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 249
+    },
+    {
+        "id": 276,
+        "arabic": "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا",
+        "turkish": "Allah hiçbir nefse gücünün yeteceğinden fazlasını yüklemez.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 286
+    },
+    {
+        "id": 277,
+        "arabic": "وَاعْبُدْ رَبَّكَ حَتَّىٰ يَأْتِيَكَ الْيَقِينُ",
+        "turkish": "Sana ölüm gelinceye kadar Rabbine ibadet et.",
+        "surah": "Hicr Suresi",
+        "ayahNumber": 99
+    },
+    {
+        "id": 278,
+        "arabic": "وَقُل رَّبِّ زِدْنِي عِلْمًا",
+        "turkish": "De ki: Rabbim, benim ilmimi artır.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 114
+    },
+    {
+        "id": 279,
+        "arabic": "فَاذْكُرُونِي أَذْكُرْكُمْ",
+        "turkish": "Siz beni zikredin, ben de sizi zikredeyim.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 152
+    },
+    {
+        "id": 280,
+        "arabic": "إِنَّ رَحْمَتَ اللَّهِ قَرِيبٌ مِّنَ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah'ın rahmeti, iyilik edenlere çok yakındır.",
+        "surah": "A'râf Suresi",
+        "ayahNumber": 56
+    },
+    {
+        "id": 281,
+        "arabic": "وَاللَّهُ يَهْدِي مَن يَشَاءُ إِلَىٰ صِرَاطٍ مُّسْتَقِيمٍ",
+        "turkish": "Allah, dilediğini doğru yola iletir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 213
+    },
+    {
+        "id": 282,
+        "arabic": "وَتَوَكَّلْ عَلَى الْعَزِيزِ الرَّحِيمِ",
+        "turkish": "Mutlak güç sahibi ve çok merhametli olan Allah'a tevekkül et.",
+        "surah": "Şuarâ Suresi",
+        "ayahNumber": 217
+    },
+    {
+        "id": 283,
+        "arabic": "لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ",
+        "turkish": "Allah'ın rahmetinden ümit kesmeyin.",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 53
+    },
+    {
+        "id": 284,
+        "arabic": "وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
+        "turkish": "O, her şeye kadirdir.",
+        "surah": "Mülk Suresi",
+        "ayahNumber": 1
+    },
+    {
+        "id": 285,
+        "arabic": "وَقُل لِّعِبَادِي يَقُولُوا الَّتِي هِيَ أَحْسَنُ",
+        "turkish": "Kullarıma söyle, sözün en güzelini söylesinler.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 53
+    },
+    {
+        "id": 286,
+        "arabic": "إِنَّ اللَّهَ بِالنَّاسِ لَرَؤُوفٌ رَّحِيمٌ",
+        "turkish": "Şüphesiz Allah, insanlara karşı çok şefkatli, çok merhametlidir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 143
+    },
+    {
+        "id": 287,
+        "arabic": "وَاللَّهُ غَفُورٌ رَّحِيمٌ",
+        "turkish": "Allah çok bağışlayan, çok merhamet edendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 218
+    },
+    {
+        "id": 288,
+        "arabic": "إِنَّ اللَّهَ لَا يُضِيعُ أَجْرَ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah, iyilik edenlerin mükafatını zayi etmez.",
+        "surah": "Tevbe Suresi",
+        "ayahNumber": 120
+    },
+    {
+        "id": 289,
+        "arabic": "ادْعُونِي أَسْتَجِبْ لَكُمْ",
+        "turkish": "Bana dua edin, size icabet edeyim.",
+        "surah": "Mü'min Suresi",
+        "ayahNumber": 60
+    },
+    {
+        "id": 290,
+        "arabic": "وَاللَّهُ يَرْزُقُ مَن يَشَاءُ بِغَيْرِ حِسَابٍ",
+        "turkish": "Allah dilediğine hesapsız rızık verir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 212
+    },
+    {
+        "id": 291,
+        "arabic": "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",
+        "turkish": "Nerede olursanız olun, O sizinle beraberdir.",
+        "surah": "Hadid Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 292,
+        "arabic": "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ",
+        "turkish": "Biz şüphesiz Allah'a aitiz ve şüphesiz O'na döneceğiz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 293,
+        "arabic": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً",
+        "turkish": "Rabbimiz! Bize dünyada da iyilik ver, ahirette de iyilik ver.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 201
+    },
+    {
+        "id": 294,
+        "arabic": "وَاللَّهُ وَلِيُّ الْمُؤْمِنِينَ",
+        "turkish": "Allah müminlerin dostudur.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 68
+    },
+    {
+        "id": 295,
+        "arabic": "وَأَوْفُوا بِالْعَهْدِ إِنَّ الْعَهْدَ كَانَ مَسْئُولًا",
+        "turkish": "Verdiğiniz sözü yerine getirin. Çünkü verilen söz sorumluluk gerektirir.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 34
+    },
+    {
+        "id": 296,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ بَصِيرٌ",
+        "turkish": "Allah yaptıklarınızı hakkıyla görendir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 297,
+        "arabic": "إِنَّ اللَّهَ كَانَ تَوَّابًا رَّحِيمًا",
+        "turkish": "Şüphesiz Allah, tövbeleri çokça kabul eden ve çok merhamet edendir.",
+        "surah": "Nisâ Suresi",
+        "ayahNumber": 16
+    },
+    {
+        "id": 298,
+        "arabic": "وَقُل رَّبِّ اغْفِرْ وَارْحَمْ وَأَنتَ خَيْرُ الرَّاحِمِينَ",
+        "turkish": "De ki: Rabbim, bağışla, merhamet et; Sen merhamet edenlerin en hayırlısısın.",
+        "surah": "Mü'minûn Suresi",
+        "ayahNumber": 118
+    },
+    {
+        "id": 299,
+        "arabic": "فَسُبْحَانَ اللَّهِ حِينَ تُمْسُونَ وَحِينَ تُصْبِحُونَ",
+        "turkish": "Akşama erdiğinizde ve sabaha çıktığınızda Allah'ı tesbih edin.",
+        "surah": "Rum Suresi",
+        "ayahNumber": 17
+    },
+    {
+        "id": 300,
+        "arabic": "وَهُوَ الْغَفُورُ الرَّحِيمُ",
+        "turkish": "O, çok bağışlayandır, çok merhamet edendir.",
+        "surah": "Yunus Suresi",
+        "ayahNumber": 107
+    },
+    {
+        "id": 301,
+        "arabic": "إِنَّ اللَّهَ يُحِبُّ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah, iyilik edenleri sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 195
+    },
+    {
+        "id": 302,
+        "arabic": "وَاللَّهُ يَهْدِي مَن يَشَاءُ إِلَىٰ نُورِهِ",
+        "turkish": "Allah, dilediği kimseyi nuruna iletir.",
+        "surah": "Nûr Suresi",
+        "ayahNumber": 35
+    },
+    {
+        "id": 303,
+        "arabic": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا",
+        "turkish": "Rabbimiz! Bizi doğru yola ilettikten sonra kalplerimizi eğriltme.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 8
+    },
+    {
+        "id": 304,
+        "arabic": "وَاللَّهُ يَعْلَمُ مَا تُسِرُّونَ وَمَا تُعْلِنُونَ",
+        "turkish": "Allah, gizlediklerinizi de açıkladıklarınızı da bilir.",
+        "surah": "Nahl Suresi",
+        "ayahNumber": 19
+    },
+    {
+        "id": 305,
+        "arabic": "إِنَّ اللَّهَ مَعَ الَّذِينَ اتَّقَوا",
+        "turkish": "Şüphesiz Allah, takva sahipleriyle beraberdir.",
+        "surah": "Nahl Suresi",
+        "ayahNumber": 128
+    },
+    {
+        "id": 306,
+        "arabic": "وَقُل رَّبِّ أَدْخِلْنِي مُدْخَلَ صِدْقٍ",
+        "turkish": "De ki: Rabbim, gireceğim yere doğrulukla girmemi nasip et.",
+        "surah": "İsrâ Suresi",
+        "ayahNumber": 80
+    },
+    {
+        "id": 307,
+        "arabic": "إِنَّ رَبِّي قَرِيبٌ مُّجِيبٌ",
+        "turkish": "Şüphesiz Rabbim yakındır ve dualara icabet edendir.",
+        "surah": "Hud Suresi",
+        "ayahNumber": 61
+    },
+    {
+        "id": 308,
+        "arabic": "وَاللَّهُ سَمِيعٌ عَلِيمٌ",
+        "turkish": "Allah hakkıyla işitendir, hakkıyla bilendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 224
+    },
+    {
+        "id": 309,
+        "arabic": "وَمَا كَانَ رَبُّكَ نَسِيًّا",
+        "turkish": "Senin Rabbin asla unutkan değildir.",
+        "surah": "Meryem Suresi",
+        "ayahNumber": 64
+    },
+    {
+        "id": 310,
+        "arabic": "فَاصْبِرْ إِنَّ وَعْدَ اللَّهِ حَقٌّ",
+        "turkish": "Sabret, şüphesiz Allah'ın vaadi haktır.",
+        "surah": "Rûm Suresi",
+        "ayahNumber": 60
+    },
+    {
+        "id": 311,
+        "arabic": "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
+        "turkish": "Şüphesiz Allah sabredenlerle beraberdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 153
+    },
+    {
+        "id": 312,
+        "arabic": "وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ",
+        "turkish": "Kim Allah'a tevekkül ederse O ona yeter.",
+        "surah": "Talak Suresi",
+        "ayahNumber": 3
+    },
+    {
+        "id": 313,
+        "arabic": "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ",
+        "turkish": "Dikkat edin! Kalpler ancak Allah'ı anmakla huzur bulur.",
+        "surah": "Ra'd Suresi",
+        "ayahNumber": 28
+    },
+    {
+        "id": 314,
+        "arabic": "وَاللَّهُ يُحِبُّ الصَّابِرِينَ",
+        "turkish": "Allah sabredenleri sever.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 146
+    },
+    {
+        "id": 315,
+        "arabic": "فَاذْكُرُونِي أَذْكُرْكُمْ",
+        "turkish": "Siz beni zikredin, ben de sizi zikredeyim.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 152
+    },
+    {
+        "id": 316,
+        "arabic": "وَاللَّهُ يَعْلَمُ مَا فِي قُلُوبِكُمْ",
+        "turkish": "Allah, kalplerinizde olanı bilir.",
+        "surah": "Ahzâb Suresi",
+        "ayahNumber": 51
+    },
+    {
+        "id": 317,
+        "arabic": "إِنَّ رَحْمَتَ اللَّهِ قَرِيبٌ مِّنَ الْمُحْسِنِينَ",
+        "turkish": "Şüphesiz Allah'ın rahmeti, iyilik edenlere çok yakındır.",
+        "surah": "A'râf Suresi",
+        "ayahNumber": 56
+    },
+    {
+        "id": 318,
+        "arabic": "رَبِّ اشْرَحْ لِي صَدْرِي",
+        "turkish": "Rabbim! Göğsümü genişlet.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 25
+    },
+    {
+        "id": 319,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ بَصِيرٌ",
+        "turkish": "Allah yaptıklarınızı hakkıyla görendir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 320,
+        "arabic": "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا",
+        "turkish": "Allah hiçbir nefse gücünün yeteceğinden fazlasını yüklemez.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 286
+    },
+    {
+        "id": 321,
+        "arabic": "وَاللَّهُ وَلِيُّ الْمُؤْمِنِينَ",
+        "turkish": "Allah müminlerin dostudur.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 68
+    },
+    {
+        "id": 322,
+        "arabic": "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",
+        "turkish": "Nerede olursanız olun, O sizinle beraberdir.",
+        "surah": "Hadid Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 323,
+        "arabic": "لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ",
+        "turkish": "Allah'ın rahmetinden ümit kesmeyin.",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 53
+    },
+    {
+        "id": 324,
+        "arabic": "وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
+        "turkish": "O, her şeye kadirdir.",
+        "surah": "Mülk Suresi",
+        "ayahNumber": 1
+    },
+    {
+        "id": 325,
+        "arabic": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً",
+        "turkish": "Rabbimiz! Bize dünyada iyilik ver.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 201
+    },
+    {
+        "id": 326,
+        "arabic": "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ",
+        "turkish": "Biz Allah'a aitiz ve O'na döneceğiz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 327,
+        "arabic": "وَقُل رَّبِّ زِدْنِي عِلْمًا",
+        "turkish": "De ki: Rabbim, ilmimi artır.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 114
+    },
+    {
+        "id": 328,
+        "arabic": "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
+        "turkish": "Allah sabredenlerle beraberdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 153
+    },
+    {
+        "id": 329,
+        "arabic": "وَتَوَكَّلْ عَلَى اللَّهِ",
+        "turkish": "Allah'a tevekkül et.",
+        "surah": "Ahzâb Suresi",
+        "ayahNumber": 3
+    },
+    {
+        "id": 330,
+        "arabic": "إِنَّ اللَّهَ غَفُورٌ رَّحِيمٌ",
+        "turkish": "Allah çok bağışlayan ve merhamet edendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 173
+    },
+    {
+        "id": 331,
+        "arabic": "وَاللَّهُ يَعْلَمُ وَأَنتُمْ لَا تَعْلَمُونَ",
+        "turkish": "Allah bilir, siz bilmezsiniz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 216
+    },
+    {
+        "id": 332,
+        "arabic": "فَاصْبِرْ صَبْرًا جَمِيلًا",
+        "turkish": "Güzel bir sabırla sabret.",
+        "surah": "Meâric Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 333,
+        "arabic": "ادْعُونِي أَسْتَجِبْ لَكُمْ",
+        "turkish": "Bana dua edin, size cevap vereyim.",
+        "surah": "Mü'min Suresi",
+        "ayahNumber": 60
+    },
+    {
+        "id": 334,
+        "arabic": "وَاللَّهُ يَرْزُقُ مَن يَشَاءُ",
+        "turkish": "Allah dilediğine rızık verir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 212
+    },
+    {
+        "id": 335,
+        "arabic": "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "turkish": "Zorlukla beraber kolaylık vardır.",
+        "surah": "İnşirah Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 336,
+        "arabic": "وَاللَّهُ عَلَىٰ كُلِّ شَيْءٍ شَهِيدٌ",
+        "turkish": "Allah her şeye şahittir.",
+        "surah": "Burûc Suresi",
+        "ayahNumber": 9
+    },
+    {
+        "id": 337,
+        "arabic": "قُلِ اللَّهُ يُنَجِّيكُم مِّنْهَا",
+        "turkish": "De ki: Sizi ondan Allah kurtarır.",
+        "surah": "En'âm Suresi",
+        "ayahNumber": 64
+    },
+    {
+        "id": 338,
+        "arabic": "وَاللَّهُ يُحِبُّ الْمُحْسِنِينَ",
+        "turkish": "Allah iyilik edenleri sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 195
+    },
+    {
+        "id": 339,
+        "arabic": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا",
+        "turkish": "Rabbimiz kalplerimizi eğriltme.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 8
+    },
+    {
+        "id": 340,
+        "arabic": "وَاللَّهُ سَمİعٌ عَلİمٌ",
+        "turkish": "Allah işitendir, bilendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 224
+    },
+    {
+        "id": 341,
+        "arabic": "إِنَّ اللَّهَ مَعَ الْمُتَّقِينَ",
+        "turkish": "Allah sakınanlarla beraberdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 194
+    },
+    {
+        "id": 342,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ خَبِيرٌ",
+        "turkish": "Allah yaptıklarınızdan haberdardır.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 234
+    },
+    {
+        "id": 343,
+        "arabic": "رَبِّي لَسَمِيعُ الدُّعَاءِ",
+        "turkish": "Rabbim duaları işitendir.",
+        "surah": "İbrâhîm Suresi",
+        "ayahNumber": 39
+    },
+    {
+        "id": 344,
+        "arabic": "إِنَّ اللَّهَ لَا يُخْلِفُ الْمِيعَادَ",
+        "turkish": "Allah sözünden dönmez.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 9
+    },
+    {
+        "id": 345,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ بَصِيرٌ",
+        "turkish": "Allah yaptıklarınızı görendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 265
+    },
+    {
+        "id": 346,
+        "arabic": "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",
+        "turkish": "Nerede olursanız O sizinledir.",
+        "surah": "Hadid Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 347,
+        "arabic": "فَاذْكُرُونِي أَذْكُرْكُمْ",
+        "turkish": "Beni anın ki sizi anayım.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 152
+    },
+    {
+        "id": 348,
+        "arabic": "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "turkish": "Zorlukla beraber kolaylık vardır.",
+        "surah": "İnşirah Suresi",
+        "ayahNumber": 6
+    },
+    {
+        "id": 349,
+        "arabic": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً",
+        "turkish": "Rabbimiz dünyada iyilik ver.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 201
+    },
+    {
+        "id": 350,
+        "arabic": "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ",
+        "turkish": "Allah'a aitiz ve O'na döneceğiz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 351,
+        "arabic": "أَلَيْسَ اللَّهُ بِكَافٍ عَبْدَهُ",
+        "turkish": "Allah kuluna yetmez mi?",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 36
+    },
+    {
+        "id": 352,
+        "arabic": "فَاصْبِرْ صَبْرًا جَمِيلًا",
+        "turkish": "Güzel sabırla sabret.",
+        "surah": "Meâric Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 353,
+        "arabic": "وَاللَّهُ يُحِبُّ الصَّابِرِينَ",
+        "turkish": "Allah sabredenleri sever.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 146
+    },
+    {
+        "id": 354,
+        "arabic": "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا",
+        "turkish": "Allah kimseye taşıyamayacağını yüklemez.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 286
+    },
+    {
+        "id": 355,
+        "arabic": "وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
+        "turkish": "O her şeye kadirdir.",
+        "surah": "Mülk Suresi",
+        "ayahNumber": 1
+    },
+    {
+        "id": 356,
+        "arabic": "إِنَّ رَحْمَتَ اللَّهِ قَرِيبٌ",
+        "turkish": "Allah'ın rahmeti yakındır.",
+        "surah": "A'râf Suresi",
+        "ayahNumber": 56
+    },
+    {
+        "id": 357,
+        "arabic": "وَاللَّهُ غَفُورٌ رَّحِيمٌ",
+        "turkish": "Allah bağışlayan ve merhamet edendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 218
+    },
+    {
+        "id": 358,
+        "arabic": "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",
+        "turkish": "O nerede olursanız sizinledir.",
+        "surah": "Hadid Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 359,
+        "arabic": "لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ",
+        "turkish": "Allah'ın rahmetinden umut kesmeyin.",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 53
+    },
+    {
+        "id": 360,
+        "arabic": "وَقُل رَّبِّ زِدْنِي عِلْمًا",
+        "turkish": "Rabbim ilmimi artır.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 114
+    },
+    {
+        "id": 361,
+        "arabic": "فَاذْكُرُونِي أَذْكُرْكُمْ",
+        "turkish": "Beni anın ki anayım.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 152
+    },
+    {
+        "id": 362,
+        "arabic": "رَبِّ اشْرَحْ لِي صَدْرِي",
+        "turkish": "Rabbim göğsümü ferahlat.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 25
+    },
+    {
+        "id": 363,
+        "arabic": "وَتَوَكَّلْ عَلَى اللَّهِ",
+        "turkish": "Allah'a güven.",
+        "surah": "Ahzâb Suresi",
+        "ayahNumber": 3
+    },
+    {
+        "id": 364,
+        "arabic": "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "turkish": "Zorlukla beraber kolaylık vardır.",
+        "surah": "İnşirah Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 365,
+        "arabic": "وَاللَّهُ يُحِبُّ الْمُحْسِنِينَ",
+        "turkish": "Allah iyilik yapanları sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 195
+    },
+    {
+        "id": 366,
+        "arabic": "لَا تَحْزَنْ إِنَّ اللَّهَ مَعَنَا",
+        "turkish": "Üzülme Allah bizimledir.",
+        "surah": "Tevbe Suresi",
+        "ayahNumber": 40
+    },
+    {
+        "id": 367,
+        "arabic": "وَاللَّهُ يَعْلَمُ وَأَنتُمْ لَا تَعْلَمُونَ",
+        "turkish": "Allah bilir siz bilmezsiniz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 216
+    },
+    {
+        "id": 368,
+        "arabic": "إِنَّ اللَّهَ عَلَىٰ كُلِّ شَيْءٍ شَهِيدٌ",
+        "turkish": "Allah her şeye şahittir.",
+        "surah": "Burûc Suresi",
+        "ayahNumber": 9
+    },
+    {
+        "id": 369,
+        "arabic": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا",
+        "turkish": "Rabbimiz kalplerimizi kaydırma.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 8
+    },
+    {
+        "id": 370,
+        "arabic": "وَاللَّهُ سَمİعٌ عَلİمٌ",
+        "turkish": "Allah her şeyi işitir ve bilir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 224
+    },
+    {
+        "id": 371,
+        "arabic": "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ",
+        "turkish": "O'na aidiz ve O'na döneceğiz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 372,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ خَبِيرٌ",
+        "turkish": "Allah yaptıklarınızdan haberdardır.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 234
+    },
+    {
+        "id": 373,
+        "arabic": "وَهُوَ الْغَفُورُ الرَّحِيمُ",
+        "turkish": "O çok bağışlayıcı ve merhametlidir.",
+        "surah": "Yunus Suresi",
+        "ayahNumber": 107
+    },
+    {
+        "id": 374,
+        "arabic": "فَاصْبِرْ صَبْرًا جَمِيلًا",
+        "turkish": "Güzelce sabret.",
+        "surah": "Meâric Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 375,
+        "arabic": "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
+        "turkish": "Allah sabredenlerle beraberdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 153
+    },
+    {
+        "id": 376,
+        "arabic": "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",
+        "turkish": "Nerede olursanız O yanınızdadır.",
+        "surah": "Hadid Suresi",
+        "ayahNumber": 4
+    },
+    {
+        "id": 377,
+        "arabic": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً",
+        "turkish": "Rabbimiz bize iyilik ver.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 201
+    },
+    {
+        "id": 378,
+        "arabic": "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا",
+        "turkish": "Allah kimseye gücünün üstünde yük yüklemez.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 286
+    },
+    {
+        "id": 379,
+        "arabic": "وَقُل رَّبِّ زِدْنِي عِلْمًا",
+        "turkish": "Rabbim ilmimi artır.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 114
+    },
+    {
+        "id": 380,
+        "arabic": "فَاذْكُرُونِي أَذْكُرْكُمْ",
+        "turkish": "Beni anın ki sizi anayım.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 152
+    },
+    {
+        "id": 381,
+        "arabic": "وَتَوَكَّلْ عَلَى اللَّهِ",
+        "turkish": "Allah'a tevekkül et.",
+        "surah": "Ahzâb Suresi",
+        "ayahNumber": 3
+    },
+    {
+        "id": 382,
+        "arabic": "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "turkish": "Zorlukla beraber kolaylık vardır.",
+        "surah": "İnşirah Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 383,
+        "arabic": "وَاللَّهُ يُحِبُّ الْمُحْسِنِينَ",
+        "turkish": "Allah güzel davrananları sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 195
+    },
+    {
+        "id": 384,
+        "arabic": "أَلَيْسَ اللَّهُ بِكَافٍ عَبْدَهُ",
+        "turkish": "Allah kuluna yetmez mi?",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 36
+    },
+    {
+        "id": 385,
+        "arabic": "وَهُوَ عَلَىٰ كُلِّ şeيْءٍ قَدِيرٌ",
+        "turkish": "O her şeye kadirdir.",
+        "surah": "Mülk Suresi",
+        "ayahNumber": 1
+    },
+    {
+        "id": 386,
+        "arabic": "رَبِّ اشْرَحْ لِي صَدْرِي",
+        "turkish": "Rabbim gönlümü ferahlat.",
+        "surah": "Tâ-Hâ Suresi",
+        "ayahNumber": 25
+    },
+    {
+        "id": 387,
+        "arabic": "إِنَّ رَحْمَتَ اللَّهِ قَرِيبٌ",
+        "turkish": "Allah'ın rahmeti çok yakındır.",
+        "surah": "A'râf Suresi",
+        "ayahNumber": 56
+    },
+    {
+        "id": 388,
+        "arabic": "وَاللَّهُ سَمİعٌ عَلİمٌ",
+        "turkish": "Allah işiten ve bilendir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 224
+    },
+    {
+        "id": 389,
+        "arabic": "فَاصْبِرْ صَبْرًا جَمِيلًا",
+        "turkish": "Güzel bir sabırla sabret.",
+        "surah": "Meâric Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 390,
+        "arabic": "وَاللَّهُ يُحِبُّ الصَّابِرِينَ",
+        "turkish": "Allah sabredenleri sever.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 146
+    },
+    {
+        "id": 391,
+        "arabic": "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ",
+        "turkish": "O'na aidiz ve O'na döneceğiz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 392,
+        "arabic": "لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ",
+        "turkish": "Allah'ın rahmetinden ümidinizi kesmeyin.",
+        "surah": "Zümer Suresi",
+        "ayahNumber": 53
+    },
+    {
+        "id": 393,
+        "arabic": "وَاللَّهُ يَعْلَمُ وَأَنتُمْ لَا تَعْلَمُونَ",
+        "turkish": "Allah bilir siz bilmezsiniz.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 216
+    },
+    {
+        "id": 394,
+        "arabic": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً",
+        "turkish": "Rabbimiz bize dünyada iyilik nasip et.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 201
+    },
+    {
+        "id": 395,
+        "arabic": "فَاذْكُرُونِي أَذْكُرْكُمْ",
+        "turkish": "Beni anın ki sizi anayım.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 152
+    },
+    {
+        "id": 396,
+        "arabic": "وَتَوَكَّلْ عَلَى اللَّهِ",
+        "turkish": "Yalnızca Allah'a güven.",
+        "surah": "Ahzâb Suresi",
+        "ayahNumber": 3
+    },
+    {
+        "id": 397,
+        "arabic": "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+        "turkish": "Zorlukla beraber kolaylık vardır.",
+        "surah": "İnşirah Suresi",
+        "ayahNumber": 5
+    },
+    {
+        "id": 398,
+        "arabic": "وَاللَّهُ يُحِبُّ الْمُحْسِنِينَ",
+        "turkish": "Allah iyilik edenleri sever.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 195
+    },
+    {
+        "id": 399,
+        "arabic": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا",
+        "turkish": "Rabbimiz kalplerimizi kaydırma.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 8
+    },
+    {
+        "id": 400,
+        "arabic": "وَاللَّهُ بِمَا تَعْمَلُونَ بَصِيرٌ",
+        "turkish": "Allah yaptıklarınızı hakkıyla görendir.",
+        "surah": "Âl-i İmrân Suresi",
+        "ayahNumber": 156
+    },
+    {
+        "id": 401,
+        "arabic": "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
+        "turkish": "Şüphesiz Allah sabredenlerle beraberdir.",
+        "surah": "Bakara Suresi",
+        "ayahNumber": 153
+    },
+    {
+        "id": 402,
+        "arabic": "يَا أَيُّهَا الَّذِينَ آمَنُوا آمِنُوا بِاللَّهِ وَرَسُولِهِ وَالْكِتَابِ الَّذِي نَزَّلَ عَلَىٰ رَسُولِهِ",
+        "turkish": "Ey iman edenler! Allah’a, Peygamberine, Peygamberine indirdiği kitaba iman edin.",
+        "surah": "Nisâ Suresi",
+        "ayahNumber": 136
+    }
+]

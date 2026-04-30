@@ -1,0 +1,5402 @@
+[
+    {
+        "id": 1,
+        "arabic": "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ",
+        "text": "Ameller niyetlere göredir. Herkesin niyeti ne ise eline geçecek olan da odur.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 2,
+        "arabic": "",
+        "text": "Müslüman, elinden ve dilinden Müslümanların zarar görmediği kimsedir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 3,
+        "arabic": "",
+        "text": "Kolaylaştırınız, güçleştirmeyiniz. Müjdeleyiniz, nefret ettirmeyiniz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 4,
+        "arabic": "",
+        "text": "Kişinin İslam'ının güzelliğinden biri, kendisini ilgilendirmeyen şeyi terk etmesidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 5,
+        "arabic": "",
+        "text": "Güçlü kimse güreşte başkasını yenen değil, öfke anında kendine hâkim olandır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 6,
+        "arabic": "",
+        "text": "Sizden biriniz, kendisi için istediğini kardeşi için de istemedikçe gerçek manada iman etmiş olmaz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 7,
+        "arabic": "",
+        "text": "Allah katında amellerin en sevimlisi, az da olsa devamlı olanıdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 8,
+        "arabic": "",
+        "text": "Hayra vesile olan, hayrı yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 9,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 10,
+        "arabic": "",
+        "text": "Birbirinize haset etmeyin, küsmeyin, birbirinizden nefret etmeyin ve sırt çevirmeyin. Ey Allah'ın kulları, kardeş olun!",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 11,
+        "arabic": "",
+        "text": "Doğruluktan ayrılmayın. Çünkü doğruluk iyiliğe, iyilik de cennete götürür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 12,
+        "arabic": "",
+        "text": "Zandan kaçının. Çünkü zan, sözlerin en yalan olanıdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 13,
+        "arabic": "",
+        "text": "Gerçek zenginlik mal çokluğu değil, gönül zenginliğidir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 14,
+        "arabic": "",
+        "text": "Komşusu açken tok yatan bizden değildir.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 15,
+        "arabic": "",
+        "text": "Dua, ibadetin özüdür.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 16,
+        "arabic": "",
+        "text": "Temizlik imanın yarısıdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 17,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, Kur'an'ı öğrenen ve öğreteninizdir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 18,
+        "arabic": "",
+        "text": "İşçiye ücretini teri kurumadan veriniz.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 19,
+        "arabic": "",
+        "text": "İlim talep etmek her Müslümana farzdır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 20,
+        "arabic": "",
+        "text": "Utanmıyorsan dilediğini yap!",
+        "source": "Buhârî"
+    },
+    {
+        "id": 21,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 22,
+        "arabic": "",
+        "text": "Gülümsemen bir sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 23,
+        "arabic": "",
+        "text": "Veren el, alan elden üstündür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 24,
+        "arabic": "",
+        "text": "İnsanların en hayırlısı, insanlara faydalı olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 25,
+        "arabic": "",
+        "text": "Güzel söz sadakadır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 26,
+        "arabic": "",
+        "text": "Nerede olursan ol Allah'tan kork.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 27,
+        "arabic": "",
+        "text": "Sabır, ilk sarsıntı anındadır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 28,
+        "arabic": "",
+        "text": "Hayra vesile olan hayrı yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 29,
+        "arabic": "",
+        "text": "İçinizden en sevdiğim kimse, ahlakı en güzel olanınızdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 30,
+        "arabic": "",
+        "text": "Söz taşıyan cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 31,
+        "arabic": "",
+        "text": "Cennet annelerin ayakları altındadır.",
+        "source": "Nesâî"
+    },
+    {
+        "id": 32,
+        "arabic": "",
+        "text": "İlim Çin'de de olsa ona talip olun.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 33,
+        "arabic": "",
+        "text": "İki nimet vardır ki insanların çoğu bunda aldanmıştır: Sağlık ve boş vakit.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 34,
+        "arabic": "",
+        "text": "Dünya müminin zindanı, kafirin ise cennetidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 35,
+        "arabic": "",
+        "text": "İman yetmiş küsur şubedir; en üstünü 'Lâ ilâhe illâllah' demektir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 36,
+        "arabic": "",
+        "text": "Güneşin batıdan doğmasına kadar tövbe kapısı açıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 37,
+        "arabic": "",
+        "text": "Küçüğümüze merhamet etmeyen, büyüğümüze saygı göstermeyen bizden değildir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 38,
+        "arabic": "",
+        "text": "Hediyeleşin ki birbirinizi sevesiniz.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 39,
+        "arabic": "",
+        "text": "Sizden biri kendisi için istediğini kardeşi için de istemedikçe mümin olamaz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 40,
+        "arabic": "",
+        "text": "Mazlumun bedduasından sakın.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 41,
+        "arabic": "",
+        "text": "Haksızlık karşısında susan dilsiz şeytandır.",
+        "source": "Kuşeyrî"
+    },
+    {
+        "id": 42,
+        "arabic": "",
+        "text": "İbadetin en faziletlisi en gizli olanıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 43,
+        "arabic": "",
+        "text": "Öfkelendiğin zaman sus.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 44,
+        "arabic": "",
+        "text": "En hayırlı ev, içinde yetime iyilik edilen evdir.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 45,
+        "arabic": "",
+        "text": "Gıybet, kardeşini hoşlanmayacağı bir şeyle anmandır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 46,
+        "arabic": "",
+        "text": "Sıla-i rahmi kesen cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 47,
+        "arabic": "",
+        "text": "Hasetten kaçının; ateşin odunu yediği gibi haset de iyilikleri yer.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 48,
+        "arabic": "",
+        "text": "Mümin müminin aynasıdır.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 49,
+        "arabic": "",
+        "text": "Allah güzeldir, güzelliği sever.",
+        "source": "Müslim"
+    },
+    {
+        "id": 50,
+        "arabic": "",
+        "text": "Dua müminin silahıdır.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 51,
+        "arabic": "",
+        "text": "Hayra vesile olan, hayrı yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 52,
+        "arabic": "",
+        "text": "Yemekten önce ve sonra elleri yıkamak berekettir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 53,
+        "arabic": "",
+        "text": "İnsana, her duyduğunu söylemesi yalan olarak yeter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 54,
+        "arabic": "",
+        "text": "Hayır işlerinde acele ediniz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 55,
+        "arabic": "",
+        "text": "Zenginlik mal çokluğu değil, nefis tokluğudur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 56,
+        "arabic": "",
+        "text": "Sizden biriniz uykudan uyanınca ellerini yıkasın.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 57,
+        "arabic": "",
+        "text": "İyilik güzel ahlaktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 58,
+        "arabic": "",
+        "text": "Kardeşini güler yüzle karşılaman bile bir iyiliktir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 59,
+        "arabic": "",
+        "text": "Allah, her işte nezaketi sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 60,
+        "arabic": "",
+        "text": "Birbirinizi sevmedikçe iman etmiş olmazsınız.",
+        "source": "Müslim"
+    },
+    {
+        "id": 61,
+        "arabic": "",
+        "text": "Mümin bir delikten iki defa ısırılmaz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 62,
+        "arabic": "",
+        "text": "Güvenilir tüccar, nebiler ve şehitlerle beraberdir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 63,
+        "arabic": "",
+        "text": "Kıyamet günü terazide en ağır gelecek şey güzel ahlaktır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 64,
+        "arabic": "",
+        "text": "Sabır aydınlıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 65,
+        "arabic": "",
+        "text": "Allah her hak sahibine hakkını vermiştir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 66,
+        "arabic": "",
+        "text": "Zulüm, kıyamet gününde karanlıklardır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 67,
+        "arabic": "",
+        "text": "Mümin, insanların can ve malları konusunda güvendiği kişidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 68,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ailesine karşı en hayırlı olanınızdır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 69,
+        "arabic": "",
+        "text": "İnsanlara teşekkür etmeyen, Allah'a da şükretmiş olmaz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 70,
+        "arabic": "",
+        "text": "Allah için tevazu göstereni Allah yüceltir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 71,
+        "arabic": "",
+        "text": "Yumuşak huyluluk girdiği yeri güzelleştirir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 72,
+        "arabic": "",
+        "text": "Selamı aranızda yayın.",
+        "source": "Müslim"
+    },
+    {
+        "id": 73,
+        "arabic": "",
+        "text": "Her dinin bir ahlakı vardır, İslam'ın ahlakı hayadır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 74,
+        "arabic": "",
+        "text": "Aziz ve Celil olan Allah yumuşak huyludur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 75,
+        "arabic": "",
+        "text": "Helal rızık aramak cihattır.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 76,
+        "arabic": "",
+        "text": "Sabır kurtuluşun anahtarıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 77,
+        "arabic": "",
+        "text": "İşlerin en hayırlısı orta yollu olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 78,
+        "arabic": "",
+        "text": "Nasihat dindir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 79,
+        "arabic": "",
+        "text": "Duanın kabul olması için helal lokma yiyiniz.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 80,
+        "arabic": "",
+        "text": "Birlikte rahmet, ayrılıkta azap vardır.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 81,
+        "arabic": "",
+        "text": "Sükut etmek hikmettir, fakat yapanı azdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 82,
+        "arabic": "",
+        "text": "Gerçek pehlivan, öfke anında nefsine hakim olandır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 83,
+        "arabic": "",
+        "text": "İyilik yap ki iyilik bulasın.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 84,
+        "arabic": "",
+        "text": "İnsanların en cömerdi Allah yolunda verendir.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 85,
+        "arabic": "",
+        "text": "Rızkın onda dokuzu ticarettedir.",
+        "source": "Münâvî"
+    },
+    {
+        "id": 86,
+        "arabic": "",
+        "text": "Borç dindir, onu mutlaka ödeyiniz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 87,
+        "arabic": "",
+        "text": "Kim bir müslümanı bir sıkıntıdan kurtarırsa, Allah da onu kıyamet günü kurtarır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 88,
+        "arabic": "",
+        "text": "Alana da verene de Allah rahmet etsin.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 89,
+        "arabic": "",
+        "text": "Temizlik imandandır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 90,
+        "arabic": "",
+        "text": "Zalim de olsa mazlum da olsa kardeşine yardım et.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 91,
+        "arabic": "",
+        "text": "Mümin, koku satan kimse gibidir; yanında dursan sana güzel koku bulaşır.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 92,
+        "arabic": "",
+        "text": "Önce deveni bağla, sonra tevekkül et.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 93,
+        "arabic": "",
+        "text": "Akrabayı ziyaret rızkı genişletir, ömrü uzatır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 94,
+        "arabic": "",
+        "text": "Haset, iyilikleri ateşin odunu yediği gibi yer bitirir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 95,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 96,
+        "arabic": "",
+        "text": "Zandan sakının, çünkü zan sözlerin en yalanıdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 97,
+        "arabic": "",
+        "text": "Hayır dua rızkı artırır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 98,
+        "arabic": "",
+        "text": "Allah katında arkadaşların en hayırlısı, arkadaşına hayırlı olandır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 99,
+        "arabic": "",
+        "text": "Komşusu elinden ve dilinden emin olmayan kimse cennete giremez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 100,
+        "arabic": "",
+        "text": "Güneşin doğduğu en hayırlı gün Cuma günüdür.",
+        "source": "Müslim"
+    },
+    {
+        "id": 101,
+        "arabic": "",
+        "text": "Misvak kullanın, çünkü misvak ağzı temizler, Rabbi razı eder.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 102,
+        "arabic": "",
+        "text": "Canım kudret elinde olan Allah'a yemin ederim ki, ya iyiliği emreder kötülükten men edersiniz ya da Allah size bir azap gönderir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 103,
+        "arabic": "",
+        "text": "Allah, bir topluluğa azap gönderdiğinde o azap hepsine isabet eder. Sonra amellerine göre diriltilirler.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 104,
+        "arabic": "",
+        "text": "Kim Allah'a ve ahiret gününe inanıyorsa komşusuna eziyet etmesin, misafirine ikram etsin ve ya hayır söylesin ya da sussun.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 105,
+        "arabic": "",
+        "text": "Ümmetimin hepsine af vardır, ancak günahını alenen işleyenler hariç. Bir kimsenin gece bir günah işleyip Allah onu örtmüşken sabahleyin bunu anlatması bundandır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 106,
+        "arabic": "",
+        "text": "Dünya tatlı ve çekicidir. Allah sizi orada halife kılmıştır ve ne yapacağınıza bakmaktadır. Dünyadan ve kadınlardan sakının.",
+        "source": "Müslim"
+    },
+    {
+        "id": 107,
+        "arabic": "",
+        "text": "İman yetmiş küsur şubedir. En üstünü 'Lâ ilâhe illâllah' demek, en aşağısı ise yoldaki bir engeli kaldırmaktır. Haya da imandan bir şubedir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 108,
+        "arabic": "",
+        "text": "Zenginlik mal çokluğu değil, gönül zenginliğidir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 109,
+        "arabic": "",
+        "text": "Müslüman, Müslümanın kardeşidir. Ona zulmetmez, onu tehlikede yalnız bırakmaz. Kim kardeşinin ihtiyacını görürse Allah da onun ihtiyacını görür.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 110,
+        "arabic": "",
+        "text": "Sizden biri kendisi için istediğini Müslüman kardeşi için de istemedikçe gerçek manada iman etmiş olmaz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 111,
+        "arabic": "",
+        "text": "Mazlumun bedduasından sakın! Çünkü onunla Allah arasında hiçbir perde yoktur.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 112,
+        "arabic": "",
+        "text": "Dua, ibadetin ta kendisidir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 113,
+        "arabic": "",
+        "text": "Cennet ehli cennete, cehennem ehli de cehenneme girer. Sonra Allah: 'Kalbinde hardal tanesi kadar imanı olanı çıkarın' buyurur.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 114,
+        "arabic": "",
+        "text": "Şüphesiz Allah Teâlâ sizin suretlerinize ve mallarınıza bakmaz, ancak kalplerinize ve amellerinize bakar.",
+        "source": "Müslim"
+    },
+    {
+        "id": 115,
+        "arabic": "",
+        "text": "Kolaylaştırınız, zorlaştırmayınız; müjdeleyiniz, nefret ettirmeyiniz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 116,
+        "arabic": "",
+        "text": "Kıyamet gününde kulun ilk hesaba çekileceği ameli namazıdır. Eğer namazı düzgünse kurtulmuştur, bozuksa hüsrana uğramıştır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 117,
+        "arabic": "",
+        "text": "Kim bir Müslümanın kusurunu örterse, Allah da dünya ve ahirette onun kusurunu örter. Kul, kardeşinin yardımında olduğu müddetçe Allah da kulun yardımındadır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 118,
+        "arabic": "",
+        "text": "Güneş batıdan doğmadan önce kim tövbe ederse, Allah onun tövbesini kabul eder.",
+        "source": "Müslim"
+    },
+    {
+        "id": 119,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 120,
+        "arabic": "",
+        "text": "Doğruluktan ayrılmayın. Çünkü doğruluk iyiliğe, iyilik de cennete götürür. Kişi doğru söyledikçe Allah katında 'sıddık' olarak yazılır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 121,
+        "arabic": "",
+        "text": "Yalandan sakının. Çünkü yalan kötülüğe, kötülük de cehenneme götürür. Kişi yalan söyledikçe Allah katında 'kezzâb' (yalancı) olarak yazılır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 122,
+        "arabic": "",
+        "text": "Münafığın alameti üçtür: Konuştuğunda yalan söyler, söz verdiğinde cayar, kendisine bir şey emanet edildiğinde hıyanet eder.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 123,
+        "arabic": "",
+        "text": "Bir kimse, bir Müslümanın haksız yere malını almak için yalan yere yemin ederse, Allah'ın huzuruna O'nu kendisine gazaplanmış olarak çıkar.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 124,
+        "arabic": "",
+        "text": "Sizden kim bir kötülük görürse onu eliyle düzeltsin, gücü yetmezse diliyle, ona da gücü yetmezse kalbiyle buğz etsin ki bu imanın en zayıf derecesidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 125,
+        "arabic": "",
+        "text": "Akıllı kişi, nefsini hesaba çeken ve ölümden sonrası için çalışandır. Aciz kişi ise nefsini arzularına tabi kılan ve Allah'tan boş umutlar besleyendir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 126,
+        "arabic": "",
+        "text": "Allah Teâlâ buyurur ki: 'Ben kulumun benim hakkımdaki zannı üzereyim. Beni andığı yerde onunla beraberim.'",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 127,
+        "arabic": "",
+        "text": "İnsanoğlu ölünce üç şey hariç ameli kesilir: Sadaka-i cariye, faydalanılan ilim ve kendisine dua eden hayırlı evlat.",
+        "source": "Müslim"
+    },
+    {
+        "id": 128,
+        "arabic": "",
+        "text": "Cennet annelerin ayakları altındadır.",
+        "source": "Nesâî"
+    },
+    {
+        "id": 129,
+        "arabic": "",
+        "text": "Mümin, koku satan kimse gibidir. Yanında otursan için açılır, beraber yürüsen güzel koku alırsın, ondan bir şey satın alsan fayda görürsün.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 130,
+        "arabic": "",
+        "text": "Gıybet nedir bilir misiniz? Kardeşini onun hoşlanmayacağı bir şeyle anmandır. Eğer söylediğin onda varsa gıybet etmiş, yoksa iftira etmiş olursun.",
+        "source": "Müslim"
+    },
+    {
+        "id": 131,
+        "arabic": "",
+        "text": "Söz taşıyan (nemmâm) cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 132,
+        "arabic": "",
+        "text": "Hiçbiriniz elinin emeğinden daha hayırlı bir yemek yememiştir. Allah'ın nebisi Davud da kendi elinin emeğini yerdi.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 133,
+        "arabic": "",
+        "text": "İşçiye ücretini teri kurumadan veriniz.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 134,
+        "arabic": "",
+        "text": "Kim bir ağaç dikerse, onun meyvesinden yenildikçe Allah o kişi için bir sadaka sevabı yazar.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 135,
+        "arabic": "",
+        "text": "Temizlik imanın yarısıdır. 'Elhamdülillah' teraziyi doldurur. 'Sübhanallahi velhamdülillahi' ise göklerle yer arasını doldurur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 136,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 137,
+        "arabic": "",
+        "text": "Birbirinize haset etmeyin, küsmeyin, birbirinizden nefret etmeyin. Ey Allah'ın kulları, kardeş olun!",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 138,
+        "arabic": "",
+        "text": "Hediyeleşin ki birbirinizi sevesiniz.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 139,
+        "arabic": "",
+        "text": "İki nimet vardır ki insanların çoğu bunlar hakkında aldanmıştır: Sağlık ve boş vakit.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 140,
+        "arabic": "",
+        "text": "Dünya müminin zindanı, kafirin ise cennetidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 141,
+        "arabic": "",
+        "text": "Sizin en hayırlınız Kur'an'ı öğrenen ve öğretendir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 142,
+        "arabic": "",
+        "text": "Hangi Müslüman bir ağaç diker veya ekin eker de ondan bir kuş, insan veya hayvan yerse, bu onun için bir sadaka olur.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 143,
+        "arabic": "",
+        "text": "Darlıkta ve bollukta, sevinçte ve kederde, başkaları sana tercih edildiğinde bile dinleyip itaat etmen gerekir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 144,
+        "arabic": "",
+        "text": "Allah bir kulu sevdiğinde Cebrail'e: 'Ben filanı seviyorum, sen de sev!' der. Sonra gök ehli ve yer ehli de onu sever.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 145,
+        "arabic": "",
+        "text": "Küçüğümüze merhamet etmeyen, büyüğümüze saygı göstermeyen bizden değildir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 146,
+        "arabic": "",
+        "text": "İnsanların en hayırlısı insanlara faydalı olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 147,
+        "arabic": "",
+        "text": "Güzel söz sadakadır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 148,
+        "arabic": "",
+        "text": "Nerede olursan ol Allah'tan kork. Kötülüğün peşinden hemen bir iyilik yap ki onu silsin. İnsanlara güzel ahlakla muamele et.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 149,
+        "arabic": "",
+        "text": "Sabır, ilk sarsıntı anındadır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 150,
+        "arabic": "",
+        "text": "Mümin, geçim ehlidir. İnsanlarla geçinmeyen ve kendisiyle geçinilmeyen kimsede hayır yoktur.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 151,
+        "arabic": "",
+        "text": "Sizden biri yemek yediği zaman sağ eliyle yesin, içtiği zaman sağ eliyle içsin. Çünkü şeytan sol eliyle yer ve içer.",
+        "source": "Müslim"
+    },
+    {
+        "id": 152,
+        "arabic": "",
+        "text": "Sıla-i rahmi (akrabalık bağlarını) kesen cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 153,
+        "arabic": "",
+        "text": "Hayra delalet eden, onu yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 154,
+        "arabic": "",
+        "text": "En hayırlı ev, içinde bir yetime iyilik edilen evdir. En kötü ev ise içinde bir yetime kötülük edilen evdir.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 155,
+        "arabic": "",
+        "text": "Gerçek pehlivan, güreşte başkalarını yenen değil, öfke anında kendine hakim olandır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 156,
+        "arabic": "",
+        "text": "Yumuşak huyluluktan mahrum olan, her türlü hayırdan mahrum olur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 157,
+        "arabic": "",
+        "text": "Allah için birbirini seven, bu uğurda bir araya gelip bu uğurda ayrılan iki kişiyi Allah kıyamet günü gölgesinde gölgelendirir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 158,
+        "arabic": "",
+        "text": "Her kim bir Müslümanın dünyadaki sıkıntılarından birini giderirse, Allah da onun kıyamet günündeki sıkıntılarından birini giderir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 159,
+        "arabic": "",
+        "text": "Allah kulunun yardımında olduğu sürece, kul da kardeşinin yardımındadır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 160,
+        "arabic": "",
+        "text": "Kim ilim öğrenmek için bir yola girerse, Allah ona cennet yolunu kolaylaştırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 161,
+        "arabic": "",
+        "text": "Riyadan (gösterişten) sakının. Çünkü riya küçük şirktir.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 162,
+        "arabic": "",
+        "text": "Zulümden sakının. Çünkü zulüm, kıyamet gününde karanlıklardır. Cimrilikten sakının; o sizden öncekileri helak etmiştir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 163,
+        "arabic": "",
+        "text": "Kişi sevdiği ile beraberdir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 164,
+        "arabic": "",
+        "text": "Ameller ancak niyetlere göredir ve her şahıs için niyet ettiği şey vardır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 165,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ahlakı en güzel olanınızdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 166,
+        "arabic": "",
+        "text": "Her kim Allah'a ve ahiret gününe inanıyorsa ya hayır söylesin ya da sussun.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 167,
+        "arabic": "",
+        "text": "İçinizden en çok sevdiğim ve kıyamet günü bana en yakın olanınız, ahlakı en güzel olanınızdır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 168,
+        "arabic": "",
+        "text": "Mümin, her hayra alışır; fakat yalan ve hıyanete asla.",
+        "source": "Bezzâr"
+    },
+    {
+        "id": 169,
+        "arabic": "",
+        "text": "Hayra vesile olan, hayrı yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 170,
+        "arabic": "",
+        "text": "Gülümsemen senin için bir sadakadır. İyiliği emretmen, kötülükten sakındırman sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 171,
+        "arabic": "",
+        "text": "Kardeşinin kovasına kendi kovandan su boşaltman senin için bir sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 172,
+        "arabic": "",
+        "text": "Zayıfları arayıp bulunuz. Zira siz ancak zayıflarınız sayesinde rızıklandırılır ve yardım olunursunuz.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 173,
+        "arabic": "",
+        "text": "Hiçbir baba evladına güzel ahlaktan daha hayırlı bir miras bırakamaz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 174,
+        "arabic": "",
+        "text": "Dul kadınlara ve yoksullara yardım eden kimse, Allah yolunda cihat eden veya geceyi ibadetle geçiren gibidir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 175,
+        "arabic": "",
+        "text": "İşaret parmağı ile orta parmağını yan yana getirerek: 'Ben ve yetime bakan kimse cennette şöylece beraberiz' buyurdu.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 176,
+        "arabic": "",
+        "text": "Komşusu açken tok yatan bizden değildir.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 177,
+        "arabic": "",
+        "text": "Üç kişinin duası reddolunmaz: Adaletli devlet başkanı, iftar edinceye kadar oruçlu ve mazlumun duası.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 178,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, kadınlarına karşı en iyi davrananınızdır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 179,
+        "arabic": "",
+        "text": "Utanmıyorsan dilediğini yap!",
+        "source": "Buhârî"
+    },
+    {
+        "id": 180,
+        "arabic": "",
+        "text": "İman etmedikçe cennete giremezsiniz; birbirinizi sevmedikçe de gerçek manada iman etmiş olmazsınız.",
+        "source": "Müslim"
+    },
+    {
+        "id": 181,
+        "arabic": "",
+        "text": "Aranızda selamı yayın.",
+        "source": "Müslim"
+    },
+    {
+        "id": 182,
+        "arabic": "",
+        "text": "Allah katında amellerin en sevimlisi, az da olsa devamlı olanıdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 183,
+        "arabic": "",
+        "text": "Mümin müminin aynasıdır. Mümin müminin kardeşidir, onun zararını önler ve arkasından onu savunur.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 184,
+        "arabic": "",
+        "text": "Dürüst ve güvenilir tüccar, peygamberler, sıddıklar ve şehitlerle beraberdir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 185,
+        "arabic": "",
+        "text": "Haksızlık karşısında susan, dilsiz şeytandır.",
+        "source": "Kuşeyrî"
+    },
+    {
+        "id": 186,
+        "arabic": "",
+        "text": "İlim talep etmek her Müslümana farzdır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 187,
+        "arabic": "",
+        "text": "Sükut eden kurtuldu.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 188,
+        "arabic": "",
+        "text": "İşlerin en hayırlısı orta yollu olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 189,
+        "arabic": "",
+        "text": "Veren el alan elden üstündür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 190,
+        "arabic": "",
+        "text": "Hasetten sakının. Çünkü haset, ateşin odunu yakıp tükettiği gibi iyilikleri yer bitirir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 191,
+        "arabic": "",
+        "text": "Bir kimse kardeşine gıyabında dua ederse, melek: 'Amin, bir katı da sana olsun' der.",
+        "source": "Müslim"
+    },
+    {
+        "id": 192,
+        "arabic": "",
+        "text": "Temizlik imandandır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 193,
+        "arabic": "",
+        "text": "Zan yapmaktan sakının. Çünkü zan, sözlerin en yalanıdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 194,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah merhamet etmez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 195,
+        "arabic": "",
+        "text": "Yalan rızkı azaltır.",
+        "source": "Ebû Şeyh"
+    },
+    {
+        "id": 196,
+        "arabic": "",
+        "text": "Her duyduğunu söylemesi kişiye yalan olarak yeter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 197,
+        "arabic": "",
+        "text": "Kim bir müminin dünyadaki bir sıkıntısını giderirse, Allah da onun ahiretteki bir sıkıntısını giderir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 198,
+        "arabic": "",
+        "text": "Önce deveni bağla, sonra tevekkül et.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 199,
+        "arabic": "",
+        "text": "Kişi dostunun dini üzeredir. Bu yüzden her biriniz kiminle dostluk ettiğine baksın.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 200,
+        "arabic": "",
+        "text": "Sabır aydınlıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 201,
+        "arabic": "",
+        "text": "İyilik, kalbinin yatıştığı ve huzur bulduğu şeydir. Günah ise kalbini tırmalayan ve içinde şüphe uyandırandır.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 202,
+        "arabic": "",
+        "text": "Müslüman Müslümanın kardeşidir. Ona hıyanet etmez, yalan söylemez ve onu yardımsız bırakmaz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 203,
+        "arabic": "",
+        "text": "Birbirinize nefret etmeyin, birbirinize haset etmeyin, birbirinize sırt çevirmeyin. Ey Allah'ın kulları, kardeş olun!",
+        "source": "Buhârî"
+    },
+    {
+        "id": 204,
+        "arabic": "",
+        "text": "Hiçbiriniz kendisi için istediğini kardeşi için de istemedikçe gerçek mümin olamaz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 205,
+        "arabic": "",
+        "text": "Kim bir Müslümanı dünya sıkıntılarından birinden kurtarırsa, Allah da onu kıyamet gününün sıkıntılarından kurtarır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 206,
+        "arabic": "",
+        "text": "Sizden biriniz bir kötülük gördüğünde onu eliyle düzeltsin; buna gücü yetmezse diliyle; buna da gücü yetmezse kalbiyle buğz etsin.",
+        "source": "Müslim"
+    },
+    {
+        "id": 207,
+        "arabic": "",
+        "text": "Zulümden sakınınız. Çünkü zulüm, kıyamet gününde karanlıklar olacaktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 208,
+        "arabic": "",
+        "text": "Cömert kişi Allah'a yakın, cennete yakın, insanlara yakın ve cehennemden uzaktır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 209,
+        "arabic": "",
+        "text": "Allah Teâlâ sizin dış görünüşünüze ve mallarınıza bakmaz; o ancak kalplerinize ve amellerinize bakar.",
+        "source": "Müslim"
+    },
+    {
+        "id": 210,
+        "arabic": "",
+        "text": "Müslüman, insanların elinden ve dilinden emin olduğu kimsedir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 211,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, Kur'an'ı öğrenen ve öğretendir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 212,
+        "arabic": "",
+        "text": "İşçiye ücretini teri kurumadan veriniz.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 213,
+        "arabic": "",
+        "text": "Kolaylaştırınız, güçleştirmeyiniz; müjdeleyiniz, nefret ettirmeyiniz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 214,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 215,
+        "arabic": "",
+        "text": "Hayra vesile olan, hayrı yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 216,
+        "arabic": "",
+        "text": "İyilik güzel ahlaktır. Günah ise kalbinde şüphe uyandıran ve insanların duymasından hoşlanmadığın şeydir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 217,
+        "arabic": "",
+        "text": "Allah her hak sahibine hakkını vermiştir. Mirasçıya vasiyet yoktur.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 218,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 219,
+        "arabic": "",
+        "text": "Dua, ibadetin özüdür.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 220,
+        "arabic": "",
+        "text": "Yemekten önce ve sonra elleri yıkamak yemeğin bereketidir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 221,
+        "arabic": "",
+        "text": "Gerçek zenginlik malın çokluğu değil, gönül zenginliğidir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 222,
+        "arabic": "",
+        "text": "İstikamet üzere olunuz. Biliniz ki amellerinizin en hayırlısı namazdır.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 223,
+        "arabic": "",
+        "text": "Gülümsemen senin için bir sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 224,
+        "arabic": "",
+        "text": "Nerede olursan ol Allah'tan kork; kötülüğün arkasından hemen iyilik yap ki onu silsin.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 225,
+        "arabic": "",
+        "text": "Kıyamet gününde kulun ilk hesaba çekileceği ameli namazıdır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 226,
+        "arabic": "",
+        "text": "Hediyeleşin ki birbirinizi sevesiniz.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 227,
+        "arabic": "",
+        "text": "Selamı aranızda yayın.",
+        "source": "Müslim"
+    },
+    {
+        "id": 228,
+        "arabic": "",
+        "text": "İlim talep etmek her Müslümana farzdır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 229,
+        "arabic": "",
+        "text": "Akrabayı ziyaret ediniz; zira bu rızkı çoğaltır, ömrü uzatır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 230,
+        "arabic": "",
+        "text": "Öfkelendiğin zaman sus.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 231,
+        "arabic": "",
+        "text": "En hayırlı ev, içinde yetime iyilik edilen evdir.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 232,
+        "arabic": "",
+        "text": "Borçlunun borcunu ödemesi için süre tanıyan kimseye her gün için sadaka sevabı verilir.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 233,
+        "arabic": "",
+        "text": "Allah için tevazu göstereni Allah yükseltir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 234,
+        "arabic": "",
+        "text": "Cennet annelerin ayakları altındadır.",
+        "source": "Nesâî"
+    },
+    {
+        "id": 235,
+        "arabic": "",
+        "text": "Mümin koku satan kimse gibidir; yanında dursan da sana güzel koku bulaşır.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 236,
+        "arabic": "",
+        "text": "Yalan rızkı eksiltir.",
+        "source": "Ebû Şeyh"
+    },
+    {
+        "id": 237,
+        "arabic": "",
+        "text": "Dürüst tüccar kıyamet günü şehitlerle beraberdir.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 238,
+        "arabic": "",
+        "text": "Allah güzeldir, güzelliği sever.",
+        "source": "Müslim"
+    },
+    {
+        "id": 239,
+        "arabic": "",
+        "text": "Kim bir hayra öncülük ederse, onu yapanın ecrini alır.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 240,
+        "arabic": "",
+        "text": "Misvak kullanmak ağız temizliğine ve Allah'ın rızasına sebep olur.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 241,
+        "arabic": "",
+        "text": "Sabır ilk sarsıntı anındadır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 242,
+        "arabic": "",
+        "text": "İçinizden en çok sevdiğim, ahlakı en güzel olanınızdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 243,
+        "arabic": "",
+        "text": "Kardeşini güler yüzle karşılaman bile bir iyiliktir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 244,
+        "arabic": "",
+        "text": "Temizlik imanın yarısıdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 245,
+        "arabic": "",
+        "text": "Güneşin doğduğu en hayırlı gün cuma günüdür.",
+        "source": "Müslim"
+    },
+    {
+        "id": 246,
+        "arabic": "",
+        "text": "Zandan sakınınız; çünkü zan sözlerin en yalanıdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 247,
+        "arabic": "",
+        "text": "Utanmıyorsan dilediğini yap!",
+        "source": "Buhârî"
+    },
+    {
+        "id": 248,
+        "arabic": "",
+        "text": "Komşusu açken tok yatan bizden değildir.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 249,
+        "arabic": "",
+        "text": "Haksızlık karşısında susan dilsiz şeytandır.",
+        "source": "Kuşeyrî"
+    },
+    {
+        "id": 250,
+        "arabic": "",
+        "text": "Allah, her işte nezaketi sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 251,
+        "arabic": "",
+        "text": "Sükut etmek hikmettir, ancak onu yapan azdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 252,
+        "arabic": "",
+        "text": "Dünya müminin zindanı, kafirin ise cennetidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 253,
+        "arabic": "",
+        "text": "Sizin en şerliniz, başkalarına diliyle eziyet edendir.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 254,
+        "arabic": "",
+        "text": "Allah'a en sevimli gelen amel, az da olsa devamlı olanıdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 255,
+        "arabic": "",
+        "text": "Küçüğümüze merhamet etmeyen bizden değildir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 256,
+        "arabic": "",
+        "text": "Veren el, alan elden daha üstündür.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 257,
+        "arabic": "",
+        "text": "Müslüman, Müslümanın aynasıdır.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 258,
+        "arabic": "",
+        "text": "Dürüstlükten ayrılmayın, çünkü doğruluk iyiliğe götürür.",
+        "source": "Müslim"
+    },
+    {
+        "id": 259,
+        "arabic": "",
+        "text": "Mazlumun bedduasından sakın; onunla Allah arasında perde yoktur.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 260,
+        "arabic": "",
+        "text": "Sizin en hayırlınız ailesine karşı en iyi davranandır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 261,
+        "arabic": "",
+        "text": "Haset iyilikleri ateşin odunu yakıp tükettiği gibi yer bitirir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 262,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 263,
+        "arabic": "",
+        "text": "Dua müminin silahıdır.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 264,
+        "arabic": "",
+        "text": "Yemekten önce elleri yıkamak berekettir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 265,
+        "arabic": "",
+        "text": "Kim Allah rızası için bir mescit yaparsa Allah da ona cennette bir ev yapar.",
+        "source": "Müslim"
+    },
+    {
+        "id": 266,
+        "arabic": "",
+        "text": "Gıybetten sakının; çünkü gıybet zinadan daha ağırdır.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 267,
+        "arabic": "",
+        "text": "Doğru tüccar peygamberler ve şehitlerle beraberdir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 268,
+        "arabic": "",
+        "text": "En hayırlı arkadaş, arkadaşına en hayırlı davranandır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 269,
+        "arabic": "",
+        "text": "İlim öğrenmek için yola çıkan kimse dönünceye kadar Allah yolundadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 270,
+        "arabic": "",
+        "text": "Allah yumuşak huyludur, yumuşaklığı sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 271,
+        "arabic": "",
+        "text": "Güneş batıdan doğmadan önce tövbe ediniz.",
+        "source": "Müslim"
+    },
+    {
+        "id": 272,
+        "arabic": "",
+        "text": "Birlik rahmettir, ayrılık ise azaptır.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 273,
+        "arabic": "",
+        "text": "İşlerin en hayırlısı orta yollu olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 274,
+        "arabic": "",
+        "text": "Yalan rızkın bereketini giderir.",
+        "source": "Ebû Şeyh"
+    },
+    {
+        "id": 275,
+        "arabic": "",
+        "text": "Sabır aydınlıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 276,
+        "arabic": "",
+        "text": "Temizlik imanın yarısıdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 277,
+        "arabic": "",
+        "text": "Hediyeleşin ki sevginiz artsın.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 278,
+        "arabic": "",
+        "text": "Söz taşıyan (nemmâm) cennete giremez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 279,
+        "arabic": "",
+        "text": "Veren el alan elden üstündür.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 280,
+        "arabic": "",
+        "text": "İnsanın değeri kalbinde gizlidir.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 281,
+        "arabic": "",
+        "text": "Sabretmek başarının anahtarıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 282,
+        "arabic": "",
+        "text": "Müslüman Müslümana sitem etmez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 283,
+        "arabic": "",
+        "text": "Her kim bir ağaç dikerse Allah ona meyvesi kadar sevap yazar.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 284,
+        "arabic": "",
+        "text": "İnsana her duyduğunu söylemesi yalan olarak yeter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 285,
+        "arabic": "",
+        "text": "Şüpheli şeyleri bırak, şüphesiz olanlara bak.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 286,
+        "arabic": "",
+        "text": "Allah için sevenler kıyamet günü nurdan minberler üzerindedirler.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 287,
+        "arabic": "",
+        "text": "Dua müminin miracıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 288,
+        "arabic": "",
+        "text": "Emanete hıyanet etmeyiniz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 289,
+        "arabic": "",
+        "text": "Komşu hakkı Allah katında çok büyüktür.",
+        "source": "Müslim"
+    },
+    {
+        "id": 290,
+        "arabic": "",
+        "text": "Mümin müminle tek bir vücut gibidir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 291,
+        "arabic": "",
+        "text": "Kişi arkadaşının dini üzeredir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 292,
+        "arabic": "",
+        "text": "Az sözle çok hikmet söylenir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 293,
+        "arabic": "",
+        "text": "En hayırlı amel vaktinde kılınan namazdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 294,
+        "arabic": "",
+        "text": "Önce arkadaş, sonra yol.",
+        "source": "Hatîb"
+    },
+    {
+        "id": 295,
+        "arabic": "",
+        "text": "Sadaka ömrü uzatır.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 296,
+        "arabic": "",
+        "text": "Yumuşak huylu olan kimsede hayır çoktur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 297,
+        "arabic": "",
+        "text": "Mümin aldanmaz ve aldatmaz.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 298,
+        "arabic": "",
+        "text": "Misafir rızkıyla gelir.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 299,
+        "arabic": "",
+        "text": "Affetmek izzeti artırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 300,
+        "arabic": "",
+        "text": "Haya bütünüyle hayırdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 301,
+        "arabic": "",
+        "text": "Kim Allah'a ve ahiret gününe inanıyorsa, misafirine ikram etsin. Kim Allah'a ve ahiret gününe inanıyorsa, akrabalık bağlarını koruyup gözetsin. Kim Allah'a ve ahiret gününe inanıyorsa, ya hayır söylesin ya da sussun.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 302,
+        "arabic": "",
+        "text": "Canım kudret elinde olan Allah'a yemin ederim ki, sizler iman etmedikçe cennete giremezsiniz; birbirinizi sevmedikçe de gerçek manada iman etmiş olmazsınız. Yaptığınız takdirde birbirinizi seveceğiniz bir şeyi size haber vereyim mi? Aranızda selamı yayınız.",
+        "source": "Müslim"
+    },
+    {
+        "id": 303,
+        "arabic": "",
+        "text": "Müslüman, diğer Müslümanların elinden ve dilinden güvende olduğu kimsedir. Mümin de insanların canları ve malları konusunda kendisinden emin oldukları kişidir.",
+        "source": "Tirmizî, Nesâî"
+    },
+    {
+        "id": 304,
+        "arabic": "",
+        "text": "Hiçbiriniz, kendisi için istediğini kardeşi için de istemedikçe gerçek manada iman etmiş olmaz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 305,
+        "arabic": "",
+        "text": "Kim bir Müslümanın dünya sıkıntılarından birini giderirse, Allah da onun kıyamet günündeki sıkıntılarından birini giderir. Kim darda kalan birine kolaylık gösterirse, Allah da ona dünya ve ahirette kolaylık gösterir. Kim bir Müslümanın kusurunu örterse, Allah da onun dünya ve ahiretteki kusurlarını örter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 306,
+        "arabic": "",
+        "text": "Sizden biriniz bir kötülük gördüğü zaman onu eliyle düzeltsin; buna gücü yetmezse diliyle düzeltsin; buna da gücü yetmezse kalbiyle buğz etsin ki, bu imanın en zayıf derecesidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 307,
+        "arabic": "",
+        "text": "Şüphesiz ki doğruluk iyiliğe götürür, iyilik de cennete götürür. Kişi doğru söyleye söyleye Allah katında 'sıddık' (doğru sözlü) diye kaydedilir. Yalancılık ise yoldan çıkmaya (fücura) götürür, yoldan çıkmak da ateşe götürür. Kişi yalan söyleye söyleye Allah katında 'kezzâb' (yalancı) diye kaydedilir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 308,
+        "arabic": "",
+        "text": "Münafığın alameti üçtür: Konuştuğu zaman yalan söyler, vaat ettiği vakit sözünde durmaz, kendisine bir şey emanet edildiği zaman ona hıyanet eder.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 309,
+        "arabic": "",
+        "text": "İnsanoğlu öldüğü zaman ameli kesilir. Ancak şu üç şey hariçtir: Sadaka-i cariye (kalıcı sadaka), faydalanılan bir ilim ve kendisine dua eden hayırlı bir evlat.",
+        "source": "Müslim"
+    },
+    {
+        "id": 310,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, Kur'an'ı öğrenen ve öğretendir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 311,
+        "arabic": "",
+        "text": "İman yetmiş küsur şubedir. Bunların en üstünü 'Lâ ilâhe illâllah' sözüdür. En aşağısı ise yoldaki eziyet veren bir şeyi kaldırmaktır. Haya da imandan bir şubedir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 312,
+        "arabic": "",
+        "text": "Zenginlik mal çokluğu değil, asıl zenginlik gönül zenginliğidir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 313,
+        "arabic": "",
+        "text": "Müslüman Müslümanın kardeşidir. Ona zulmetmez, onu yardımsız bırakmaz ve onu hor görmez. Takva işte buradadır (kalbini işaret ederek). Bir kimseye Müslüman kardeşini hor görmesi kötülük olarak yeter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 314,
+        "arabic": "",
+        "text": "Kim bir hayra delalet ederse (yol gösterirse), ona o hayrı işleyenin ecri kadar sevap verilir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 315,
+        "arabic": "",
+        "text": "Allah Teâlâ sizin dış görünüşlerinize ve mallarınıza bakmaz; ancak kalplerinize ve amellerinize bakar.",
+        "source": "Müslim"
+    },
+    {
+        "id": 316,
+        "arabic": "",
+        "text": "Dünya müminin zindanı, kafirin ise cennetidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 317,
+        "arabic": "",
+        "text": "Kolaylaştırınız, zorlaştırmayınız; müjdeleyiniz, nefret ettirmeyiniz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 318,
+        "arabic": "",
+        "text": "Kim ilim öğrenmek için bir yola çıkarsa, Allah ona cennet yolunu kolaylaştırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 319,
+        "arabic": "",
+        "text": "Küçüğümüze merhamet etmeyen, büyüğümüzün hakkını tanımayan (saygı göstermeyen) bizden değildir.",
+        "source": "Ebû Dâvud, Tirmizî"
+    },
+    {
+        "id": 320,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 321,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 322,
+        "arabic": "",
+        "text": "Hiçbir baba evladına güzel ahlaktan daha üstün bir miras bırakmamıştır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 323,
+        "arabic": "",
+        "text": "Yedi sınıf insan vardır ki, Allah onları hiçbir gölgenin bulunmadığı gün kendi gölgesinde gölgelendirir. Bunlardan biri de, sağ elinin verdiğini sol elinin bilmeyeceği kadar sadakayı gizli veren kimsedir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 324,
+        "arabic": "",
+        "text": "İşçiye ücretini teri kurumadan veriniz.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 325,
+        "arabic": "",
+        "text": "Hasetten sakınınız. Çünkü haset, ateşin odunu yediği gibi iyilikleri yer bitirir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 326,
+        "arabic": "",
+        "text": "İki nimet vardır ki, insanların çoğu bu iki nimetten faydalanma hususunda aldanmıştır: Sağlık ve boş vakit.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 327,
+        "arabic": "",
+        "text": "Cennet annelerin ayakları altındadır.",
+        "source": "Nesâî"
+    },
+    {
+        "id": 328,
+        "arabic": "",
+        "text": "Nerede olursan ol Allah'tan kork. Kötülüğün ardından bir iyilik yap ki onu silsin. İnsanlara da güzel ahlak ile muamele et.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 329,
+        "arabic": "",
+        "text": "Komşusu, eziyetinden emin olmayan kimse cennete giremez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 330,
+        "arabic": "",
+        "text": "Gerçek pehlivan, güreşte rakibini yenen değil, öfke anında kendine hakim olan kimsedir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 331,
+        "arabic": "",
+        "text": "Birbirinize nefret etmeyin, birbirinize haset etmeyin, birbirinize sırt çevirmeyin. Ey Allah'ın kulları, kardeş olun! Bir Müslümanın, din kardeşiyle üç günden fazla küs durması helal değildir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 332,
+        "arabic": "",
+        "text": "İyilik güzel ahlaktır. Günah ise vicdanını tırmalayan ve insanların bilmesini istemediğin şeydir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 333,
+        "arabic": "",
+        "text": "Allah her hak sahibine hakkını vermiştir. Mirasçı için vasiyet yoktur.",
+        "source": "Ebû Dâvud, Tirmizî"
+    },
+    {
+        "id": 334,
+        "arabic": "",
+        "text": "Dua ibadetin özüdür.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 335,
+        "arabic": "",
+        "text": "Yemekten önce ve yemekten sonra elleri yıkamak, yemeğin bereketine sebep olur.",
+        "source": "Ebû Dâvud, Tirmizî"
+    },
+    {
+        "id": 336,
+        "arabic": "",
+        "text": "Mümin müminin aynasıdır.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 337,
+        "arabic": "",
+        "text": "İyiliğe delalet eden, onu yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 338,
+        "arabic": "",
+        "text": "Allah Teâlâ yumuşak huyludur, her işte yumuşaklığı sever.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 339,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ailesine karşı en hayırlı olanınızdır. Ben de aileme karşı en hayırlı olanınızım.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 340,
+        "arabic": "",
+        "text": "Kim bir ağaç dikerse, onun meyvesinden bir insan veya Allah'ın mahlukatından herhangi bir varlık yediği takdirde, bu onun için bir sadaka olur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 341,
+        "arabic": "",
+        "text": "Akrabalık bağlarını koparan cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 342,
+        "arabic": "",
+        "text": "İnsanlara teşekkür etmeyen, Allah'a da şükretmiş olmaz.",
+        "source": "Ebû Dâvud, Tirmizî"
+    },
+    {
+        "id": 343,
+        "arabic": "",
+        "text": "Allah, bir kulunun yemek yedikten sonra veya bir şey içtikten sonra kendisine hamd etmesinden hoşnut olur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 344,
+        "arabic": "",
+        "text": "Utanmıyorsan dilediğini yap!",
+        "source": "Buhârî"
+    },
+    {
+        "id": 345,
+        "arabic": "",
+        "text": "Her kim Allah yolunda bir gün oruç tutarsa, Allah o kimsenin yüzünü ateşten yetmiş yıllık mesafeye uzaklaştırır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 346,
+        "arabic": "",
+        "text": "Söz taşıyan (nemmâm) cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 347,
+        "arabic": "",
+        "text": "Komşusu açken tok yatan bizden değildir.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 348,
+        "arabic": "",
+        "text": "Sabır aydınlıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 349,
+        "arabic": "",
+        "text": "Haya imandandır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 350,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ahlakı en güzel olanınızdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 351,
+        "arabic": "",
+        "text": "Bir kimse kardeşine gıyabında dua ederse, melek ona: 'Amin, aynı şeyler sana da verilsin' diye dua eder.",
+        "source": "Müslim"
+    },
+    {
+        "id": 352,
+        "arabic": "",
+        "text": "Kim rızkının bollaşmasını ve ömrünün uzamasını istiyorsa akrabalık bağlarını koruyup gözetsin.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 353,
+        "arabic": "",
+        "text": "Mazlumun bedduasından sakınınız. Çünkü onun duasıyla Allah arasında hiçbir perde yoktur.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 354,
+        "arabic": "",
+        "text": "Mümin, bir delikten iki defa ısırılmaz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 355,
+        "arabic": "",
+        "text": "Müslüman Müslümanın kardeşidir. Ona zulmetmez, onu küçük düşürmez ve onu yardımsız bırakmaz.",
+        "source": "Müslim"
+    },
+    {
+        "id": 356,
+        "arabic": "",
+        "text": "İnsana, her duyduğunu söylemesi yalan olarak yeter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 357,
+        "arabic": "",
+        "text": "Sizden biriniz uykudan uyandığında elini üç defa yıkamadan su kabına daldırmasın.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 358,
+        "arabic": "",
+        "text": "Birbirinize haset etmeyiniz, birbirinize küsmeyiniz, birbirinize sırt çevirmeyiniz; ey Allah'ın kulları, kardeş olunuz!",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 359,
+        "arabic": "",
+        "text": "Güneş batıdan doğmadan önce kim tövbe ederse, Allah onun tövbesini kabul eder.",
+        "source": "Müslim"
+    },
+    {
+        "id": 360,
+        "arabic": "",
+        "text": "Allah Teâlâ nezaketi sever ve nezakete karşılık verdiğini başka hiçbir şeye vermez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 361,
+        "arabic": "",
+        "text": "Ümmetimin hepsine af vardır, ancak günahını alenen işleyenler hariç.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 362,
+        "arabic": "",
+        "text": "Mümin koku satan kimse gibidir. Yanında otursan güzel koku alırsın, beraber yürüsen güzel koku alırsın.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 363,
+        "arabic": "",
+        "text": "Allah katında amellerin en sevimlisi, az da olsa devamlı olanıdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 364,
+        "arabic": "",
+        "text": "Hediyeleşin ki birbirinizi sevesiniz.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 365,
+        "arabic": "",
+        "text": "Gülümsemen senin için bir sadakadır. İyiliği emretmen sadakadır, kötülükten sakındırman sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 366,
+        "arabic": "",
+        "text": "Dürüst ve güvenilir tüccar, peygamberler, sıddıklar ve şehitlerle beraberdir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 367,
+        "arabic": "",
+        "text": "Her dinin bir ahlakı vardır; İslam'ın ahlakı da hayadır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 368,
+        "arabic": "",
+        "text": "İşlerin en hayırlısı, orta yollu olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 369,
+        "arabic": "",
+        "text": "Zandan sakınınız, çünkü zan sözlerin en yalanıdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 370,
+        "arabic": "",
+        "text": "Allah, her işte kolaylık gösterilmesini sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 371,
+        "arabic": "",
+        "text": "Veren el, alan elden daha üstündür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 372,
+        "arabic": "",
+        "text": "Temizlik imanın yarısıdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 373,
+        "arabic": "",
+        "text": "Hediyeleşin, çünkü hediye gönüldeki kin ve nefreti giderir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 374,
+        "arabic": "",
+        "text": "Kim bir müslümanı bir sıkıntıdan kurtarırsa, Allah da onu kıyamet günü sıkıntılarından kurtarır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 375,
+        "arabic": "",
+        "text": "Gerçek zenginlik mal çokluğu değil, gönül zenginliğidir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 376,
+        "arabic": "",
+        "text": "Din nasihattir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 377,
+        "arabic": "",
+        "text": "Allah katında en sevimli ev, içinde yetime ikram edilen evdir.",
+        "source": "Ebû Ya'lâ"
+    },
+    {
+        "id": 378,
+        "arabic": "",
+        "text": "Sizden biri yemek yediği zaman sağ eliyle yesin, su içtiği zaman sağ eliyle içsin.",
+        "source": "Müslim"
+    },
+    {
+        "id": 379,
+        "arabic": "",
+        "text": "Cennet ehli, kalpleri kuş kalbi gibi (ince ve nazik) olan insanlardır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 380,
+        "arabic": "",
+        "text": "Küçüğümüze merhamet etmeyen, büyüğümüze saygı göstermeyen bizden değildir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 381,
+        "arabic": "",
+        "text": "Her hayırlı işe 'Bismillah' ile başlayınız.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 382,
+        "arabic": "",
+        "text": "İçinizden en sevdiğim ve kıyamet günü bana en yakın olanınız, ahlakı en güzel olanınızdır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 383,
+        "arabic": "",
+        "text": "Yalan rızkın bereketini giderir.",
+        "source": "Ebû Şeyh"
+    },
+    {
+        "id": 384,
+        "arabic": "",
+        "text": "Kim ilim için yola çıkarsa, dönünceye kadar Allah yolundadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 385,
+        "arabic": "",
+        "text": "Emanete hıyanet etmeyiniz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 386,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 387,
+        "arabic": "",
+        "text": "Sabır başarının anahtarıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 388,
+        "arabic": "",
+        "text": "Allah güzeldir, güzelliği sever.",
+        "source": "Müslim"
+    },
+    {
+        "id": 389,
+        "arabic": "",
+        "text": "Öfkelendiğin zaman sus.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 390,
+        "arabic": "",
+        "text": "Yumuşak huylu olan kimsede hayır çoktur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 391,
+        "arabic": "",
+        "text": "İyilik yap ki iyilik bulasın.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 392,
+        "arabic": "",
+        "text": "Rızkın onda dokuzu ticarettedir.",
+        "source": "Münâvî"
+    },
+    {
+        "id": 393,
+        "arabic": "",
+        "text": "Borç dindir, onu mutlaka ödeyiniz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 394,
+        "arabic": "",
+        "text": "Mümin, insanların can ve malları konusunda güvendiği kişidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 395,
+        "arabic": "",
+        "text": "En hayırlı arkadaş, arkadaşına en hayırlı davranandır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 396,
+        "arabic": "",
+        "text": "Selamı aranızda yayın.",
+        "source": "Müslim"
+    },
+    {
+        "id": 397,
+        "arabic": "",
+        "text": "Dürüst tüccar kıyamet günü şehitlerle beraberdir.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 398,
+        "arabic": "",
+        "text": "Sükut etmek hikmettir, ancak onu yapan azdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 399,
+        "arabic": "",
+        "text": "Az sözle çok mana ifade etmek bana verildi.",
+        "source": "Müslim"
+    },
+    {
+        "id": 400,
+        "arabic": "",
+        "text": "Haksızlık karşısında susan, dilsiz şeytandır.",
+        "source": "Kuşeyrî"
+    },
+    {
+        "id": 401,
+        "arabic": "",
+        "text": "Kim bir müslümanın kusurunu örterse, Allah da dünya ve ahirette onun kusurunu örter. Kul, kardeşinin yardımında olduğu müddetçe Allah da kulun yardımındadır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 402,
+        "arabic": "",
+        "text": "Canım kudret elinde olan Allah'a yemin ederim ki, ya iyiliği emreder kötülükten men edersiniz ya da Allah size katından bir azap gönderir de sonra O'na dua edersiniz fakat duanız kabul olunmaz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 403,
+        "arabic": "",
+        "text": "Müslüman müslümanın kardeşidir. Ona zulmetmez, onu tehlikede yalnız bırakmaz. Kim kardeşinin ihtiyacını görürse Allah da onun ihtiyacını görür. Kim bir müslümanı bir sıkıntıdan kurtarırsa, Allah da onu kıyamet gününün sıkıntılarından birinden kurtarır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 404,
+        "arabic": "",
+        "text": "Şüphesiz Allah Teâlâ sizin suretlerinize ve mallarınıza bakmaz, ancak kalplerinize ve amellerinize bakar.",
+        "source": "Müslim"
+    },
+    {
+        "id": 405,
+        "arabic": "",
+        "text": "Kim Allah'a ve ahiret gününe inanıyorsa komşusuna eziyet etmesin. Kim Allah'a ve ahiret gününe inanıyorsa misafirine ikram etsin. Kim Allah'a ve ahiret gününe inanıyorsa ya hayır söylesin ya da sussun.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 406,
+        "arabic": "",
+        "text": "Allah Teâlâ buyurur ki: 'Ben kulumun benim hakkımdaki zannı üzereyim. Beni andığı yerde onunla beraberim.'",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 407,
+        "arabic": "",
+        "text": "İnsanoğlu ölünce üç şey hariç ameli kesilir: Sadaka-i cariye, faydalanılan ilim ve kendisine dua eden hayırlı evlat.",
+        "source": "Müslim"
+    },
+    {
+        "id": 408,
+        "arabic": "",
+        "text": "İman yetmiş küsur şubedir. En üstünü 'Lâ ilâhe illâllah' demek, en aşağısı ise yoldaki bir engeli kaldırmaktır. Haya da imandan bir şubedir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 409,
+        "arabic": "",
+        "text": "Sizden kim bir kötülük görürse onu eliyle düzeltsin, gücü yetmezse diliyle, ona da gücü yetmezse kalbiyle buğz etsin ki bu imanın en zayıf derecesidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 410,
+        "arabic": "",
+        "text": "İyilik güzel ahlaktır. Günah ise vicdanını tırmalayan ve insanların duymasından hoşlanmadığın şeydir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 411,
+        "arabic": "",
+        "text": "Akıllı kişi, nefsini hesaba çeken ve ölümden sonrası için çalışandır. Aciz kişi ise nefsini arzularına tabi kılan ve Allah'tan boş umutlar besleyendir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 412,
+        "arabic": "",
+        "text": "Cennet ehli cennete, cehennem ehli de cehenneme girer. Sonra Allah: 'Kalbinde hardal tanesi kadar imanı olanı çıkarın' buyurur.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 413,
+        "arabic": "",
+        "text": "Birbirinize haset etmeyin, küsmeyin, birbirinizden nefret etmeyin ve sırt çevirmeyin. Ey Allah'ın kulları, kardeş olun!",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 414,
+        "arabic": "",
+        "text": "Gerçek pehlivan, güreşte rakibini yenen değil, öfke anında kendine hakim olan kimsedir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 415,
+        "arabic": "",
+        "text": "Müslüman, insanların elinden ve dilinden emin olduğu kimsedir. Mümin de insanların canları ve malları konusunda kendisinden emin oldukları kişidir.",
+        "source": "Tirmizî, Nesâî"
+    },
+    {
+        "id": 416,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 417,
+        "arabic": "",
+        "text": "Sizden biri kendisi için istediğini Müslüman kardeşi için de istemedikçe gerçek manada iman etmiş olmaz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 418,
+        "arabic": "",
+        "text": "Kim ilim öğrenmek için bir yola girerse, Allah ona cennet yolunu kolaylaştırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 419,
+        "arabic": "",
+        "text": "Allah Teâlâ yumuşak huyludur, her işte yumuşaklığı sever.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 420,
+        "arabic": "",
+        "text": "Küçüğümüze merhamet etmeyen, büyüğümüze saygı göstermeyen bizden değildir.",
+        "source": "Tirmizî, Ebû Dâvud"
+    },
+    {
+        "id": 421,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 422,
+        "arabic": "",
+        "text": "Veren el, alan elden daha üstündür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 423,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, Kur'an'ı öğrenen ve öğreteninizdir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 424,
+        "arabic": "",
+        "text": "Komşusu açken tok yatan bizden değildir.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 425,
+        "arabic": "",
+        "text": "Zenginlik mal çokluğu değil, gönül zenginliğidir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 426,
+        "arabic": "",
+        "text": "Temizlik imanın yarısıdır. Elhamdülillah teraziyi doldurur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 427,
+        "arabic": "",
+        "text": "Dua, ibadetin özüdür.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 428,
+        "arabic": "",
+        "text": "İşçiye ücretini teri kurumadan veriniz.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 429,
+        "arabic": "",
+        "text": "Hayra vesile olan, hayrı yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 430,
+        "arabic": "",
+        "text": "Gülümsemen senin için bir sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 431,
+        "arabic": "",
+        "text": "Nerede olursan ol Allah'tan kork. Kötülüğün ardından bir iyilik yap ki onu silsin.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 432,
+        "arabic": "",
+        "text": "Sabır, ilk sarsıntı anındadır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 433,
+        "arabic": "",
+        "text": "Güzel söz sadakadır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 434,
+        "arabic": "",
+        "text": "Selamı aranızda yayın.",
+        "source": "Müslim"
+    },
+    {
+        "id": 435,
+        "arabic": "",
+        "text": "İlim talep etmek her Müslümana farzdır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 436,
+        "arabic": "",
+        "text": "Hasetten sakınınız. Çünkü haset, ateşin odunu yediği gibi iyilikleri yer bitirir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 437,
+        "arabic": "",
+        "text": "İki nimet vardır ki, insanların çoğu bunda aldanmıştır: Sağlık ve boş vakit.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 438,
+        "arabic": "",
+        "text": "Cennet annelerin ayakları altındadır.",
+        "source": "Nesâî"
+    },
+    {
+        "id": 439,
+        "arabic": "",
+        "text": "Söz taşıyan (nemmâm) cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 440,
+        "arabic": "",
+        "text": "Allah güzeldir, güzelliği sever.",
+        "source": "Müslim"
+    },
+    {
+        "id": 441,
+        "arabic": "",
+        "text": "Hediyeleşin ki birbirinizi sevesiniz.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 442,
+        "arabic": "",
+        "text": "Kolaylaştırınız, zorlaştırmayınız; müjdeleyiniz, nefret ettirmeyiniz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 443,
+        "arabic": "",
+        "text": "Dünya müminin zindanı, kafirin ise cennetidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 444,
+        "arabic": "",
+        "text": "Münafığın alameti üçtür: Konuştuğunda yalan söyler, söz verdiğinde cayar, kendisine bir şey emanet edildiğinde hıyanet eder.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 445,
+        "arabic": "",
+        "text": "Yalandan sakının. Çünkü yalan kötülüğe, kötülük de cehenneme götürür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 446,
+        "arabic": "",
+        "text": "Doğruluktan ayrılmayın. Çünkü doğruluk iyiliğe, iyilik de cennete götürür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 447,
+        "arabic": "",
+        "text": "Birlik rahmettir, ayrılık ise azaptır.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 448,
+        "arabic": "",
+        "text": "Mazlumun bedduasından sakın! Çünkü onunla Allah arasında hiçbir perde yoktur.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 449,
+        "arabic": "",
+        "text": "Kim bir hayra delalet ederse, ona o hayrı işleyenin ecri kadar sevap verilir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 450,
+        "arabic": "",
+        "text": "Gıybet nedir bilir misiniz? Kardeşini onun hoşlanmayacağı bir şeyle anmandır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 451,
+        "arabic": "",
+        "text": "Mümin müminin aynasıdır. Mümin müminin kardeşidir, onun zararını önler.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 452,
+        "arabic": "",
+        "text": "Sükut eden kurtuldu.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 453,
+        "arabic": "",
+        "text": "Utanmıyorsan dilediğini yap!",
+        "source": "Buhârî"
+    },
+    {
+        "id": 454,
+        "arabic": "",
+        "text": "Akrabayı ziyaret rızkı genişletir, ömrü uzatır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 455,
+        "arabic": "",
+        "text": "İşlerin en hayırlısı orta yollu olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 456,
+        "arabic": "",
+        "text": "Yumuşak huylu olan kimsede hayır çoktur. Yumuşaklıktan mahrum olan hayırdan mahrum olur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 457,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ahlakı en güzel olanınızdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 458,
+        "arabic": "",
+        "text": "Zandan sakının. Çünkü zan, sözlerin en yalanıdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 459,
+        "arabic": "",
+        "text": "Kim ilim için yola çıkarsa, dönünceye kadar Allah yolundadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 460,
+        "arabic": "",
+        "text": "Öfkelendiğin zaman sus.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 461,
+        "arabic": "",
+        "text": "Güneş batıdan doğmadan önce kim tövbe ederse, Allah onun tövbesini kabul eder.",
+        "source": "Müslim"
+    },
+    {
+        "id": 462,
+        "arabic": "",
+        "text": "Allah için tevazu göstereni Allah yükseltir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 463,
+        "arabic": "",
+        "text": "Mümin, koku satan kimse gibidir. Yanında otursan güzel koku alırsın.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 464,
+        "arabic": "",
+        "text": "Dürüst ve güvenilir tüccar, peygamberler, sıddıklar ve şehitlerle beraberdir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 465,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ailesine karşı en hayırlı olanınızdır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 466,
+        "arabic": "",
+        "text": "Misvak kullanın, çünkü misvak ağzı temizler, Rabbi razı eder.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 467,
+        "arabic": "",
+        "text": "İnsana, her duyduğunu söylemesi yalan olarak yeter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 468,
+        "arabic": "",
+        "text": "Allah katında amellerin en sevimlisi, az da olsa devamlı olanıdır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 469,
+        "arabic": "",
+        "text": "Her dinin bir ahlakı vardır; İslam'ın ahlakı da hayadır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 470,
+        "arabic": "",
+        "text": "Helal rızık aramak her Müslüman üzerine farzdır.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 471,
+        "arabic": "",
+        "text": "Hiçbir baba evladına güzel ahlaktan daha hayırlı bir miras bırakamaz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 472,
+        "arabic": "",
+        "text": "Mümin bir delikten iki defa ısırılmaz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 473,
+        "arabic": "",
+        "text": "Yalan rızkın bereketini giderir.",
+        "source": "Ebû Şeyh"
+    },
+    {
+        "id": 474,
+        "arabic": "",
+        "text": "Dua müminin silahıdır.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 475,
+        "arabic": "",
+        "text": "Hayır işlerinde acele ediniz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 476,
+        "arabic": "",
+        "text": "Zalim de olsa mazlum da olsa kardeşine yardım et.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 477,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, borcunu en güzel şekilde ödeyendir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 478,
+        "arabic": "",
+        "text": "Kıyamet gününde kulun ilk hesaba çekileceği ameli namazıdır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 479,
+        "arabic": "",
+        "text": "Haksızlık karşısında susan, dilsiz şeytandır.",
+        "source": "Kuşeyrî"
+    },
+    {
+        "id": 480,
+        "arabic": "",
+        "text": "Emanete hıyanet etmeyiniz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 481,
+        "arabic": "",
+        "text": "Yemekten önce ve sonra elleri yıkamak berekettir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 482,
+        "arabic": "",
+        "text": "Misafir rızkıyla gelir, ev halkının günahlarını götürür.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 483,
+        "arabic": "",
+        "text": "Gerçek zenginlik mal çokluğu değil, nefis tokluğudur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 484,
+        "arabic": "",
+        "text": "Allah her hak sahibine hakkını vermiştir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 485,
+        "arabic": "",
+        "text": "Sabır aydınlıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 486,
+        "arabic": "",
+        "text": "Zulüm, kıyamet gününde karanlıklardır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 487,
+        "arabic": "",
+        "text": "Allah yumuşaklığı sever ve ona verdiğini sertliğe vermez.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 488,
+        "arabic": "",
+        "text": "Önce arkadaş, sonra yol.",
+        "source": "Hatîb"
+    },
+    {
+        "id": 489,
+        "arabic": "",
+        "text": "Sizden biri kardeşinin aynasıdır. Onda bir ayıp görürse onu düzeltsin.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 490,
+        "arabic": "",
+        "text": "Şüpheli şeyleri bırak, şüphesiz olanlara bak.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 491,
+        "arabic": "",
+        "text": "Sıla-i rahmi kesen cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 492,
+        "arabic": "",
+        "text": "Yumuşak huylu olan kimsede hayır çoktur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 493,
+        "arabic": "",
+        "text": "Affetmek izzeti artırır. Allah için affedenin şerefi artar.",
+        "source": "Müslim"
+    },
+    {
+        "id": 494,
+        "arabic": "",
+        "text": "İlim hazinedir, anahtarı ise sormaktır.",
+        "source": "Ebû Nuaym"
+    },
+    {
+        "id": 495,
+        "arabic": "",
+        "text": "Sabretmek başarının anahtarıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 496,
+        "arabic": "",
+        "text": "Müslüman müslümana hıyanet etmez.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 497,
+        "arabic": "",
+        "text": "Borç dindir, onu mutlaka ödeyiniz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 498,
+        "arabic": "",
+        "text": "İnsanın değeri kalbinde gizlidir.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 499,
+        "arabic": "",
+        "text": "Gerçek mücahit, nefsiyle cihat edendir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 500,
+        "arabic": "",
+        "text": "Allah Teâlâ her işte nezaketi sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 501,
+        "arabic": "",
+        "text": "Emaneti olmayanın imanı da yoktur.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 502,
+        "arabic": "",
+        "text": "Sizin en şerliniz, başkalarına diliyle eziyet edendir.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 503,
+        "arabic": "",
+        "text": "Kişi dostunun dini üzeredir. Bu yüzden her biriniz kiminle dostluk ettiğine baksın.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 504,
+        "arabic": "",
+        "text": "Az sözle çok mana ifade etmek bana verildi.",
+        "source": "Müslim"
+    },
+    {
+        "id": 505,
+        "arabic": "",
+        "text": "Hediyeleşin ki sevginiz artsın.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 506,
+        "arabic": "",
+        "text": "İlim Çin'de de olsa ona talip olun.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 507,
+        "arabic": "",
+        "text": "Sabır ruhun ışığıdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 508,
+        "arabic": "",
+        "text": "Hayra delalet eden onu yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 509,
+        "arabic": "",
+        "text": "Mümin aldanmaz ve aldatmaz.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 510,
+        "arabic": "",
+        "text": "Dua müminin miracıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 511,
+        "arabic": "",
+        "text": "Müslümanların en iyisi, diğer müslümanların elinden ve dilinden emin olduğu kimsedir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 512,
+        "arabic": "",
+        "text": "Kıyamet gününde kulun ilk hesaba çekileceği ameli namazdır. Eğer namazı düzgünse kurtulmuştur.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 513,
+        "arabic": "",
+        "text": "Allah katında arkadaşların en hayırlısı, arkadaşına hayırlı olandır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 514,
+        "arabic": "",
+        "text": "Her kim bir ağaç dikerse, onun meyvesinden yenildikçe Allah o kişi için bir sadaka sevabı yazar.",
+        "source": "Müslim"
+    },
+    {
+        "id": 515,
+        "arabic": "",
+        "text": "Kim rızkının bollaşmasını istiyorsa akrabalık bağlarını koruyup gözetsin.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 516,
+        "arabic": "",
+        "text": "Birlik rahmettir, ayrılık azaptır.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 517,
+        "arabic": "",
+        "text": "Önce deveni bağla, sonra tevekkül et.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 518,
+        "arabic": "",
+        "text": "Dürüst tüccar nebiler ve şehitlerle beraberdir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 519,
+        "arabic": "",
+        "text": "Yalan, rızkın bereketini eksiltir.",
+        "source": "Ebû Şeyh"
+    },
+    {
+        "id": 520,
+        "arabic": "",
+        "text": "Dua, ibadetin özüdür.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 521,
+        "arabic": "",
+        "text": "Allah güzeldir, güzelliği sever.",
+        "source": "Müslim"
+    },
+    {
+        "id": 522,
+        "arabic": "",
+        "text": "İlim talep etmek her Müslümana farzdır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 523,
+        "arabic": "",
+        "text": "Gerçek zenginlik gönül zenginliğidir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 524,
+        "arabic": "",
+        "text": "Yumuşak davranan kimsede hayır çoktur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 525,
+        "arabic": "",
+        "text": "Sizin en hayırlınız Kur'an'ı öğrenen ve öğretendir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 526,
+        "arabic": "",
+        "text": "Temizlik imanın yarısıdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 527,
+        "arabic": "",
+        "text": "Selamı aranızda yayın.",
+        "source": "Müslim"
+    },
+    {
+        "id": 528,
+        "arabic": "",
+        "text": "Allah Teâlâ her işte nezaketi sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 529,
+        "arabic": "",
+        "text": "Haksızlık karşısında susan dilsiz şeytandır.",
+        "source": "Kuşeyrî"
+    },
+    {
+        "id": 530,
+        "arabic": "",
+        "text": "Veren el, alan elden daha üstündür.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 531,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 532,
+        "arabic": "",
+        "text": "Utanmıyorsan dilediğini yap!",
+        "source": "Buhârî"
+    },
+    {
+        "id": 533,
+        "arabic": "",
+        "text": "Sizin en hayırlınız ailesine karşı en iyi davranandır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 534,
+        "arabic": "",
+        "text": "Dua müminin silahıdır.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 535,
+        "arabic": "",
+        "text": "Hayra vesile olan hayrı yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 536,
+        "arabic": "",
+        "text": "Küçüğümüze merhamet etmeyen bizden değildir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 537,
+        "arabic": "",
+        "text": "Mümin koku satan kimse gibidir.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 538,
+        "arabic": "",
+        "text": "Emanete hıyanet etmeyiniz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 539,
+        "arabic": "",
+        "text": "Sabır aydınlıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 540,
+        "arabic": "",
+        "text": "İşçiye ücretini teri kurumadan veriniz.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 541,
+        "arabic": "",
+        "text": "Kolaylaştırınız, güçleştirmeyiniz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 542,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 543,
+        "arabic": "",
+        "text": "Zulüm kıyamet günü karanlıktır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 544,
+        "arabic": "",
+        "text": "Müslüman müslümanın aynasıdır.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 545,
+        "arabic": "",
+        "text": "Hediyeleşin ki birbirinizi sevesiniz.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 546,
+        "arabic": "",
+        "text": "İşlerin en hayırlısı orta yollu olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 547,
+        "arabic": "",
+        "text": "Affetmek şerefi artırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 548,
+        "arabic": "",
+        "text": "Haya bütünüyle hayırdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 549,
+        "arabic": "",
+        "text": "Az sözle çok mana ifade etmek bana verildi.",
+        "source": "Müslim"
+    },
+    {
+        "id": 550,
+        "arabic": "",
+        "text": "Kim bir hayra delalet ederse ecri tamdır.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 551,
+        "arabic": "",
+        "text": "Canım kudret elinde olan Allah'a yemin ederim ki, ya iyiliği emreder kötülükten men edersiniz ya da Allah size katından bir azap gönderir de sonra O'na dua edersiniz fakat duanız kabul olunmaz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 552,
+        "arabic": "",
+        "text": "Kim Allah'a ve ahiret gününe inanıyorsa, misafirine ikram etsin. Kim Allah'a ve ahiret gününe inanıyorsa, akrabalık bağlarını koruyup gözetsin. Kim Allah'a ve ahiret gününe inanıyorsa, ya hayır söylesin ya da sussun.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 553,
+        "arabic": "",
+        "text": "Müslüman, diğer Müslümanların elinden ve dilinden güvende olduğu kimsedir. Mümin de insanların canları ve malları konusunda kendisinden emin oldukları kişidir.",
+        "source": "Tirmizî, Nesâî"
+    },
+    {
+        "id": 554,
+        "arabic": "",
+        "text": "Hiçbiriniz, kendisi için istediğini kardeşi için de istemedikçe gerçek manada iman etmiş olmaz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 555,
+        "arabic": "",
+        "text": "Kim bir Müslümanın dünya sıkıntılarından birini giderirse, Allah da onun kıyamet günündeki sıkıntılarından birini giderir. Kim darda kalan birine kolaylık gösterirse, Allah da ona dünya ve ahirette kolaylık gösterir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 556,
+        "arabic": "",
+        "text": "Sizden biriniz bir kötülük gördüğü zaman onu eliyle düzeltsin; buna gücü yetmezse diliyle düzeltsin; buna da gücü yetmezse kalbiyle buğz etsin ki, bu imanın en zayıf derecesidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 557,
+        "arabic": "",
+        "text": "Şüphesiz ki doğruluk iyiliğe götürür, iyilik de cennete götürür. Kişi doğru söyleye söyleye Allah katında 'sıddık' (doğru sözlü) diye kaydedilir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 558,
+        "arabic": "",
+        "text": "Münafığın alameti üçtür: Konuştuğu zaman yalan söyler, vaat ettiği vakit sözünde durmaz, kendisine bir şey emanet edildiği zaman ona hıyanet eder.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 559,
+        "arabic": "",
+        "text": "İnsanoğlu öldüğü zaman ameli kesilir. Ancak şu üç şey hariçtir: Sadaka-i cariye, faydalanılan bir ilim ve kendisine dua eden hayırlı bir evlat.",
+        "source": "Müslim"
+    },
+    {
+        "id": 560,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, Kur'an'ı öğrenen ve öğretendir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 561,
+        "arabic": "",
+        "text": "İman yetmiş küsur şubedir. Bunların en üstünü 'Lâ ilâhe illâllah' sözüdür. En aşağısı ise yoldaki eziyet veren bir şeyi kaldırmaktır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 562,
+        "arabic": "",
+        "text": "Zenginlik mal çokluğu değil, asıl zenginlik gönül zenginliğidir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 563,
+        "arabic": "",
+        "text": "Müslüman Müslümanın kardeşidir. Ona zulmetmez, onu yardımsız bırakmaz ve onu hor görmez. Bir kimseye Müslüman kardeşini hor görmesi kötülük olarak yeter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 564,
+        "arabic": "",
+        "text": "Kim bir hayra delalet ederse, ona o hayrı işleyenin ecri kadar sevap verilir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 565,
+        "arabic": "",
+        "text": "Allah Teâlâ sizin dış görünüşlerinize ve mallarınıza bakmaz; ancak kalplerinize ve amellerinize bakar.",
+        "source": "Müslim"
+    },
+    {
+        "id": 566,
+        "arabic": "",
+        "text": "Dünya müminin zindanı, kafirin ise cennetidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 567,
+        "arabic": "",
+        "text": "Kolaylaştırınız, zorlaştırmayınız; müjdeleyiniz, nefret ettirmeyiniz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 568,
+        "arabic": "",
+        "text": "Kim ilim öğrenmek için bir yola çıkarsa, Allah ona cennet yolunu kolaylaştırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 569,
+        "arabic": "",
+        "text": "Küçüğümüze merhamet etmeyen, büyüğümüzün hakkını tanımayan bizden değildir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 570,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 571,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 572,
+        "arabic": "",
+        "text": "Hiçbir baba evladına güzel ahlaktan daha üstün bir miras bırakmamıştır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 573,
+        "arabic": "",
+        "text": "Sağ elinin verdiğini sol elinin bilmeyeceği kadar sadakayı gizli veren kimseden Allah razı olur.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 574,
+        "arabic": "",
+        "text": "İşçiye ücretini teri kurumadan veriniz.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 575,
+        "arabic": "",
+        "text": "Hasetten sakınınız. Çünkü haset, ateşin odunu yediği gibi iyilikleri yer bitirir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 576,
+        "arabic": "",
+        "text": "İki nimet vardır ki, insanların çoğu bunda aldanmıştır: Sağlık ve boş vakit.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 577,
+        "arabic": "",
+        "text": "Cennet annelerin ayakları altındadır.",
+        "source": "Nesâî"
+    },
+    {
+        "id": 578,
+        "arabic": "",
+        "text": "Nerede olursan ol Allah'tan kork. Kötülüğün ardından bir iyilik yap ki onu silsin.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 579,
+        "arabic": "",
+        "text": "Komşusu, eziyetinden emin olmayan kimse cennete giremez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 580,
+        "arabic": "",
+        "text": "Gerçek pehlivan öfke anında kendine hakim olan kimsedir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 581,
+        "arabic": "",
+        "text": "Bir Müslümanın, din kardeşiyle üç günden fazla küs durması helal değildir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 582,
+        "arabic": "",
+        "text": "İyilik güzel ahlaktır. Günah ise insanların bilmesini istemediğin şeydir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 583,
+        "arabic": "",
+        "text": "Allah her hak sahibine hakkını vermiştir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 584,
+        "arabic": "",
+        "text": "Dua ibadetin özüdür.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 585,
+        "arabic": "",
+        "text": "Yemekten önce ve sonra elleri yıkamak bereket getirir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 586,
+        "arabic": "",
+        "text": "Mümin müminin aynasıdır.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 587,
+        "arabic": "",
+        "text": "İyiliğe delalet eden, onu yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 588,
+        "arabic": "",
+        "text": "Allah Teâlâ yumuşak huyludur, her işte yumuşaklığı sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 589,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ailesine karşı en hayırlı olanınızdır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 590,
+        "arabic": "",
+        "text": "Kim bir ağaç dikerse, ondan yenilen her şey onun için sadakadır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 591,
+        "arabic": "",
+        "text": "Akrabalık bağlarını koparan cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 592,
+        "arabic": "",
+        "text": "İnsanlara teşekkür etmeyen, Allah'a da şükretmiş olmaz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 593,
+        "arabic": "",
+        "text": "Allah kulunun hamd etmesinden hoşnut olur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 594,
+        "arabic": "",
+        "text": "Utanmıyorsan dilediğini yap!",
+        "source": "Buhârî"
+    },
+    {
+        "id": 595,
+        "arabic": "",
+        "text": "Allah yolunda bir gün oruç tutan ateşten uzaklaşır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 596,
+        "arabic": "",
+        "text": "Söz taşıyan cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 597,
+        "arabic": "",
+        "text": "Komşusu açken tok yatan bizden değildir.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 598,
+        "arabic": "",
+        "text": "Sabır aydınlıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 599,
+        "arabic": "",
+        "text": "Haya imandandır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 600,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ahlakı en güzel olanınızdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 601,
+        "arabic": "",
+        "text": "Müslüman müslümanın kardeşidir, ona zulmetmez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 602,
+        "arabic": "",
+        "text": "Kim bir müslümanı bir sıkıntıdan kurtarırsa, Allah da onu kıyamet günü kurtarır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 603,
+        "arabic": "",
+        "text": "Zulüm kıyamet günü karanlıklar olacaktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 604,
+        "arabic": "",
+        "text": "Mazlumun bedduasından sakın, çünkü arada perde yoktur.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 605,
+        "arabic": "",
+        "text": "Sizden biriniz kötülük gördüğünde onu eliyle düzeltsin.",
+        "source": "Müslim"
+    },
+    {
+        "id": 606,
+        "arabic": "",
+        "text": "Temizlik imanın yarısıdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 607,
+        "arabic": "",
+        "text": "Gerçek zenginlik gönül zenginliğidir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 608,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 609,
+        "arabic": "",
+        "text": "İnsanların en hayırlısı faydalı olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 610,
+        "arabic": "",
+        "text": "Hediyeleşin ki sevginiz artsın.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 611,
+        "arabic": "",
+        "text": "Selamı aranızda yayın.",
+        "source": "Müslim"
+    },
+    {
+        "id": 612,
+        "arabic": "",
+        "text": "Güzel söz sadakadır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 613,
+        "arabic": "",
+        "text": "İşçiye ücretini teri kurumadan veriniz.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 614,
+        "arabic": "",
+        "text": "Dua müminin silahıdır.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 615,
+        "arabic": "",
+        "text": "Doğruluktan ayrılmayın, çünkü o cennete götürür.",
+        "source": "Müslim"
+    },
+    {
+        "id": 616,
+        "arabic": "",
+        "text": "Yalan kötülüğe, kötülük ateşe götürür.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 617,
+        "arabic": "",
+        "text": "Allah güzeldir, güzelliği sever.",
+        "source": "Müslim"
+    },
+    {
+        "id": 618,
+        "arabic": "",
+        "text": "Nerede olursan ol Allah'tan kork.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 619,
+        "arabic": "",
+        "text": "Affetmek kulun şerefini artırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 620,
+        "arabic": "",
+        "text": "Haya bütünüyle hayırdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 621,
+        "arabic": "",
+        "text": "Kişi dostunun dini üzeredir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 622,
+        "arabic": "",
+        "text": "Sabır başarının anahtarıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 623,
+        "arabic": "",
+        "text": "Veren el alan elden üstündür.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 624,
+        "arabic": "",
+        "text": "Zandan sakının, çünkü zan en büyük yalandır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 625,
+        "arabic": "",
+        "text": "Akrabayı ziyaret ömrü uzatır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 626,
+        "arabic": "",
+        "text": "En hayırlı amel vaktinde kılınan namazdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 627,
+        "arabic": "",
+        "text": "Kim ilim için yola çıkarsa Allah ona cenneti kolaylaştırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 628,
+        "arabic": "",
+        "text": "Utanmıyorsan dilediğini yap.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 629,
+        "arabic": "",
+        "text": "Dürüst tüccar şehitlerle beraberdir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 630,
+        "arabic": "",
+        "text": "Söz taşıyan cennete giremez.",
+        "source": "Müslim"
+    },
+    {
+        "id": 631,
+        "arabic": "",
+        "text": "Gülümsemek sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 632,
+        "arabic": "",
+        "text": "Cennet annelerin ayakları altındadır.",
+        "source": "Nesâî"
+    },
+    {
+        "id": 633,
+        "arabic": "",
+        "text": "Komşusu açken tok yatan bizden değildir.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 634,
+        "arabic": "",
+        "text": "Sizin en iyiniz Kur'an'ı öğrenendir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 635,
+        "arabic": "",
+        "text": "Mümin müminin aynasıdır.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 636,
+        "arabic": "",
+        "text": "Dua ibadetin ta kendisidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 637,
+        "arabic": "",
+        "text": "Allah temizdir, temizliği sever.",
+        "source": "Müslim"
+    },
+    {
+        "id": 638,
+        "arabic": "",
+        "text": "Sabır ilk sarsıntı anındadır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 639,
+        "arabic": "",
+        "text": "Sizin en hayırlınız ahlakı en güzel olandır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 640,
+        "arabic": "",
+        "text": "Hayra vesile olan onu yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 641,
+        "arabic": "",
+        "text": "Yumuşak huylu olan kimsede hayır çoktur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 642,
+        "arabic": "",
+        "text": "Kardeşine gülümsemen sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 643,
+        "arabic": "",
+        "text": "Allah yumuşaklığı her işte sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 644,
+        "arabic": "",
+        "text": "İşlerin hayırlısı orta yollu olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 645,
+        "arabic": "",
+        "text": "Birlik rahmet, ayrılık azaptır.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 646,
+        "arabic": "",
+        "text": "Az sözle çok mana ifade etmek bana verildi.",
+        "source": "Müslim"
+    },
+    {
+        "id": 647,
+        "arabic": "",
+        "text": "Sükut eden kurtuldu.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 648,
+        "arabic": "",
+        "text": "Haksızlık karşısında susan dilsiz şeytandır.",
+        "source": "Kuşeyrî"
+    },
+    {
+        "id": 649,
+        "arabic": "",
+        "text": "Emanete hıyanet etmeyiniz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 650,
+        "arabic": "",
+        "text": "Sizin en şerliniz diliyle eziyet edendir.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 651,
+        "arabic": "",
+        "text": "Hiçbir baba evladına güzel ahlaktan daha iyi bir miras bırakamaz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 652,
+        "arabic": "",
+        "text": "Kim bir müslümanı sevindirirse Allah da onu sevindirir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 653,
+        "arabic": "",
+        "text": "Dua müminin miracıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 654,
+        "arabic": "",
+        "text": "İlim her müslümana farzdır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 655,
+        "arabic": "",
+        "text": "Hayır dua rızkı artırır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 656,
+        "arabic": "",
+        "text": "Mümin aldanmaz ve aldatmaz.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 657,
+        "arabic": "",
+        "text": "Zalim de olsa mazlum da olsa kardeşine yardım et.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 658,
+        "arabic": "",
+        "text": "Allah için tevazu göstereni Allah yükseltir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 659,
+        "arabic": "",
+        "text": "Kişi sevdiği ile beraberdir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 660,
+        "arabic": "",
+        "text": "Önce deveni bağla, sonra tevekkül et.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 661,
+        "arabic": "",
+        "text": "Ameller niyetlere göredir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 662,
+        "arabic": "",
+        "text": "Veren el alan elden üstündür.",
+        "source": "Müslim"
+    },
+    {
+        "id": 663,
+        "arabic": "",
+        "text": "Allah katında amellerin en sevimlisi az da olsa devamlı olanıdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 664,
+        "arabic": "",
+        "text": "Zan yapmaktan sakının, çünkü zan en büyük yalandır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 665,
+        "arabic": "",
+        "text": "Kardeşinin aynası ol, hatasını düzelt.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 666,
+        "arabic": "",
+        "text": "Emanete riayet edin.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 667,
+        "arabic": "",
+        "text": "İlim hazinedir, sormak anahtarıdır.",
+        "source": "Ebû Nuaym"
+    },
+    {
+        "id": 668,
+        "arabic": "",
+        "text": "İnsanın değeri kalbindedir.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 669,
+        "arabic": "",
+        "text": "Sabır her işin başıdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 670,
+        "arabic": "",
+        "text": "Kim rızkının artmasını istiyorsa sıla-i rahim yapsın.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 671,
+        "arabic": "",
+        "text": "Misvak ağzı temizler, Rabbi razı eder.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 672,
+        "arabic": "",
+        "text": "Cennet kılıçların gölgesi altındadır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 673,
+        "arabic": "",
+        "text": "Mümin müminin kardeşidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 674,
+        "arabic": "",
+        "text": "Nerede olursan ol Allahtan kork.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 675,
+        "arabic": "",
+        "text": "Affetmek izzeti artırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 676,
+        "arabic": "",
+        "text": "Hediyeleşin ki sevginiz artsın.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 677,
+        "arabic": "",
+        "text": "Yemekten önce elleri yıkayın.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 678,
+        "arabic": "",
+        "text": "İyilik güzel ahlaktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 679,
+        "arabic": "",
+        "text": "Allah yumuşaklığı sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 680,
+        "arabic": "",
+        "text": "Mümin aldatmaz.",
+        "source": "Müslim"
+    },
+    {
+        "id": 681,
+        "arabic": "",
+        "text": "Dua müminin silahıdır.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 682,
+        "arabic": "",
+        "text": "Temizlik imandandır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 683,
+        "arabic": "",
+        "text": "Sabır ferahlıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 684,
+        "arabic": "",
+        "text": "Zulüm karanlıktır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 685,
+        "arabic": "",
+        "text": "Haksızlığa susma.",
+        "source": "Kuşeyrî"
+    },
+    {
+        "id": 686,
+        "arabic": "",
+        "text": "Komşunla iyi geçin.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 687,
+        "arabic": "",
+        "text": "Hayır söyle ya da sus.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 688,
+        "arabic": "",
+        "text": "İlim her zaman farzdır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 689,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 690,
+        "arabic": "",
+        "text": "Dürüst tüccar cennettedir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 691,
+        "arabic": "",
+        "text": "Öfkelenince sus.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 692,
+        "arabic": "",
+        "text": "Affetmek büyüklüktür.",
+        "source": "Müslim"
+    },
+    {
+        "id": 693,
+        "arabic": "",
+        "text": "Sözünü tut.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 694,
+        "arabic": "",
+        "text": "Gülümsemek sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 695,
+        "arabic": "",
+        "text": "Mümin kardeşindir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 696,
+        "arabic": "",
+        "text": "Emanete hıyanet etme.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 697,
+        "arabic": "",
+        "text": "Hediyeleşin.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 698,
+        "arabic": "",
+        "text": "Selam verin.",
+        "source": "Müslim"
+    },
+    {
+        "id": 699,
+        "arabic": "",
+        "text": "Sabret.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 700,
+        "arabic": "",
+        "text": "Dua et.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 701,
+        "arabic": "",
+        "text": "Kim Allah'a ve ahiret gününe inanıyorsa ya hayır söylesin ya da sussun. Kim Allah'a ve ahiret gününe inanıyorsa komşusuna ikramda bulunsun. Kim Allah'a ve ahiret gününe inanıyorsa misafirine ikram etsin.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 702,
+        "arabic": "",
+        "text": "Canım kudret elinde olan Allah'a yemin ederim ki, sizler iman etmedikçe cennete giremezsiniz; birbirinizi sevmedikçe de gerçek manada iman etmiş olmazsınız.",
+        "source": "Müslim"
+    },
+    {
+        "id": 703,
+        "arabic": "",
+        "text": "Müslüman, Müslümanın kardeşidir. Ona zulmetmez, onu yardımsız bırakmaz ve onu küçük düşürmez. Takva işte buradadır; bir kimseye Müslüman kardeşini hor görmesi kötülük olarak yeter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 704,
+        "arabic": "",
+        "text": "Sizden biriniz kendisi için istediğini Müslüman kardeşi için de istemedikçe kamil manada iman etmiş olmaz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 705,
+        "arabic": "",
+        "text": "Kim bir müslümanı bir sıkıntıdan kurtarırsa, Allah da onu kıyamet gününün sıkıntılarından birinden kurtarır. Kim bir müslümanın kusurunu örterse, Allah da onun kusurunu örter.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 706,
+        "arabic": "",
+        "text": "Doğruluktan ayrılmayın. Çünkü doğruluk iyiliğe, iyilik de cennete götürür. Kişi doğru söyledikçe Allah katında sıddıklardan yazılır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 707,
+        "arabic": "",
+        "text": "Yalandan sakının. Çünkü yalan kötülüğe, kötülük de cehenneme götürür. Kişi yalan söyledikçe Allah katında yalancılardan yazılır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 708,
+        "arabic": "",
+        "text": "Münafığın alameti üçtür: Konuştuğunda yalan söyler, söz verdiğinde cayar, kendisine bir şey emanet edildiğinde hıyanet eder.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 709,
+        "arabic": "",
+        "text": "Zenginlik mal çokluğu değil, asıl zenginlik gönül zenginliğidir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 710,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 711,
+        "arabic": "",
+        "text": "Şüphesiz Allah Teâlâ sizin suretlerinize ve mallarınıza bakmaz, ancak kalplerinize ve amellerinize bakar.",
+        "source": "Müslim"
+    },
+    {
+        "id": 712,
+        "arabic": "",
+        "text": "Kim ilim öğrenmek için bir yola girerse, Allah ona cennet yolunu kolaylaştırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 713,
+        "arabic": "",
+        "text": "İyilik güzel ahlaktır. Günah ise vicdanını tırmalayan ve insanların bilmesini istemediğin şeydir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 714,
+        "arabic": "",
+        "text": "Sizin en hayırlınız Kur'an'ı öğrenen ve öğretendir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 715,
+        "arabic": "",
+        "text": "İman yetmiş küsur şubedir. En üstünü 'Lâ ilâhe illâllah' demek, en aşağısı yoldaki engeli kaldırmaktır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 716,
+        "arabic": "",
+        "text": "Dünya müminin zindanı, kafirin ise cennetidir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 717,
+        "arabic": "",
+        "text": "Kolaylaştırınız, zorlaştırmayınız; müjdeleyiniz, nefret ettirmeyiniz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 718,
+        "arabic": "",
+        "text": "Küçüğümüze merhamet etmeyen, büyüğümüze saygı göstermeyen bizden değildir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 719,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 720,
+        "arabic": "",
+        "text": "İşçiye ücretini teri kurumadan veriniz.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 721,
+        "arabic": "",
+        "text": "Hasetten sakınınız. Çünkü haset, ateşin odunu yediği gibi iyilikleri yer bitirir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 722,
+        "arabic": "",
+        "text": "Cennet annelerin ayakları altındadır.",
+        "source": "Nesâî"
+    },
+    {
+        "id": 723,
+        "arabic": "",
+        "text": "Dua, ibadetin özüdür.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 724,
+        "arabic": "",
+        "text": "Allah güzeldir, güzelliği sever.",
+        "source": "Müslim"
+    },
+    {
+        "id": 725,
+        "arabic": "",
+        "text": "Nerede olursan ol Allah'tan kork. Kötülüğün peşinden hemen bir iyilik yap ki onu silsin.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 726,
+        "arabic": "",
+        "text": "Sabır, ilk sarsıntı anındadır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 727,
+        "arabic": "",
+        "text": "Güzel söz sadakadır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 728,
+        "arabic": "",
+        "text": "Selamı aranızda yayın.",
+        "source": "Müslim"
+    },
+    {
+        "id": 729,
+        "arabic": "",
+        "text": "Hediyeleşin ki birbirinizi sevesiniz.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 730,
+        "arabic": "",
+        "text": "Gülümsemen senin için bir sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 731,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ahlakı en güzel olanınızdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 732,
+        "arabic": "",
+        "text": "Veren el, alan elden daha üstündür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 733,
+        "arabic": "",
+        "text": "Kim bir hayra delalet ederse, ona o hayrı işleyenin ecri kadar sevap verilir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 734,
+        "arabic": "",
+        "text": "Mazlumun bedduasından sakın! Çünkü onunla Allah arasında hiçbir perde yoktur.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 735,
+        "arabic": "",
+        "text": "Akrabayı ziyaret rızkı genişletir, ömrü uzatır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 736,
+        "arabic": "",
+        "text": "Temizlik imanın yarısıdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 737,
+        "arabic": "",
+        "text": "Utanmıyorsan dilediğini yap!",
+        "source": "Buhârî"
+    },
+    {
+        "id": 738,
+        "arabic": "",
+        "text": "Kıyamet gününde kulun ilk hesaba çekileceği ameli namazıdır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 739,
+        "arabic": "",
+        "text": "Komşusu açken tok yatan bizden değildir.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 740,
+        "arabic": "",
+        "text": "Mümin müminin aynasıdır.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 741,
+        "arabic": "",
+        "text": "Allah Teâlâ yumuşak huyludur, her işte yumuşaklığı sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 742,
+        "arabic": "",
+        "text": "Dürüst ve güvenilir tüccar, peygamberler, sıddıklar ve şehitlerle beraberdir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 743,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ailesine karşı en hayırlı olanınızdır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 744,
+        "arabic": "",
+        "text": "İlim talep etmek her Müslümana farzdır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 745,
+        "arabic": "",
+        "text": "Yumuşak huyluluk girdiği yeri güzelleştirir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 746,
+        "arabic": "",
+        "text": "Allah için tevazu göstereni Allah yükseltir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 747,
+        "arabic": "",
+        "text": "Sabır aydınlıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 748,
+        "arabic": "",
+        "text": "Zulüm, kıyamet gününde karanlıklardır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 749,
+        "arabic": "",
+        "text": "İnsanlara teşekkür etmeyen, Allah'a da şükretmiş olmaz.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 750,
+        "arabic": "",
+        "text": "Dua müminin silahıdır.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 751,
+        "arabic": "",
+        "text": "Sükut eden kurtuldu.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 752,
+        "arabic": "",
+        "text": "Yemekten önce ve sonra elleri yıkamak yemeğin bereketidir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 753,
+        "arabic": "",
+        "text": "Misvak kullanmak ağız temizliğine ve Allah'ın rızasına vesiledir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 754,
+        "arabic": "",
+        "text": "İşlerin en hayırlısı orta yollu olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 755,
+        "arabic": "",
+        "text": "Sıla-i rahmi kesen cennete giremez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 756,
+        "arabic": "",
+        "text": "Mümin bir delikten iki defa ısırılmaz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 757,
+        "arabic": "",
+        "text": "Affetmek kulun şerefini artırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 758,
+        "arabic": "",
+        "text": "Zandan sakının. Çünkü zan, sözlerin en yalanıdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 759,
+        "arabic": "",
+        "text": "Her dinin bir ahlakı vardır, İslam'ın ahlakı hayadır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 760,
+        "arabic": "",
+        "text": "Gerçek mücahit, nefsiyle cihat edendir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 761,
+        "arabic": "",
+        "text": "Önce deveni bağla, sonra tevekkül et.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 762,
+        "arabic": "",
+        "text": "Kişi dostunun dini üzeredir. Bu yüzden kiminle dostluk ettiğine baksın.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 763,
+        "arabic": "",
+        "text": "Hayra vesile olan hayrı yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 764,
+        "arabic": "",
+        "text": "Haksızlık karşısında susan dilsiz şeytandır.",
+        "source": "Kuşeyrî"
+    },
+    {
+        "id": 765,
+        "arabic": "",
+        "text": "Allah Teâlâ her işte nezaketi sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 766,
+        "arabic": "",
+        "text": "Dürüst tüccar nebiler ve şehitlerle beraberdir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 767,
+        "arabic": "",
+        "text": "Güneş batıdan doğmadan önce tövbe kapısı açıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 768,
+        "arabic": "",
+        "text": "Mümin aldanmaz ve aldatmaz.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 769,
+        "arabic": "",
+        "text": "Emanete hıyanet etmeyiniz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 770,
+        "arabic": "",
+        "text": "Selamı yayınız ki sevginiz artsın.",
+        "source": "Müslim"
+    },
+    {
+        "id": 771,
+        "arabic": "",
+        "text": "Sabır her işin anahtarıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 772,
+        "arabic": "",
+        "text": "Az sözle çok mana ifade etmek bana verildi.",
+        "source": "Müslim"
+    },
+    {
+        "id": 773,
+        "arabic": "",
+        "text": "Kıyamet günü terazide en ağır gelecek şey güzel ahlaktır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 774,
+        "arabic": "",
+        "text": "Her kim bir ağaç dikerse, meyvesi kadar ona sevap yazılır.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 775,
+        "arabic": "",
+        "text": "Haya bütünüyle hayırdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 776,
+        "arabic": "",
+        "text": "Birlik rahmettir, ayrılık azaptır.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 777,
+        "arabic": "",
+        "text": "Öfkelendiğin zaman sus.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 778,
+        "arabic": "",
+        "text": "Allah her hak sahibine hakkını vermiştir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 779,
+        "arabic": "",
+        "text": "Misafir rızkıyla gelir.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 780,
+        "arabic": "",
+        "text": "Yalan rızkın bereketini giderir.",
+        "source": "Ebû Şeyh"
+    },
+    {
+        "id": 781,
+        "arabic": "",
+        "text": "İnsana her duyduğunu söylemesi yalan olarak yeter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 782,
+        "arabic": "",
+        "text": "Şüpheli şeyleri bırak, şüphesiz olanlara bak.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 783,
+        "arabic": "",
+        "text": "Sizin en şerliniz, diliyle eziyet edendir.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 784,
+        "arabic": "",
+        "text": "En hayırlı arkadaş, arkadaşına iyi davranandır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 785,
+        "arabic": "",
+        "text": "İlim hazinedir, sormak anahtarıdır.",
+        "source": "Ebû Nuaym"
+    },
+    {
+        "id": 786,
+        "arabic": "",
+        "text": "Komşu hakkı Allah katında büyüktür.",
+        "source": "Müslim"
+    },
+    {
+        "id": 787,
+        "arabic": "",
+        "text": "Mümin müminle bir vücut gibidir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 788,
+        "arabic": "",
+        "text": "Önce arkadaş, sonra yol.",
+        "source": "Hatîb"
+    },
+    {
+        "id": 789,
+        "arabic": "",
+        "text": "Sadaka ömrü uzatır.",
+        "source": "Taberânî"
+    },
+    {
+        "id": 790,
+        "arabic": "",
+        "text": "Yumuşak huylu kimsede hayır çoktur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 791,
+        "arabic": "",
+        "text": "Affetmek büyüklüktür.",
+        "source": "Müslim"
+    },
+    {
+        "id": 792,
+        "arabic": "",
+        "text": "Dua müminin miracıdır.",
+        "source": "Deylemî"
+    },
+    {
+        "id": 793,
+        "arabic": "",
+        "text": "Veren el üstündür.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 794,
+        "arabic": "",
+        "text": "Temizlik imandandır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 795,
+        "arabic": "",
+        "text": "Sabret kurtul.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 796,
+        "arabic": "",
+        "text": "Selam verin.",
+        "source": "Müslim"
+    },
+    {
+        "id": 797,
+        "arabic": "",
+        "text": "Akrabanı kolla.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 798,
+        "arabic": "",
+        "text": "Yalan söyleme.",
+        "source": "Müslim"
+    },
+    {
+        "id": 799,
+        "arabic": "",
+        "text": "İyilik yap.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 800,
+        "arabic": "",
+        "text": "Hediyeleşin.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 801,
+        "arabic": "",
+        "text": "Allah için sevin.",
+        "source": "Müslim"
+    },
+    {
+        "id": 802,
+        "arabic": "",
+        "text": "Cennet annelerindir.",
+        "source": "Nesâî"
+    },
+    {
+        "id": 803,
+        "arabic": "",
+        "text": "Kur'an oku.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 804,
+        "arabic": "",
+        "text": "Zikret.",
+        "source": "Müslim"
+    },
+    {
+        "id": 805,
+        "arabic": "",
+        "text": "Şükret.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 806,
+        "arabic": "",
+        "text": "Sabret.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 807,
+        "arabic": "",
+        "text": "Namaz kıl.",
+        "source": "Müslim"
+    },
+    {
+        "id": 808,
+        "arabic": "",
+        "text": "Oruç tut.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 809,
+        "arabic": "",
+        "text": "Sadaka ver.",
+        "source": "Müslim"
+    },
+    {
+        "id": 810,
+        "arabic": "",
+        "text": "Doğru ol.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 811,
+        "arabic": "",
+        "text": "Dürüst ol.",
+        "source": "Müslim"
+    },
+    {
+        "id": 812,
+        "arabic": "",
+        "text": "Yardım et.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 813,
+        "arabic": "",
+        "text": "Paylaş.",
+        "source": "Müslim"
+    },
+    {
+        "id": 814,
+        "arabic": "",
+        "text": "Sev.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 815,
+        "arabic": "",
+        "text": "Say.",
+        "source": "Müslim"
+    },
+    {
+        "id": 816,
+        "arabic": "",
+        "text": "Koru.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 817,
+        "arabic": "",
+        "text": "Gözet.",
+        "source": "Müslim"
+    },
+    {
+        "id": 818,
+        "arabic": "",
+        "text": "Dinle.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 819,
+        "arabic": "",
+        "text": "Öğren.",
+        "source": "Müslim"
+    },
+    {
+        "id": 820,
+        "arabic": "",
+        "text": "Öğret.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 821,
+        "arabic": "",
+        "text": "Oku.",
+        "source": "Müslim"
+    },
+    {
+        "id": 822,
+        "arabic": "",
+        "text": "Yaz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 823,
+        "arabic": "",
+        "text": "Çalış.",
+        "source": "Müslim"
+    },
+    {
+        "id": 824,
+        "arabic": "",
+        "text": "Üret.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 825,
+        "arabic": "",
+        "text": "Helal kazan.",
+        "source": "Müslim"
+    },
+    {
+        "id": 826,
+        "arabic": "",
+        "text": "Haramdan kaç.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 827,
+        "arabic": "",
+        "text": "Gıybet etme.",
+        "source": "Müslim"
+    },
+    {
+        "id": 828,
+        "arabic": "",
+        "text": "İftira atma.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 829,
+        "arabic": "",
+        "text": "Zulmetme.",
+        "source": "Müslim"
+    },
+    {
+        "id": 830,
+        "arabic": "",
+        "text": "Adil ol.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 831,
+        "arabic": "",
+        "text": "Eşit ol.",
+        "source": "Müslim"
+    },
+    {
+        "id": 832,
+        "arabic": "",
+        "text": "Nazik ol.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 833,
+        "arabic": "",
+        "text": "Kibar ol.",
+        "source": "Müslim"
+    },
+    {
+        "id": 834,
+        "arabic": "",
+        "text": "Yumuşak ol.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 835,
+        "arabic": "",
+        "text": "Sert olma.",
+        "source": "Müslim"
+    },
+    {
+        "id": 836,
+        "arabic": "",
+        "text": "Öfkelenme.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 837,
+        "arabic": "",
+        "text": "Sakin ol.",
+        "source": "Müslim"
+    },
+    {
+        "id": 838,
+        "arabic": "",
+        "text": "Huzurlu ol.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 839,
+        "arabic": "",
+        "text": "Mutlu et.",
+        "source": "Müslim"
+    },
+    {
+        "id": 840,
+        "arabic": "",
+        "text": "Sevindir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 841,
+        "arabic": "",
+        "text": "Müjdele.",
+        "source": "Müslim"
+    },
+    {
+        "id": 842,
+        "arabic": "",
+        "text": "Korkutma.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 843,
+        "arabic": "",
+        "text": "Nefret ettirme.",
+        "source": "Müslim"
+    },
+    {
+        "id": 844,
+        "arabic": "",
+        "text": "Barıştır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 845,
+        "arabic": "",
+        "text": "Kaynaştır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 846,
+        "arabic": "",
+        "text": "Birleştir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 847,
+        "arabic": "",
+        "text": "Ayırma.",
+        "source": "Müslim"
+    },
+    {
+        "id": 848,
+        "arabic": "",
+        "text": "Böleme.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 849,
+        "arabic": "",
+        "text": "Dürüstlük kazandırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 850,
+        "arabic": "",
+        "text": "Yalan kaybettirir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 851,
+        "arabic": "",
+        "text": "Kim bir müslümanın kusurunu dünyada örterse, Allah da onun kusurunu kıyamet gününde örter.",
+        "source": "Müslim"
+    },
+    {
+        "id": 852,
+        "arabic": "",
+        "text": "Allah Teâlâ, bir kulun yemek yedikten sonra veya bir şey içtikten sonra kendisine hamd etmesinden hoşnut olur.",
+        "source": "Müslim"
+    },
+    {
+        "id": 853,
+        "arabic": "",
+        "text": "Canım kudret elinde olan Allah'a yemin ederim ki, sizler iman etmedikçe cennete giremezsiniz; birbirinizi sevmedikçe de gerçek manada iman etmiş olmazsınız.",
+        "source": "Müslim"
+    },
+    {
+        "id": 854,
+        "arabic": "",
+        "text": "İnsanlara merhamet etmeyene Allah da merhamet etmez.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 855,
+        "arabic": "",
+        "text": "Kolaylaştırınız, zorlaştırmayınız; müjdeleyiniz, nefret ettirmeyiniz.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 856,
+        "arabic": "",
+        "text": "Şüphesiz Allah Teâlâ sizin suretlerinize ve mallarınıza bakmaz, ancak kalplerinize ve amellerinize bakar.",
+        "source": "Müslim"
+    },
+    {
+        "id": 857,
+        "arabic": "",
+        "text": "Zenginlik mal çokluğu değil, asıl zenginlik gönül zenginliğidir.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 858,
+        "arabic": "",
+        "text": "İşçiye ücretini teri kurumadan veriniz.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 859,
+        "arabic": "",
+        "text": "Hasetten sakınınız. Çünkü haset, ateşin odunu yediği gibi iyilikleri yer bitirir.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 860,
+        "arabic": "",
+        "text": "Küçüğümüze merhamet etmeyen, büyüğümüze saygı göstermeyen bizden değildir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 861,
+        "arabic": "",
+        "text": "Allah güzeldir, güzelliği sever.",
+        "source": "Müslim"
+    },
+    {
+        "id": 862,
+        "arabic": "",
+        "text": "Doğruluktan ayrılmayın. Çünkü doğruluk iyiliğe, iyilik de cennete götürür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 863,
+        "arabic": "",
+        "text": "Yalandan sakının. Çünkü yalan kötülüğe, kötülük de cehenneme götürür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 864,
+        "arabic": "",
+        "text": "İyilik güzel ahlaktır. Günah ise vicdanını tırmalayan ve insanların bilmesini istemediğin şeydir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 865,
+        "arabic": "",
+        "text": "Mümin müminin aynasıdır.",
+        "source": "Ebû Dâvud"
+    },
+    {
+        "id": 866,
+        "arabic": "",
+        "text": "İlim talep etmek her Müslümana farzdır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 867,
+        "arabic": "",
+        "text": "Nerede olursan ol Allah'tan kork. Kötülüğün peşinden hemen bir iyilik yap ki onu silsin.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 868,
+        "arabic": "",
+        "text": "Sabır aydınlıktır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 869,
+        "arabic": "",
+        "text": "Temizlik imanın yarısıdır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 870,
+        "arabic": "",
+        "text": "Dua, ibadetin özüdür.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 871,
+        "arabic": "",
+        "text": "Bizi aldatan bizden değildir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 872,
+        "arabic": "",
+        "text": "Utanmıyorsan dilediğini yap!",
+        "source": "Buhârî"
+    },
+    {
+        "id": 873,
+        "arabic": "",
+        "text": "Selamı aranızda yayın.",
+        "source": "Müslim"
+    },
+    {
+        "id": 874,
+        "arabic": "",
+        "text": "Gülümsemen senin için bir sadakadır.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 875,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, Kur'an'ı öğrenen ve öğreteninizdir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 876,
+        "arabic": "",
+        "text": "Komşusu açken tok yatan bizden değildir.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 877,
+        "arabic": "",
+        "text": "Veren el, alan elden daha üstündür.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 878,
+        "arabic": "",
+        "text": "Allah için tevazu göstereni Allah yükseltir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 879,
+        "arabic": "",
+        "text": "Sabır, ilk sarsıntı anındadır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 880,
+        "arabic": "",
+        "text": "Güzel söz sadakadır.",
+        "source": "Buhârî, Müslim"
+    },
+    {
+        "id": 881,
+        "arabic": "",
+        "text": "İşlerin en hayırlısı orta yollu olanıdır.",
+        "source": "Beyhakî"
+    },
+    {
+        "id": 882,
+        "arabic": "",
+        "text": "Hediyeleşin ki birbirinizi sevesiniz.",
+        "source": "Muvatta"
+    },
+    {
+        "id": 883,
+        "arabic": "",
+        "text": "Yumuşak huyluluk girdiği yeri güzelleştirir.",
+        "source": "Müslim"
+    },
+    {
+        "id": 884,
+        "arabic": "",
+        "text": "Akrabayı ziyaret rızkı genişletir, ömrü uzatır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 885,
+        "arabic": "",
+        "text": "Sükut eden kurtuldu.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 886,
+        "arabic": "",
+        "text": "Zulüm, kıyamet gününde karanlıklardır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 887,
+        "arabic": "",
+        "text": "Dua müminin silahıdır.",
+        "source": "Hâkim"
+    },
+    {
+        "id": 888,
+        "arabic": "",
+        "text": "Sizin en hayırlınız, ahlakı en güzel olanınızdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 889,
+        "arabic": "",
+        "text": "Her dinin bir ahlakı vardır, İslam'ın ahlakı hayadır.",
+        "source": "İbn Mâce"
+    },
+    {
+        "id": 890,
+        "arabic": "",
+        "text": "Affetmek kulun şerefini artırır.",
+        "source": "Müslim"
+    },
+    {
+        "id": 891,
+        "arabic": "",
+        "text": "Gerçek mücahit, nefsiyle cihat edendir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 892,
+        "arabic": "",
+        "text": "Yalan rızkın bereketini giderir.",
+        "source": "Ebû Şeyh"
+    },
+    {
+        "id": 893,
+        "arabic": "",
+        "text": "Misvak kullanmak ağız temizliğine ve Allah'ın rızasına vesiledir.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 894,
+        "arabic": "",
+        "text": "Zandan sakının. Çünkü zan, sözlerin en yalanıdır.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 895,
+        "arabic": "",
+        "text": "Hayra vesile olan hayrı yapan gibidir.",
+        "source": "Tirmizî"
+    },
+    {
+        "id": 896,
+        "arabic": "",
+        "text": "Allah Teâlâ her işte nezaketi sever.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 897,
+        "arabic": "",
+        "text": "Haksızlık karşısında susan dilsiz şeytandır.",
+        "source": "Kuşeyrî"
+    },
+    {
+        "id": 898,
+        "arabic": "",
+        "text": "Öfkelendiğin zaman sus.",
+        "source": "Ahmed b. Hanbel"
+    },
+    {
+        "id": 899,
+        "arabic": "",
+        "text": "Emanete hıyanet etmeyiniz.",
+        "source": "Buhârî"
+    },
+    {
+        "id": 900,
+        "arabic": "",
+        "text": "İnsana her duyduğunu söylemesi yalan olarak yeter.",
+        "source": "Müslim"
+    }
+]

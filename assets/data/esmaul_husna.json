@@ -1,0 +1,681 @@
+[
+    {
+        "id": 1,
+        "arabic": "الله",
+        "turkish": "ALLAH",
+        "meaning": "Eşi benzeri olmayan tek ilah",
+        "dua": "Sensin Allah; Sanadır kulluğum, Sendedir çarem, Seninledir varlığım. Seni arar ruhum."
+    },
+    {
+        "id": 2,
+        "arabic": "الرحمن",
+        "turkish": "ER-RAHMÂN",
+        "meaning": "Dünyada her canlıya merhamet eden",
+        "dua": "Ey varlığı rahmetiyle kuşatan! Ayırt etmeden besleyen Rahmân! Rahmetine muhtacım, beni merhametinden uzak tutma."
+    },
+    {
+        "id": 3,
+        "arabic": "الرحيم",
+        "turkish": "ER-RAHÎM",
+        "meaning": "Ahirette müminlere şefkat eden",
+        "dua": "Ey merhameti sonsuz olan! Sevdiklerini ebedi saadete erdiren Rahîm! Beni Senin sevginden mahrum eyleme."
+    },
+    {
+        "id": 4,
+        "arabic": "الملك",
+        "turkish": "EL-MELİK",
+        "meaning": "Mülkün gerçek sahibi",
+        "dua": "Ey mülkün tek sahibi! Sensiz sahipsizim, Sensiz kimsesizim. Beni Senin kapından başka kapıya gönderme."
+    },
+    {
+        "id": 5,
+        "arabic": "القدوس",
+        "turkish": "EL-KUDDÛS",
+        "meaning": "Her türlü eksiklikten uzak",
+        "dua": "Ey kusursuz olan, her şeyi temizleyen! Kalbimi masivadan (Senden gayrısından) temizle, ruhumu arındır."
+    },
+    {
+        "id": 6,
+        "arabic": "السلام",
+        "turkish": "ES-SELÂM",
+        "meaning": "Esenlik veren, selamete çıkaran",
+        "dua": "Ey barışın ve huzurun kaynağı! Korktuklarımdan emin ele, gönlüme Senin selamının ferahlığını indir."
+    },
+    {
+        "id": 7,
+        "arabic": "المؤمن",
+        "turkish": "EL-MÜ'MİN",
+        "meaning": "Emniyet veren, güven sağlayan",
+        "dua": "Ey iman ışığını kalbime yakan! Beni korkularımın karanlığında bırakma, Sana olan güvenimi daim eyle."
+    },
+    {
+        "id": 8,
+        "arabic": "المهيمن",
+        "turkish": "EL-MÜHEYMİN",
+        "meaning": "Gözeten ve koruyan",
+        "dua": "Ey her anımı gören, beni benden daha iyi kollayan! Beni nefsimin eline bırakma, hıfzınla kuşat."
+    },
+    {
+        "id": 9,
+        "arabic": "العزيز",
+        "turkish": "EL-AZÎZ",
+        "meaning": "İzzet sahibi, mağlup edilemez",
+        "dua": "Ey her şeye galip, izzeti sonsuz olan! Beni Senden başkasına boyun eğdirme, Senin kapında kul olmakla beni aziz kıl."
+    },
+    {
+        "id": 10,
+        "arabic": "الجبار",
+        "turkish": "EL-CEBBÂR",
+        "meaning": "Dilediğini yapan, eksikleri tamamlayan",
+        "dua": "Ey kırık kalpleri onaran, dilediğini zorla da olsa yaptıran! Benim de kırıklarımı sar, irademi rızana bağla."
+    },
+    {
+        "id": 11,
+        "arabic": "المتكبر",
+        "turkish": "EL-MÜTEKEBBİR",
+        "meaning": "Büyüklükte eşi olmayan",
+        "dua": "Ey azameti her şeyi kuşatan! Kibrin karanlığından kalbimi koru, Senin büyüklüğün önünde beni secdeyle yücelt."
+    },
+    {
+        "id": 12,
+        "arabic": "الخالق",
+        "turkish": "EL-HÂLIK",
+        "meaning": "Yaratan, yoktan var eden",
+        "dua": "Ey her şeyi yokluğun karanlığından çıkaran! Beni en güzel biçimde yarattın; kalbimi de marifetinle ihya eyle."
+    },
+    {
+        "id": 13,
+        "arabic": "البارئ",
+        "turkish": "EL-BÂRİ",
+        "meaning": "Kusursuzca var eden",
+        "dua": "Ey her yarattığına bir ahenk veren! Varlığımı Senin rızanla uyumlu kıl, ruhumu dağınıklıktan kurtar."
+    },
+    {
+        "id": 14,
+        "arabic": "المصور",
+        "turkish": "EL-MUSAVVİR",
+        "meaning": "Şekil ve suret veren",
+        "dua": "Ey her yüze ayrı mana, her çiçeğe ayrı renk nakşeden! Suretimi güzel kıldığın gibi, sîretimi de güzel eyle."
+    },
+    {
+        "id": 15,
+        "arabic": "الغفار",
+        "turkish": "EL-GAFFÂR",
+        "meaning": "Günahları çokça affeden",
+        "dua": "Ey günahları defalarca örten! Utancımdan yüzümü yerden kaldıramadığımda, rahmetinle ayıplarımı ört."
+    },
+    {
+        "id": 16,
+        "arabic": "القهار",
+        "turkish": "EL-KAHHÂR",
+        "meaning": "Her şeye galip gelen",
+        "dua": "Ey mutlak güç sahibi! Nefsiminin bitmek bilmeyen arzularını kahret, beni Sensizliğin esaretinden kurtar."
+    },
+    {
+        "id": 17,
+        "arabic": "الوهاب",
+        "turkish": "EL-VEHHÂB",
+        "meaning": "Karşılıksız bolca veren",
+        "dua": "Ey istemeden veren, verdiğini geri almayan! Bana Seni bulmanın sevincini ve en büyük hediyen olan imanı bağışla."
+    },
+    {
+        "id": 18,
+        "arabic": "الرزاق",
+        "turkish": "ER-REZZÂK",
+        "meaning": "Rızık veren, besleyen",
+        "dua": "Ey her canlının azığını taksim eden! Beni Senden başkasının eline bakıtma; ruhumu da zikrinle rızıklandır."
+    },
+    {
+        "id": 19,
+        "arabic": "الفتاح",
+        "turkish": "EL-FETTÂH",
+        "meaning": "Kapıları açan, çözen",
+        "dua": "Ey düğümleri çözen, kapalı kapıları açan! Kalbimi imana, zihnimi hakikate, ömrümü hayırlı kapılara aç."
+    },
+    {
+        "id": 20,
+        "arabic": "العليم",
+        "turkish": "EL-ALÎM",
+        "meaning": "Her şeyi en ince ayrıntısıyla bilen",
+        "dua": "Ey kalbimden geçen fısıltıları bilen! Cehaletimi ilminle gider, beni rızanı bildiğim yollarda yürüt."
+    },
+    {
+        "id": 21,
+        "arabic": "القابض",
+        "turkish": "EL-KÂBİD",
+        "meaning": "Sıkan, daraltan",
+        "dua": "Ey dilediğinde ruhları daraltan! Ruhumun daraldığı anlarda genişliğini lütfet, beni Senden başkasına muhtaç etme."
+    },
+    {
+        "id": 22,
+        "arabic": "الباسط",
+        "turkish": "EL-BÂSIT",
+        "meaning": "Açan, genişleten",
+        "dua": "Ey dilediğine rızkı ve huzuru bolca veren! Kalbimi Senin sevginle genişlet, ruhuma inşirah ver."
+    },
+    {
+        "id": 23,
+        "arabic": "الخافض",
+        "turkish": "EL-HÂFID",
+        "meaning": "Alçaltan, aşağı indiren",
+        "dua": "Ey kibirlenenleri alçaltan! Beni gururun uçurumlarından koru, huzurunda tevazu ile duranlardan eyle."
+    },
+    {
+        "id": 24,
+        "arabic": "الرافع",
+        "turkish": "ER-RÂFİ",
+        "meaning": "Yükselten, yücelten",
+        "dua": "Ey dilediğini katına yükselten! Kalbimi dünyevi hırslardan kurtarıp Senin rızanın yüksekliğine ulaştır."
+    },
+    {
+        "id": 25,
+        "arabic": "المعز",
+        "turkish": "EL-MUİZZ",
+        "meaning": "İzzet veren, aziz kılan",
+        "dua": "Ey dilediğini şereflendiren! Beni Senin yolunda olduğum için izzetli kıl, Senin sevginle beni aziz eyle."
+    },
+    {
+        "id": 26,
+        "arabic": "المذل",
+        "turkish": "EL-MÜZİLL",
+        "meaning": "Zelil kılan, alçaltan",
+        "dua": "Ey haddini aşanları hüsrana uğratan! Beni nefsimin elinde zelil etme, Seni bulmakla beni şereflendir."
+    },
+    {
+        "id": 27,
+        "arabic": "السميع",
+        "turkish": "ES-SEMÎ",
+        "meaning": "Her şeyi işiten",
+        "dua": "Ey sessiz çığlıklarımı duyan, kalbimin fısıltılarına icabet eden! Seni anan dillerimizi, Sana yalvaran kalplerimizi cevapsız bırakma."
+    },
+    {
+        "id": 28,
+        "arabic": "البصير",
+        "turkish": "EL-BASÎR",
+        "meaning": "Her şeyi gören",
+        "dua": "Ey karanlık gecede, kara taşın üzerindeki kara karıncayı gören! Amellerimi Senin rızanla güzelleştir, beni Seni görüyormuşçasına yaşat."
+    },
+    {
+        "id": 29,
+        "arabic": "الحكم",
+        "turkish": "EL-HAKEM",
+        "meaning": "Mutlak hakim, hüküm veren",
+        "dua": "Ey hükmüne karşı durulamaz Hakem! Kararlarımı Senin rızana ram eyle, ahirette lehime hükmedilenlerden eyle."
+    },
+    {
+        "id": 30,
+        "arabic": "العدل",
+        "turkish": "EL-ADL",
+        "meaning": "Tam adaletli olan",
+        "dua": "Ey zerre kadar haksızlık etmeyen! Beni adaletinle değil, fazlın ve rahmetinle yargıla Rabbim."
+    },
+    {
+        "id": 31,
+        "arabic": "اللطيف",
+        "turkish": "EL-LATÎF",
+        "meaning": "En ince işleri bilen, lütfeden",
+        "dua": "Ey lütfu hücrelerime kadar sızan! Görünmez kaza ve belalardan, latif isminin tecellisiyle beni koru."
+    },
+    {
+        "id": 32,
+        "arabic": "الخبير",
+        "turkish": "EL-HABÎR",
+        "meaning": "Her şeyden haberdar olan",
+        "dua": "Ey kalbimin gizli dehlizlerinden haberdar olan! Günahlarımın karanlığını haberim olmadan hayra tebdil eyle."
+    },
+    {
+        "id": 33,
+        "arabic": "الحليم",
+        "turkish": "EL-HALÎM",
+        "meaning": "Cezada acele etmeyen",
+        "dua": "Ey isyanıma rağmen bana mühlet veren! Yumuşaklığınla kalbimi erit, beni de kullarına karşı halîm eyle."
+    },
+    {
+        "id": 34,
+        "arabic": "العظيم",
+        "turkish": "EL-AZÎM",
+        "meaning": "Pek yüce, azametli",
+        "dua": "Ey büyüklüğü akılları durduran! Senin azametin karşısında eğiliyorum; beni Senden başkasına boyun eğdirme."
+    },
+    {
+        "id": 35,
+        "arabic": "الغفور",
+        "turkish": "EL-GAFÛR",
+        "meaning": "Çok bağışlayan",
+        "dua": "Ey mağfireti denizler kadar geniş olan! Kirli ellerimi rahmet kapına uzattım; beni affınla temizle."
+    },
+    {
+        "id": 36,
+        "arabic": "الشكور",
+        "turkish": "EŞ-ŞEKÛR",
+        "meaning": "Şükre karşılık veren",
+        "dua": "Ey az amele çok mükafat veren! Verdiğin nimetlere karşı şükrümü artır, beni şükredenlerden eyle."
+    },
+    {
+        "id": 37,
+        "arabic": "العلي",
+        "turkish": "EL-ALİYY",
+        "meaning": "En yüce, çok yüksek",
+        "dua": "Ey her şeyden üstün olan! Ruhumu alçak dünya heveslerinden kurtar, Senin katında makamı yüce olanlardan eyle."
+    },
+    {
+        "id": 38,
+        "arabic": "الكبير",
+        "turkish": "EL-KEBÎR",
+        "meaning": "Mutlak büyük",
+        "dua": "Ey büyüklüğüne sınır olmayan! Kalbimdeki sahte büyükleri yık, sadece Senin büyüklüğünü bilmeyi nasip eyle."
+    },
+    {
+        "id": 39,
+        "arabic": "الحفيظ",
+        "turkish": "EL-HAFÎZ",
+        "meaning": "Koruyucu, muhafaza eden",
+        "dua": "Ey evreni düşmekten, beni yoldan çıkmaktan koruyan! İmanımı ve canımı Senin himayene emanet ediyorum."
+    },
+    {
+        "id": 40,
+        "arabic": "المقيت",
+        "turkish": "EL-MUKÎT",
+        "meaning": "Her canlının rızkını veren",
+        "dua": "Ey her ihtiyaca kefil olan! Maddi ve manevi rızkımı eksik etme, kalbimi Seni tanımakla doyur."
+    },
+    {
+        "id": 41,
+        "arabic": "الحسيب",
+        "turkish": "EL-HASÎB",
+        "meaning": "Hesap gören, kafi olan",
+        "dua": "Ey her şeye yeten, hesabı en süratli gören! Zor günümde Sen bana yetersin; hesabımı kolay eyle."
+    },
+    {
+        "id": 42,
+        "arabic": "الجليل",
+        "turkish": "EL-CELÎL",
+        "meaning": "Azamet ve celal sahibi",
+        "dua": "Ey heybeti karşısında her şeyin titrediği! Celalinle bizi terbiye eyle, cemalinle bizi sevindir."
+    },
+    {
+        "id": 43,
+        "arabic": "الكريم",
+        "turkish": "EL-KERÎM",
+        "meaning": "Çok cömert, ihsanı bol",
+        "dua": "Ey istemeden veren, keremi sonsuz olan! Kereminden bana hayırlı kapılar aç, beni cömertliğinle kuşat."
+    },
+    {
+        "id": 44,
+        "arabic": "الرقيب",
+        "turkish": "ER-RAKÎB",
+        "meaning": "Her an gözeten",
+        "dua": "Ey bakışları üzerimden bir an bile eksilmeyen! Beni Senin gözetiminde olduğumun bilinciyle yaşat."
+    },
+    {
+        "id": 45,
+        "arabic": "المجيب",
+        "turkish": "EL-MUCÎB",
+        "meaning": "Duaları kabul eden",
+        "dua": "Ey 'Bana dua edin icabet edeyim' buyuran! Kırık kalbimle yaptığım duaları, rahmetinle kabul eyle."
+    },
+    {
+        "id": 46,
+        "arabic": "الواسع",
+        "turkish": "EL-VÂSİ",
+        "meaning": "İlmi ve rahmeti geniş",
+        "dua": "Ey darlığı genişliğe çeviren! Daralan göğsüme inşirah ver, rahmetinin genişliğinde beni ferahlat."
+    },
+    {
+        "id": 47,
+        "arabic": "الحكيم",
+        "turkish": "EL-HAKÎM",
+        "meaning": "Her işi hikmetli olan",
+        "dua": "Ey her yarattığında bin bir hikmet gizleyen! Şer sandıklarımı hayra çevir, hikmetini kalbime ilham eyle."
+    },
+    {
+        "id": 48,
+        "arabic": "الودود",
+        "turkish": "EL-VEDÛD",
+        "meaning": "Sevmeye layık, çok seven",
+        "dua": "Ey sevmeyi kalbime koyan, kullarını çok seven! Seni sevmeyi ve Senin sevdiklerini sevmeyi bana nasip eyle."
+    },
+    {
+        "id": 49,
+        "arabic": "المجيد",
+        "turkish": "EL-MECÎD",
+        "meaning": "Şanı yüce, kadr-ü kıymeti bol",
+        "dua": "Ey şanı her dilde anılan! Beni Senin rızanla şereflendir, adımı Senin sevdiğin kulların arasına yaz."
+    },
+    {
+        "id": 50,
+        "arabic": "الباعث",
+        "turkish": "EL-BÂİS",
+        "meaning": "Ölüleri dirilten, peygamber gönderen",
+        "dua": "Ey ölmüş toprakları dirilttiği gibi kalpleri dirilten! Mahşer günü beni nurunla dirilt, beni utandırma."
+    },
+    {
+        "id": 51,
+        "arabic": "الشهيد",
+        "turkish": "EŞ-ŞEHÎD",
+        "meaning": "Her şeye şahit olan",
+        "dua": "Ey her anıma şahit olan! Seni unuttuğum anlarda bile beni izleyen Şehîd! Amellerimi ihlasla süsle, beni huzurunda mahcup etme."
+    },
+    {
+        "id": 52,
+        "arabic": "الحق",
+        "turkish": "EL-HAKK",
+        "meaning": "Varlığı hiç değişmeyen",
+        "dua": "Ey tek gerçek, batılı yok eden Hakk! Kalbimi hakikate aç, beni Senden uzaklaştıran sahte sevdalardan kurtar."
+    },
+    {
+        "id": 53,
+        "arabic": "الوكيل",
+        "turkish": "EL-VEKÎL",
+        "meaning": "Kendine güvenenlerin işini bitiren",
+        "dua": "Ey işlerimi kendisine bıraktığımda en güzel sonuca ulaştıran Vekîl! Sana tevekkül ettim, beni çaresiz bırakma."
+    },
+    {
+        "id": 54,
+        "arabic": "القوي",
+        "turkish": "EL-KAVİYY",
+        "meaning": "Pek güçlü",
+        "dua": "Ey gücü her şeye yeten! Zayıflığımı Senin kudretinle gider, beni nefsimin karşısında güçsüz bırakma."
+    },
+    {
+        "id": 55,
+        "arabic": "المتين",
+        "turkish": "EL-METÎN",
+        "meaning": "Çok dayanıklı, sarsılmaz",
+        "dua": "Ey sarsılmaz kudret sahibi! İmanımı kavi kıl, beni hak yolda sabit kadem eyle."
+    },
+    {
+        "id": 56,
+        "arabic": "الولي",
+        "turkish": "EL-VELİYY",
+        "meaning": "Müminlere dost ve yardımcı",
+        "dua": "Ey gerçek dost! Kimsesiz kaldığımda 'Yalnız değilsin' diyen Veliyy! Beni dostluğuna kabul et, Seni bulan her şeyi bulmuştur."
+    },
+    {
+        "id": 57,
+        "arabic": "الحميد",
+        "turkish": "EL-HAMÎD",
+        "meaning": "Her türlü övgüye layık",
+        "dua": "Ey her dilde övülen, hamdın tek mercii! Dilimi zikrinle, kalbimi şükrünle süsle."
+    },
+    {
+        "id": 58,
+        "arabic": "المحصي",
+        "turkish": "EL-MUHSÎ",
+        "meaning": "Her şeyin sayısını bilen",
+        "dua": "Ey her zerreyi tek tek sayan! Hesabımı kolay eyle, günahlarımı rahmet deryanda yok et."
+    },
+    {
+        "id": 59,
+        "arabic": "المبدئ",
+        "turkish": "EL-MÜBDİ",
+        "meaning": "Örneksiz, yoktan yaratan",
+        "dua": "Ey her şeyi ilk kez var eden! Kalbimde Senin sevgini yeniden başlat, ruhumu taptaze bir imanla dirilt."
+    },
+    {
+        "id": 60,
+        "arabic": "المعيد",
+        "turkish": "EL-MUÎD",
+        "meaning": "Yeniden dirilten",
+        "dua": "Ey ölümü hayata, sonu başlangıca çeviren! Beni huzuruna tertemiz bir dönüşle döndür."
+    },
+    {
+        "id": 61,
+        "arabic": "المحيي",
+        "turkish": "EL-MUHYÎ",
+        "meaning": "Can veren, dirilten",
+        "dua": "Ey ölü kalpleri zikriyle dirilten Muhyî! Gönlüme hayat ver, beni ebedi saadetle yaşat."
+    },
+    {
+        "id": 62,
+        "arabic": "المميت",
+        "turkish": "EL-MÜMÎT",
+        "meaning": "Can alan, öldüren",
+        "dua": "Ey ölümü de hayat gibi güzel yaratan! Son nefesimde dilimi kelime-i şehadetle, kalbimi huzurunla süsle."
+    },
+    {
+        "id": 63,
+        "arabic": "الحي",
+        "turkish": "EL-HAYY",
+        "meaning": "Ebedi hayat sahibi",
+        "dua": "Ey ölmez ve sönmez hayatın kaynağı! Hayatımı Senin yolunda harcamayı, huzurunda diri kalmayı nasip eyle."
+    },
+    {
+        "id": 64,
+        "arabic": "القيوم",
+        "turkish": "EL-KAYYÛM",
+        "meaning": "Her şeyi ayakta tutan",
+        "dua": "Ey gökleri ve yerleri kudretiyle ayakta tutan! Beni Sensizliğin boşluğuna düşürme, varlığımı rahmetinle tut."
+    },
+    {
+        "id": 65,
+        "arabic": "الواجد",
+        "turkish": "EL-VÂCİD",
+        "meaning": "İstediğini bulan",
+        "dua": "Ey hiçbir şeye muhtaç olmayan! Beni Senden uzaklaşınca kaybolanlardan değil, Seni bulunca kendini bulanlardan eyle."
+    },
+    {
+        "id": 66,
+        "arabic": "الماجد",
+        "turkish": "EL-MÂCİD",
+        "meaning": "Şanı yüce, keremi bol",
+        "dua": "Ey cömertliği sonsuz olan! Beni iyiliklerinle şereflendir, Senin katında makbul olanlardan eyle."
+    },
+    {
+        "id": 67,
+        "arabic": "الواحد",
+        "turkish": "EL-VÂHİD",
+        "meaning": "Tek olan, ortağı olmayan",
+        "dua": "Ey parçalara bölünmez birliğin sahibi! Kalbimdeki putları yık, beni sadece Sana kul olma hürriyetine erdir."
+    },
+    {
+        "id": 68,
+        "arabic": "الصمد",
+        "turkish": "ES-SAMED",
+        "meaning": "Hiçbir şeye muhtaç olmayan",
+        "dua": "Ey herkesin muhtaç olduğu, kimseye muhtaç olmayan! İhtiyaçlarımı Senden başkasına arz ettirme."
+    },
+    {
+        "id": 69,
+        "arabic": "القادر",
+        "turkish": "EL-KÂDİR",
+        "meaning": "Dilediğini yapmaya gücü yeten",
+        "dua": "Ey 'Ol' deyince olduran! Kalbimdeki hayırlı dualarıma 'Ol' de, beni acizliğimden kurtar."
+    },
+    {
+        "id": 70,
+        "arabic": "المقتدر",
+        "turkish": "EL-MUKTEDİR",
+        "meaning": "Gücü her şeye hakim olan",
+        "dua": "Ey her hükmü geçerli olan! İrademi Senin rızanla birleştir, beni Senin çizdiğin kaderin güzelliğine razı et."
+    },
+    {
+        "id": 71,
+        "arabic": "المقدم",
+        "turkish": "EL-MUKADDİM",
+        "meaning": "Dilediğini öne alan",
+        "dua": "Ey dilediğini yücelten! Beni rızana giden yolda öne al, hayırlarda yarışanlardan eyle."
+    },
+    {
+        "id": 72,
+        "arabic": "المؤخر",
+        "turkish": "EL-MUAHHİR",
+        "meaning": "Dilediğini geriye bırakan",
+        "dua": "Ey kötülüğü ve şerri benden uzaklaştıran! Beni Senin yolundan geri bırakma."
+    },
+    {
+        "id": 73,
+        "arabic": "الأول",
+        "turkish": "EL-EVVEL",
+        "meaning": "Başlangıcı olmayan",
+        "dua": "Ey her şeyden önce olan! Başlangıcım Sendedir, kalbimin ilk aşkı Sen ol."
+    },
+    {
+        "id": 74,
+        "arabic": "الآخر",
+        "turkish": "EL-ÂHİR",
+        "meaning": "Sonu olmayan",
+        "dua": "Ey her şey yok olduğunda baki kalan! Son durağım Sensin, beni son nefeste Sensiz bırakma."
+    },
+    {
+        "id": 75,
+        "arabic": "الظاهر",
+        "turkish": "EZ-ZÂHİR",
+        "meaning": "Varlığı aşikar olan",
+        "dua": "Ey her eserde mührü görünen! Gözlerime Seni her şeyde görme basireti ver."
+    },
+    {
+        "id": 76,
+        "arabic": "الباطن",
+        "turkish": "EL-BÂTIN",
+        "meaning": "Mahiyeti gizli olan",
+        "dua": "Ey her şeyin iç yüzünü bilen, gizliyi ayan eyleyen! Kalbimin en gizli yaralarını Sen iyileştir, beni benden daha iyi bilen Sensin."
+    },
+    {
+        "id": 77,
+        "arabic": "الوالي",
+        "turkish": "EL-VÂLÎ",
+        "meaning": "Kâinatı idare eden",
+        "dua": "Ey kâinatın dizginlerini elinde tutan! Ömrümü Senin idarene teslim ettim; beni sahipsiz, beni rızasız bırakma."
+    },
+    {
+        "id": 80,
+        "arabic": "التواب",
+        "turkish": "ET-TEVVÂB",
+        "meaning": "Tövbeleri kabul eden",
+        "dua": "Ey her kapı kapandığında tövbe kapısını açık tutan! Pişmanlıklarımla geldim, beni geri çevirme, kalbimi tövbeyle temizle."
+    },
+    {
+        "id": 81,
+        "arabic": "المنتقم",
+        "turkish": "EL-MÜNTAKİM",
+        "meaning": "Suçluları cezalandıran",
+        "dua": "Ey mazlumun ahını yerde bırakmayan! Zalimin zulmünden bizi koru, intikamımızı nefsimizden değil, adaletinden bekle."
+    },
+    {
+        "id": 82,
+        "arabic": "العفو",
+        "turkish": "EL-AFÜVV",
+        "meaning": "Affı çok olan",
+        "dua": "Ey günahları hiç işlenmemiş gibi silen! Defterimi günahlarla doldurdum ama Senin affın hepsinden büyüktür; beni affet."
+    },
+    {
+        "id": 83,
+        "arabic": "الرؤوف",
+        "turkish": "ER-RAÛF",
+        "meaning": "Çok şefkatli",
+        "dua": "Ey anne şefkatinden daha sıcak, daha derin merhamet sahibi! Şefkatinle kalbimdeki katılıkları erit, ruhumu rahmetinle sar."
+    },
+    {
+        "id": 84,
+        "arabic": "مالك الملك",
+        "turkish": "MÂLİKÜ'L-MÜLK",
+        "meaning": "Mülkün mutlak sahibi",
+        "dua": "Ey mülkün tek sultanı! Kalbim de Senin mülkündür; oraya Senden başkasının girmesine izin verme."
+    },
+    {
+        "id": 85,
+        "arabic": "ذو الجلال والإكرام",
+        "turkish": "ZÜ'L-CELÂLI VE'L-İKRÂM",
+        "meaning": "Azamet ve ikram sahibi",
+        "dua": "Ey hem celalinden korkulan hem ikramından umulan! Bize celalinle edep, cemalinle lütuf nasip eyle."
+    },
+    {
+        "id": 86,
+        "arabic": "المقسط",
+        "turkish": "EL-MUKSİT",
+        "meaning": "Adaletle hükmeden",
+        "dua": "Ey her hakkı sahibine veren! Kalbimi ve amellerimi denge üzerine kıl, beni kimsenin hakkına girmekten koru."
+    },
+    {
+        "id": 87,
+        "arabic": "الجامع",
+        "turkish": "EL-CÂMİ",
+        "meaning": "İstediğini toplayan",
+        "dua": "Ey mahşer günü herkesi bir araya getirecek olan! Dağılan aklımı, bölünen kalbimi ve tüm sevdiklerimi cennetinde birleştir."
+    },
+    {
+        "id": 88,
+        "arabic": "الغني",
+        "turkish": "EL-GANÎ",
+        "meaning": "Çok zengin, muhtaç olmayan",
+        "dua": "Ey hazineleri bitmeyen, her şeyden müstağni olan! Beni Senden başkasına el açtırmayacak bir gönül zenginliğine erdir."
+    },
+    {
+        "id": 89,
+        "arabic": "المغني",
+        "turkish": "EL-MUĞNÎ",
+        "meaning": "Zengin eden",
+        "dua": "Ey dilediğini bolluğa kavuştururan! Ruhumu marifetinle, ömrümü bereketinle zenginleştir."
+    },
+    {
+        "id": 90,
+        "arabic": "المانع",
+        "turkish": "EL-MÂNİ",
+        "meaning": "Engel olan",
+        "dua": "Ey gelmesine engel olduğunda hiçbir gücün veremediği! Beni şerlerden, günahlardan ve Senden uzaklaştıracak her şeyden uzak tut."
+    },
+    {
+        "id": 91,
+        "arabic": "الضار",
+        "turkish": "ED-DÂRR",
+        "meaning": "Elem veren şeyleri yaratan",
+        "dua": "Ey imtihan için zararı veren! Zararımı hayra tebdil eyle, sabrımı mükafatınla süsle."
+    },
+    {
+        "id": 92,
+        "arabic": "النافع",
+        "turkish": "EN-NÂFİ",
+        "meaning": "Faydalı şeyleri yaratan",
+        "dua": "Ey her hayrın ve faydanın kaynağı! Bana faydalı ilim, şifalı rızık ve Seni memnun edecek ameller lütfet."
+    },
+    {
+        "id": 93,
+        "arabic": "النور",
+        "turkish": "EN-NÛR",
+        "meaning": "Nurlandıran, ışık veren",
+        "dua": "Ey göklerin ve yerin nuru! Kabrimi, kalbimi ve ahiretimi nurunla aydınlat; beni karanlıklarda bırakma."
+    },
+    {
+        "id": 94,
+        "arabic": "الهادي",
+        "turkish": "EL-HÂDÎ",
+        "meaning": "Hidayet veren",
+        "dua": "Ey şaşırmışlara yol gösteren! Kalbimi hidayetinle sabit kıl, beni bir an olsun sırat-ı müstakimden ayırma."
+    },
+    {
+        "id": 95,
+        "arabic": "البديع",
+        "turkish": "EL-BEDÎ",
+        "meaning": "Emsalsiz yaratan",
+        "dua": "Ey sanatı hayran bırakan! Varlığımdaki mucizeleri görmeyi, Seni her şeyde hayranlıkla tesbih etmeyi nasip eyle."
+    },
+    {
+        "id": 96,
+        "arabic": "الباقي",
+        "turkish": "EL-BÂKÎ",
+        "meaning": "Ebedi olan",
+        "dua": "Ey her şey yok olduğunda kalan! Geçici sevdaların peşinde beni yorma, kalbimi baki olan aşkınla doyur."
+    },
+    {
+        "id": 97,
+        "arabic": "الوارث",
+        "turkish": "EL-VÂRİS",
+        "meaning": "Her şeyin gerçek sahibi",
+        "dua": "Ey mülkün asıl varisi! Emanet olarak verdiğin bu canı ve ömrü, huzuruna yüz akıyla teslim etmeyi nasip eyle."
+    },
+    {
+        "id": 98,
+        "arabic": "الرشيد",
+        "turkish": "ER-REŞÎD",
+        "meaning": "Doğru yolu gösteren",
+        "dua": "Ey her işi isabetli olan! Beni aklın ve nefsin yanılgılarından koru, en doğru kararlara kalbimi yönlendir."
+    },
+    {
+        "id": 99,
+        "arabic": "الصبور",
+        "turkish": "ES-SABÛR",
+        "meaning": "Çok sabırlı olan",
+        "dua": "Ey isyanlara rağmen hemen cezalandırmayan! Bana zorluklara karşı sabır, ibadetlerde sebat ve Sana kavuşma yolunda metanet lütfet."
+    }
+]

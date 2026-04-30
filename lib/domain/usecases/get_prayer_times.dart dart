@@ -1,0 +1,39 @@
+import 'package:adhan/adhan.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../core/services/location_service.dart';
+
+class PrayerTimesResult {
+  final PrayerTimes prayerTimes;
+  final double latitude;
+  final double longitude;
+
+  PrayerTimesResult({
+    required this.prayerTimes,
+    required this.latitude,
+    required this.longitude,
+  });
+}
+
+class GetPrayerTimes {
+  final LocationService _locationService = LocationService();
+
+  Future<PrayerTimesResult?> call() async {
+    Position? position = await _locationService.getCurrentPosition();
+
+    // Konum alınamazsa İstanbul koordinatları
+    final double lat = position?.latitude ?? 41.0082;
+    final double lng = position?.longitude ?? 28.9784;
+
+    final coordinates = Coordinates(lat, lng);
+    final params = CalculationMethod.turkey().getParameters();
+    final date = DateComponents.from(DateTime.now());
+
+    final prayerTimes = PrayerTimes(coordinates, date, params);
+
+    return PrayerTimesResult(
+      prayerTimes: prayerTimes,
+      latitude: lat,
+      longitude: lng,
+    );
+  }
+}
