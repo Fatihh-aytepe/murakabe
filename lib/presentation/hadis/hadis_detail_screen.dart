@@ -25,7 +25,7 @@ class _HadisDetailScreenState extends State<HadisDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _currentHadis = _currentHadis;
+    _currentHadis = widget.hadis;
     _checkSaved();
   }
 

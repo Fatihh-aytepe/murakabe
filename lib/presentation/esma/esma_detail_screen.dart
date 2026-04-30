@@ -25,7 +25,7 @@ class _EsmaDetailScreenState extends State<EsmaDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _currentEsma = _currentEsma;
+    _currentEsma = widget.esma;
     _checkSaved();
   }
 

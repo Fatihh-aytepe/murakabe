@@ -25,7 +25,7 @@ class _AyetDetailScreenState extends State<AyetDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _currentAyet = _currentAyet;
+    _currentAyet = widget.ayet;
     _checkSaved();
   }
 
