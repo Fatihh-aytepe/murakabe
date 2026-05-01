@@ -6,10 +6,14 @@ import '../local/local_storage.dart';
 import '../models/esma_model.dart';
 import '../models/hadis_model.dart';
 import '../models/ayet_model.dart';
+import '../remote/firebase_service.dart';
 
 class ContentRepository {
   final DatabaseHelper _db = DatabaseHelper();
   final LocalStorage _storage = LocalStorage();
+  final FirebaseService _firebase = FirebaseService();
+
+  String? get _uid => _storage.userId;
 
   List<EsmaModel>? _esmaCache;
   List<HadisModel>? _hadisCache;
@@ -88,12 +92,19 @@ class ContentRepository {
 
   // Kaydetme işlemleri
   Future<void> saveContent(String type, int contentId) async {
-    await _db.insert('saved_content', {
+    final doc = {
       'id': '${type}_$contentId',
       'type': type,
       'contentId': contentId,
       'savedAt': DateTime.now().toIso8601String(),
-    });
+    };
+    await _db.insert('saved_content', doc);
+    final uid = _storage.userId;
+    if (uid != null) {
+      try {
+        await _firebase.saveFavorite(uid, doc);
+      } catch (_) {}
+    }
   }
 
   Future<void> unsaveContent(String type, int contentId) async {
@@ -102,6 +113,12 @@ class ContentRepository {
       where: 'type = ? AND contentId = ?',
       whereArgs: [type, contentId],
     );
+    final uid = _storage.userId;
+    if (uid != null) {
+      try {
+        await _firebase.deleteFavorite(uid, '${type}_$contentId');
+      } catch (_) {}
+    }
   }
 
   Future<bool> isSaved(String type, int contentId) async {

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/notification_service.dart';
-import '../../core/services/alarm_service.dart';
+import '../../core/services/reward_service.dart';
 import '../../data/models/esma_model.dart';
 import '../../data/models/hadis_model.dart';
 import '../../data/models/ayet_model.dart';
@@ -23,6 +22,9 @@ import '../../data/models/user_model.dart';
 import 'widgets/streak_card.dart';
 import '../ayet/ayet_detail_screen.dart';
 import '../hadis/hadis_detail_screen.dart';
+import '../rewards/murakabe_hosgeldin_screen.dart';
+import '../rewards/tahajjud_odul_screen.dart';
+import '../rewards/tebrik_karti_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -53,10 +55,47 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadContent();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AlarmService().checkAndShowTahajjudReward(context);
+    _loadContent().then((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _checkRewards();
+      });
     });
+  }
+
+  Future<void> _checkRewards() async {
+    final rewardService = RewardService();
+
+    if (rewardService.shouldShowWelcome) {
+      if (!mounted) return;
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => MurakabeHosgeldinScreen(
+          onDone: () => Navigator.of(context).pop(),
+        ),
+      ));
+      return;
+    }
+
+    if (_currentUser != null) {
+      final streakReward =
+          await rewardService.checkStreakReward(_currentUser!.streakDays);
+      if (streakReward != null && mounted) {
+        await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => TebrikKartiScreen(
+            type: streakReward.type,
+            title: streakReward.title,
+            message: streakReward.message,
+            autoSave: false,
+          ),
+        ));
+      }
+    }
+
+    final showTahajjud = await rewardService.checkTahajjudReward();
+    if (showTahajjud && mounted) {
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => const TahajjudOdulScreen(),
+      ));
+    }
   }
 
   Future<void> _loadContent() async {

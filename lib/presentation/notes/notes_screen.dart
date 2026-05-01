@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uuid/uuid.dart';
 import '../../core/constants/app_colors.dart';
-import '../../data/local/database_helper.dart';
 import '../../data/models/note_model.dart';
+import '../../data/repositories/note_repository.dart';
 
 class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
@@ -13,7 +12,7 @@ class NotesScreen extends StatefulWidget {
 }
 
 class NotesScreenState extends State<NotesScreen> {
-  final _db = DatabaseHelper();
+  final _repo = NoteRepository();
   List<NoteModel> _notes = [];
 
   @override
@@ -26,12 +25,8 @@ class NotesScreenState extends State<NotesScreen> {
   void reload() => _loadNotes();
 
   Future<void> _loadNotes() async {
-    final rows = await _db.query('notes', orderBy: 'updatedAt DESC');
-    if (mounted) {
-      setState(() {
-        _notes = rows.map((r) => NoteModel.fromMap(r)).toList();
-      });
-    }
+    final notes = await _repo.getNotes();
+    if (mounted) setState(() => _notes = notes);
   }
 
   @override
@@ -199,30 +194,15 @@ class NotesScreenState extends State<NotesScreen> {
         note: note,
         onSave: (title, content) async {
           if (note != null) {
-            // Güncelle
-            final updated = NoteModel(
+            await _repo.updateNote(NoteModel(
               id: note.id,
               title: title,
               content: content,
               createdAt: note.createdAt,
               updatedAt: DateTime.now(),
-            );
-            await _db.update(
-              'notes',
-              updated.toMap(),
-              where: 'id = ?',
-              whereArgs: [note.id],
-            );
+            ));
           } else {
-            // Yeni ekle
-            final newNote = NoteModel(
-              id: const Uuid().v4(),
-              title: title,
-              content: content,
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-            );
-            await _db.insert('notes', newNote.toMap());
+            await _repo.addNote(title: title, content: content);
           }
           await _loadNotes();
         },
@@ -247,7 +227,7 @@ class NotesScreenState extends State<NotesScreen> {
       ),
     );
     if (confirm == true) {
-      await _db.delete('notes', where: 'id = ?', whereArgs: [note.id]);
+      await _repo.deleteNote(note.id);
       await _loadNotes();
     }
   }

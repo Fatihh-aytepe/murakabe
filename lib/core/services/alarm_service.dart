@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import '../../data/repositories/reward_repository.dart';
-import '../../presentation/rewards/tebrik_karti_screen.dart';
+import '../../data/local/local_storage.dart';
 import 'notification_service.dart';
 
 class AlarmService {
@@ -75,27 +73,8 @@ class AlarmService {
     }
   }
 
-  // Cuma sabahı teheccüd ödülü kontrolü
-  Future<void> checkAndShowTahajjudReward(BuildContext context) async {
-    final now = DateTime.now();
-    if (now.weekday != DateTime.friday) return;
-
-    final rewardRepo = RewardRepository();
-    final today = now.toIso8601String().substring(0, 10);
-    final alreadyShown = await rewardRepo.hasRewardForDate('tahajjud', today);
-    if (alreadyShown) return;
-
-    if (context.mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const TebrikKartiScreen(
-            type: 'tahajjud',
-            title: 'Teheccüd Ödülü 🌙',
-            message:
-                'Bu gece milyonlar uykudayken sen Rabbinle buluştun. Bu sadakat, kalbinde hiç sönmeyecek bir kandil yaktı. Mübarek olsun.',
-          ),
-        ),
-      );
-    }
+  Future<void> saveTahajjudAlarmDate() async {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    await LocalStorage().setTahajjudAlarmDate(today);
   }
 }

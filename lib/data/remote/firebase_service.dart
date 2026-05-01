@@ -2,35 +2,91 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 
 class FirebaseService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static final FirebaseService _instance = FirebaseService._internal();
+  factory FirebaseService() => _instance;
+  FirebaseService._internal();
 
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  CollectionReference _userCol() => _db.collection('users');
+  CollectionReference _sub(String uid, String col) =>
+      _userCol().doc(uid).collection(col);
+
+  // ─── USER ─────────────────────────────────────────────────────────────────
   Future<void> saveUser(UserModel user) async {
-    await _firestore
-        .collection('users')
-        .doc(user.id)
-        .set(user.toMap(), SetOptions(merge: true));
+    await _userCol().doc(user.id).set(user.toMap(), SetOptions(merge: true));
   }
 
-  Future<void> markQuranRead(String userId, String date) async {
-    await _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('quranTracking')
-        .doc(date)
-        .set({'isRead': true, 'readAt': FieldValue.serverTimestamp()});
+  // ─── NOTES ────────────────────────────────────────────────────────────────
+  Future<void> saveNote(String uid, Map<String, dynamic> note) async {
+    await _sub(uid, 'notes').doc(note['id'] as String).set(note);
   }
 
-  // Admin: tüm kullanıcıları al
-  Stream<QuerySnapshot> getAllUsers() {
-    return _firestore
-        .collection('users')
-        .orderBy('createdAt', descending: true)
-        .snapshots();
+  Future<void> deleteNote(String uid, String noteId) async {
+    await _sub(uid, 'notes').doc(noteId).delete();
   }
 
-  // Admin: kullanıcı detayı
-  Future<Map<String, dynamic>?> getUserDetails(String userId) async {
-    final doc = await _firestore.collection('users').doc(userId).get();
-    return doc.data();
+  // ─── REMINDERS ────────────────────────────────────────────────────────────
+  Future<void> saveReminder(String uid, Map<String, dynamic> reminder) async {
+    await _sub(uid, 'reminders').doc(reminder['id'] as String).set(reminder);
+  }
+
+  Future<void> deleteReminder(String uid, String reminderId) async {
+    await _sub(uid, 'reminders').doc(reminderId).delete();
+  }
+
+  // ─── CUSTOM TASKS ─────────────────────────────────────────────────────────
+  Future<void> saveTask(String uid, Map<String, dynamic> task) async {
+    await _sub(uid, 'tasks').doc(task['id'] as String).set(task);
+  }
+
+  Future<void> deleteTask(String uid, String taskId) async {
+    await _sub(uid, 'tasks').doc(taskId).delete();
+  }
+
+  Future<void> saveTaskCompletion(
+      String uid, Map<String, dynamic> completion) async {
+    await _sub(uid, 'taskCompletions')
+        .doc(completion['id'] as String)
+        .set(completion);
+  }
+
+  // ─── SAVED CONTENT (heybe) ────────────────────────────────────────────────
+  Future<void> saveFavorite(String uid, Map<String, dynamic> content) async {
+    await _sub(uid, 'saved').doc(content['id'] as String).set(content);
+  }
+
+  Future<void> deleteFavorite(String uid, String contentId) async {
+    await _sub(uid, 'saved').doc(contentId).delete();
+  }
+
+  // ─── REWARDS ──────────────────────────────────────────────────────────────
+  Future<void> saveReward(String uid, Map<String, dynamic> reward) async {
+    await _sub(uid, 'rewards').doc(reward['id'] as String).set(reward);
+  }
+
+  // ─── QURAN TRACKING ───────────────────────────────────────────────────────
+  Future<void> markQuranRead(String uid, String date) async {
+    await _sub(uid, 'quranTracking').doc(date).set({
+      'isRead': true,
+      'readAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // ─── TAHAJJUD TRACKING ────────────────────────────────────────────────────
+  Future<void> markTahajjudPrayed(String uid, String date) async {
+    await _sub(uid, 'tahajjudTracking').doc(date).set({
+      'isPrayed': true,
+      'prayedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // ─── ADMIN ────────────────────────────────────────────────────────────────
+  Stream<QuerySnapshot> getAllUsers() =>
+      _userCol().orderBy('createdAt', descending: true).snapshots();
+
+  Future<Map<String, dynamic>?> getUserDetails(String uid) async {
+    final doc = await _userCol().doc(uid).get();
+    return doc.data() as Map<String, dynamic>?;
   }
 }

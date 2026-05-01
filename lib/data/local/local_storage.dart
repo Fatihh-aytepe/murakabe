@@ -50,4 +50,31 @@ class LocalStorage {
   String? get profilePhotoPath => _prefs.getString('profilePhotoPath');
   Future<void> setProfilePhotoPath(String path) =>
       _prefs.setString('profilePhotoPath', path);
+
+  // İlk açılış (hoş geldin ödülü)
+  bool get isFirstOpen => _prefs.getBool('isFirstOpen') ?? true;
+  Future<void> setFirstOpenDone() => _prefs.setBool('isFirstOpen', false);
+
+  // Streak ödülü son verilen milestone
+  int get lastRewardedStreak => _prefs.getInt('lastRewardedStreak') ?? 0;
+  Future<void> setLastRewardedStreak(int s) =>
+      _prefs.setInt('lastRewardedStreak', s);
+
+  // Teheccüd alarm kurulduğu gece tarihi
+  String? get tahajjudAlarmDate => _prefs.getString('tahajjudAlarmDate');
+  Future<void> setTahajjudAlarmDate(String d) =>
+      _prefs.setString('tahajjudAlarmDate', d);
+
+  // İçerik etkileşim sayaçları (hangi ödül verileceğini belirler)
+  int get esmaOpenCount => _prefs.getInt('esmaOpenCount') ?? 0;
+  Future<void> incrementEsmaCount() =>
+      _prefs.setInt('esmaOpenCount', esmaOpenCount + 1);
+
+  int get ayetOpenCount => _prefs.getInt('ayetOpenCount') ?? 0;
+  Future<void> incrementAyetCount() =>
+      _prefs.setInt('ayetOpenCount', ayetOpenCount + 1);
+
+  int get hadisOpenCount => _prefs.getInt('hadisOpenCount') ?? 0;
+  Future<void> incrementHadisCount() =>
+      _prefs.setInt('hadisOpenCount', hadisOpenCount + 1);
 }
