@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/repositories/reward_repository.dart';
@@ -88,15 +88,15 @@ class _TebrikKartiScreenState extends State<TebrikKartiScreen>
                       width: double.infinity,
                       padding: const EdgeInsets.all(28),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.06),
+                        color: Colors.white.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: AppColors.gold.withOpacity(0.5),
+                          color: AppColors.gold.withValues(alpha: 0.5),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.gold.withOpacity(0.2),
+                            color: AppColors.gold.withValues(alpha: 0.2),
                             blurRadius: 30,
                             spreadRadius: 5,
                           ),
@@ -129,7 +129,7 @@ class _TebrikKartiScreenState extends State<TebrikKartiScreen>
                           // Altın çizgi
                           Container(
                             height: 1,
-                            color: AppColors.gold.withOpacity(0.4),
+                            color: AppColors.gold.withValues(alpha: 0.4),
                           ),
                           const SizedBox(height: 20),
 
@@ -139,7 +139,7 @@ class _TebrikKartiScreenState extends State<TebrikKartiScreen>
                             textAlign: TextAlign.center,
                             style: GoogleFonts.notoSans(
                               fontSize: 15,
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withValues(alpha: 0.85),
                               height: 1.8,
                               fontStyle: FontStyle.italic,
                             ),

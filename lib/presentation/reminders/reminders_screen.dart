@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants/app_colors.dart';
@@ -100,7 +100,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.alarm_outlined,
-                        size: 64, color: AppColors.textLight.withOpacity(0.4)),
+                        size: 64, color: AppColors.textLight.withValues(alpha: 0.4)),
                     const SizedBox(height: 12),
                     Text(
                       'Henüz hatırlatıcı yok',
@@ -141,7 +141,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.gold.withOpacity(0.08),
+            color: AppColors.gold.withValues(alpha: 0.08),
             blurRadius: 10,
           ),
         ],
@@ -205,10 +205,10 @@ class _RemindersScreenState extends State<RemindersScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.textLight.withOpacity(0.1),
+                          color: AppColors.textLight.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Text(
+                        child: const Text(
                           'Geçti',
                           style: TextStyle(
                               fontSize: 10, color: AppColors.textLight),
@@ -259,7 +259,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.textLight.withOpacity(0.4),
+                      color: AppColors.textLight.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -311,6 +311,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       lastDate: DateTime.now().add(const Duration(days: 365)),
                     );
                     if (date != null) {
+                      if (!ctx.mounted) return;
                       final time = await showTimePicker(
                         context: ctx,
                         initialTime: TimeOfDay.fromDateTime(selectedDate),
@@ -327,7 +328,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       border: Border.all(
-                          color: AppColors.textLight.withOpacity(0.4)),
+                          color: AppColors.textLight.withValues(alpha: 0.4)),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -367,6 +368,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       await _db.insert('reminders', reminder.toMap());
                       // Bildirim planla
                       await _scheduleReminderNotification(reminder);
+                      if (!ctx.mounted) return;
                       Navigator.pop(ctx);
                       await _loadReminders();
                     },

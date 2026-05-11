@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -108,13 +108,13 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                                   boxShadow: [
                                     BoxShadow(
                                       color: const Color(0xFF4080FF)
-                                          .withOpacity(_glow.value * 0.6),
+                                          .withValues(alpha: _glow.value * 0.6),
                                       blurRadius: 40,
                                       spreadRadius: 10,
                                     ),
                                     BoxShadow(
                                       color: Colors.white
-                                          .withOpacity(_glow.value * 0.2),
+                                          .withValues(alpha: _glow.value * 0.2),
                                       blurRadius: 20,
                                     ),
                                   ],
@@ -166,21 +166,21 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                const Color(0xFF0A1628).withOpacity(0.95),
-                                const Color(0xFF0D2050).withOpacity(0.90),
+                                const Color(0xFF0A1628).withValues(alpha: 0.95),
+                                const Color(0xFF0D2050).withValues(alpha: 0.90),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(28),
                             border: Border.all(
-                              color: const Color(0xFF4080FF).withOpacity(0.5),
+                              color: const Color(0xFF4080FF).withValues(alpha: 0.5),
                               width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
                                 color:
-                                    const Color(0xFF2040A0).withOpacity(0.4),
+                                    const Color(0xFF2040A0).withValues(alpha: 0.4),
                                 blurRadius: 30,
                                 spreadRadius: 5,
                               ),
@@ -203,7 +203,7 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                                   gradient: LinearGradient(
                                     colors: [
                                       Colors.transparent,
-                                      const Color(0xFF4080FF).withOpacity(0.8),
+                                      const Color(0xFF4080FF).withValues(alpha: 0.8),
                                       Colors.transparent,
                                     ],
                                   ),
@@ -220,7 +220,7 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 14,
-                                  color: Colors.white.withOpacity(0.85),
+                                  color: Colors.white.withValues(alpha: 0.85),
                                   height: 1.9,
                                   fontStyle: FontStyle.italic,
                                 ),
@@ -228,14 +228,14 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                               const SizedBox(height: 20),
 
                               // Yildiz rozeti
-                              Row(
+                              const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text('⭐', style: TextStyle(fontSize: 16)),
-                                  const SizedBox(width: 4),
-                                  const Text('⭐', style: TextStyle(fontSize: 22)),
-                                  const SizedBox(width: 4),
-                                  const Text('⭐', style: TextStyle(fontSize: 16)),
+                                  Text('⭐', style: TextStyle(fontSize: 16)),
+                                  SizedBox(width: 4),
+                                  Text('⭐', style: TextStyle(fontSize: 22)),
+                                  SizedBox(width: 4),
+                                  Text('⭐', style: TextStyle(fontSize: 16)),
                                 ],
                               ),
                               const SizedBox(height: 12),
@@ -276,7 +276,7 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                               ),
                               elevation: 8,
                               shadowColor:
-                                  const Color(0xFF2040A0).withOpacity(0.5),
+                                  const Color(0xFF2040A0).withValues(alpha: 0.5),
                             ),
                           ),
                         ),
@@ -327,7 +327,7 @@ class _NightSkyPainter extends CustomPainter {
     final paint = Paint();
     for (final (x, y, r) in _pts) {
       final opacity = 0.2 + (r / 2.0) * 0.4;
-      paint.color = Colors.white.withOpacity(opacity.clamp(0.1, 0.7));
+      paint.color = Colors.white.withValues(alpha: opacity.clamp(0.1, 0.7));
       canvas.drawCircle(Offset(x * size.width, y * size.height), r, paint);
     }
   }

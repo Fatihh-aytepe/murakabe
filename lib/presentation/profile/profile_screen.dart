@@ -49,7 +49,7 @@ class ProfileScreenState extends State<ProfileScreen>
   List<RewardModel> _rewards = [];
   List<CustomTaskModel> _customTasks = [];
   bool _tahajjudEnabled = false;
-  List<TimeOfDay> _tahajjudTimes = [const TimeOfDay(hour: 2, minute: 0)];
+  final List<TimeOfDay> _tahajjudTimes = [const TimeOfDay(hour: 2, minute: 0)];
   String? _profilePhotoPath;
 
   @override
@@ -175,28 +175,28 @@ class ProfileScreenState extends State<ProfileScreen>
                       ),
                     ],
                   ),
-                  child: _profilePhotoPath != null &&
-                          _profilePhotoPath!.isNotEmpty
-                      ? ClipOval(
-                          child: Image.file(
-                            File(_profilePhotoPath!),
-                            fit: BoxFit.cover,
-                            width: 80,
-                            height: 80,
-                          ),
-                        )
-                      : Center(
-                          child: Text(
-                            _user?.nameSurname.isNotEmpty == true
-                                ? _user!.nameSurname[0].toUpperCase()
-                                : '?',
-                            style: GoogleFonts.playfairDisplay(
-                              fontSize: 32,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                  child:
+                      _profilePhotoPath != null && _profilePhotoPath!.isNotEmpty
+                          ? ClipOval(
+                              child: Image.file(
+                                File(_profilePhotoPath!),
+                                fit: BoxFit.cover,
+                                width: 80,
+                                height: 80,
+                              ),
+                            )
+                          : Center(
+                              child: Text(
+                                _user?.nameSurname.isNotEmpty == true
+                                    ? _user!.nameSurname[0].toUpperCase()
+                                    : '?',
+                                style: GoogleFonts.playfairDisplay(
+                                  fontSize: 32,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
                 ),
                 Positioned(
                   bottom: 0,
@@ -241,7 +241,7 @@ class ProfileScreenState extends State<ProfileScreen>
                 builder: (_, theme, __) => Switch(
                   value: theme.isDark,
                   onChanged: (_) => theme.toggleTheme(),
-                  activeColor: AppColors.gold,
+                  activeThumbColor: AppColors.gold,
                   activeTrackColor: AppColors.gold.withValues(alpha: 0.3),
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: Colors.white24,
@@ -254,19 +254,16 @@ class ProfileScreenState extends State<ProfileScreen>
           const SizedBox(height: 12),
           if (missed.isEmpty)
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.green.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: Colors.green.withValues(alpha: 0.5)),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.check_circle,
-                      color: Colors.green, size: 16),
+                  const Icon(Icons.check_circle, color: Colors.green, size: 16),
                   const SizedBox(width: 6),
                   Text(
                     'Tüm günler tamamlandı',
@@ -424,8 +421,7 @@ class ProfileScreenState extends State<ProfileScreen>
           color: AppColors.gold,
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (_) => EsmaDetailScreen(esma: esma)),
+            MaterialPageRoute(builder: (_) => EsmaDetailScreen(esma: esma)),
           ),
         );
       },
@@ -446,8 +442,7 @@ class ProfileScreenState extends State<ProfileScreen>
           color: AppColors.turquoise,
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (_) => AyetDetailScreen(ayet: ayet)),
+            MaterialPageRoute(builder: (_) => AyetDetailScreen(ayet: ayet)),
           ),
         );
       },
@@ -455,8 +450,9 @@ class ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildHadisList() {
-    if (_savedHadises.isEmpty)
+    if (_savedHadises.isEmpty) {
       return _buildEmptyState('Henüz hadis kaydedilmedi');
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _savedHadises.length,
@@ -469,8 +465,7 @@ class ProfileScreenState extends State<ProfileScreen>
           color: const Color(0xFF6B4226),
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (_) => HadisDetailScreen(hadis: hadis)),
+            MaterialPageRoute(builder: (_) => HadisDetailScreen(hadis: hadis)),
           ),
         );
       },
@@ -573,8 +568,8 @@ class ProfileScreenState extends State<ProfileScreen>
               GestureDetector(
                 onTap: _showAddTaskDialog,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppColors.gold.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
@@ -645,9 +640,8 @@ class ProfileScreenState extends State<ProfileScreen>
                     color: textColor,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
-                    decoration: task.isActive
-                        ? null
-                        : TextDecoration.lineThrough,
+                    decoration:
+                        task.isActive ? null : TextDecoration.lineThrough,
                   ),
                 ),
                 if (task.notificationTime.isNotEmpty)
@@ -673,7 +667,7 @@ class ProfileScreenState extends State<ProfileScreen>
               await _loadData();
               widget.onTasksChanged?.call();
             },
-            activeColor: AppColors.gold,
+            activeThumbColor: AppColors.gold,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           IconButton(
@@ -688,16 +682,28 @@ class ProfileScreenState extends State<ProfileScreen>
   }
 
   Future<void> _showAddTaskDialog({CustomTaskModel? existing}) async {
-    final titleCtrl =
-        TextEditingController(text: existing?.title ?? '');
-    final descCtrl =
-        TextEditingController(text: existing?.description ?? '');
+    final titleCtrl = TextEditingController(text: existing?.title ?? '');
+    final descCtrl = TextEditingController(text: existing?.description ?? '');
     String emoji = existing?.emoji ?? '📝';
     String notifTime = existing?.notificationTime ?? '';
 
     final emojis = [
-      '📖', '🤲', '🕌', '⭐', '💪', '🏃', '📝', '🎯', '🌙', '☀️',
-      '🌿', '❤️', '✨', '🔥', '📿', '🕋'
+      '📖',
+      '🤲',
+      '🕌',
+      '⭐',
+      '💪',
+      '🏃',
+      '📝',
+      '🎯',
+      '🌙',
+      '☀️',
+      '🌿',
+      '❤️',
+      '✨',
+      '🔥',
+      '📿',
+      '🕋'
     ];
 
     await showModalBottomSheet(
@@ -706,22 +712,19 @@ class ProfileScreenState extends State<ProfileScreen>
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) {
-          final isDark =
-              Theme.of(context).brightness == Brightness.dark;
-          final bgColor =
-              isDark ? const Color(0xFF1A2035) : Colors.white;
-          final textColor =
-              isDark ? Colors.white : AppColors.textPrimary;
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final bgColor = isDark ? const Color(0xFF1A2035) : Colors.white;
+          final textColor = isDark ? Colors.white : AppColors.textPrimary;
 
           return Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            padding:
+                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -750,37 +753,31 @@ class ProfileScreenState extends State<ProfileScreen>
                     // Emoji seçici
                     Text('İkon Seç',
                         style: GoogleFonts.notoSans(
-                            color: textColor,
-                            fontWeight: FontWeight.w600)),
+                            color: textColor, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
                       children: emojis
                           .map(
                             (e) => GestureDetector(
-                              onTap: () =>
-                                  setModalState(() => emoji = e),
+                              onTap: () => setModalState(() => emoji = e),
                               child: Container(
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
                                   color: emoji == e
-                                      ? AppColors.gold
-                                          .withValues(alpha: 0.2)
+                                      ? AppColors.gold.withValues(alpha: 0.2)
                                       : Colors.transparent,
-                                  borderRadius:
-                                      BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: emoji == e
                                         ? AppColors.gold
-                                        : Colors.grey
-                                            .withValues(alpha: 0.3),
+                                        : Colors.grey.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Center(
                                     child: Text(e,
-                                        style: const TextStyle(
-                                            fontSize: 20))),
+                                        style: const TextStyle(fontSize: 20))),
                               ),
                             ),
                           )
@@ -800,8 +797,7 @@ class ProfileScreenState extends State<ProfileScreen>
                           borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: AppColors.gold),
+                          borderSide: const BorderSide(color: AppColors.gold),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -820,8 +816,7 @@ class ProfileScreenState extends State<ProfileScreen>
                           borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: AppColors.gold),
+                          borderSide: const BorderSide(color: AppColors.gold),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -951,16 +946,14 @@ class ProfileScreenState extends State<ProfileScreen>
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.gold,
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
                         ),
                         child: Text(
                           existing != null ? 'Güncelle' : 'Görev Ekle',
                           style: GoogleFonts.notoSans(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
+                              color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -980,16 +973,14 @@ class ProfileScreenState extends State<ProfileScreen>
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Görevi Sil'),
-        content:
-            Text('"${task.title}" görevini silmek istiyor musunuz?'),
+        content: Text('"${task.title}" görevini silmek istiyor musunuz?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: const Text('Vazgeç')),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Sil',
-                  style: TextStyle(color: Colors.red))),
+              child: const Text('Sil', style: TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -1032,8 +1023,7 @@ class ProfileScreenState extends State<ProfileScreen>
                 colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
               ),
               borderRadius: BorderRadius.circular(16),
-              border:
-                  Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
+              border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -1093,8 +1083,19 @@ class ProfileScreenState extends State<ProfileScreen>
 
   String _formatRewardDate(DateTime dt) {
     const months = [
-      '', 'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz',
-      'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'
+      '',
+      'Oca',
+      'Şub',
+      'Mar',
+      'Nis',
+      'May',
+      'Haz',
+      'Tem',
+      'Ağu',
+      'Eyl',
+      'Eki',
+      'Kas',
+      'Ara'
     ];
     return '${dt.day} ${months[dt.month]} ${dt.year}';
   }
@@ -1150,14 +1151,18 @@ class ProfileScreenState extends State<ProfileScreen>
                 Switch(
                   value: _tahajjudEnabled,
                   onChanged: _toggleTahajjud,
-                  activeColor: AppColors.gold,
+                  activeThumbColor: AppColors.gold,
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 12),
+          _buildSoundSelector(),
           if (_tahajjudEnabled) ...[
             const SizedBox(height: 16),
-            ..._tahajjudTimes.asMap().entries
+            ..._tahajjudTimes
+                .asMap()
+                .entries
                 .map((e) => _buildAlarmTile(e.value, e.key)),
             const SizedBox(height: 12),
             GestureDetector(
@@ -1167,8 +1172,8 @@ class ProfileScreenState extends State<ProfileScreen>
                 decoration: BoxDecoration(
                   color: AppColors.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: AppColors.gold.withValues(alpha: 0.4)),
+                  border:
+                      Border.all(color: AppColors.gold.withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1213,9 +1218,65 @@ class ProfileScreenState extends State<ProfileScreen>
           ],
           if (!_tahajjudEnabled) ...[
             const SizedBox(height: 24),
-            _buildEmptyState(
-                'Teheccüd alarmını açarak\ngece namazını kaçırma'),
+            _buildEmptyState('Teheccüd alarmını açarak\ngece namazını kaçırma'),
           ],
+        ],
+      ),
+    );
+  }
+
+// Teheccüd bölümünde _buildAlarmTile listesinin ÜSTÜNE ekle
+  Widget _buildSoundSelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF1A2035) : Colors.white;
+    final current = _alarmService.selectedSound;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.gold.withValues(alpha: 0.08), blurRadius: 10),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Alarm Sesi',
+            style: GoogleFonts.notoSans(
+              color: isDark ? Colors.white70 : AppColors.textSecondary,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 10),
+          DropdownButton<String>(
+            value: current.id,
+            isExpanded: true,
+            dropdownColor: isDark ? const Color(0xFF1A2035) : Colors.white,
+            underline: const SizedBox(),
+            style: GoogleFonts.notoSans(
+              color: isDark ? Colors.white : AppColors.textPrimary,
+              fontSize: 14,
+            ),
+            icon: const Icon(Icons.music_note, color: AppColors.gold, size: 20),
+            items: AlarmService.availableSounds
+                .map((s) => DropdownMenuItem(
+                      value: s.id,
+                      child: Text(s.label),
+                    ))
+                .toList(),
+            onChanged: (val) async {
+              if (val == null) return;
+              final sound =
+                  AlarmService.availableSounds.firstWhere((s) => s.id == val);
+              await _alarmService.setSelectedSound(sound);
+              setState(() {});
+            },
+          ),
         ],
       ),
     );
@@ -1232,8 +1293,7 @@ class ProfileScreenState extends State<ProfileScreen>
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-              color: AppColors.gold.withValues(alpha: 0.08),
-              blurRadius: 10),
+              color: AppColors.gold.withValues(alpha: 0.08), blurRadius: 10),
         ],
       ),
       child: Row(
@@ -1270,14 +1330,13 @@ class ProfileScreenState extends State<ProfileScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.inbox_outlined,
-              size: 60,
-              color: AppColors.textLight.withValues(alpha: 0.4)),
+              size: 60, color: AppColors.textLight.withValues(alpha: 0.4)),
           const SizedBox(height: 12),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: GoogleFonts.notoSans(
-                color: AppColors.textLight, fontSize: 14),
+            style:
+                GoogleFonts.notoSans(color: AppColors.textLight, fontSize: 14),
           ),
         ],
       ),
@@ -1309,16 +1368,15 @@ class ProfileScreenState extends State<ProfileScreen>
       initialTime: const TimeOfDay(hour: 2, minute: 0),
       builder: (ctx, child) => Theme(
         data: ThemeData.dark().copyWith(
-            colorScheme:
-                const ColorScheme.dark(primary: AppColors.gold)),
+            colorScheme: const ColorScheme.dark(primary: AppColors.gold)),
         child: child!,
       ),
     );
     if (picked != null) {
       setState(() => _tahajjudTimes.add(picked));
       final now = DateTime.now();
-      final alarmDt = DateTime(
-          now.year, now.month, now.day, picked.hour, picked.minute);
+      final alarmDt =
+          DateTime(now.year, now.month, now.day, picked.hour, picked.minute);
       await _alarmService.setTahajjudAlarm(alarmDt);
     }
   }
@@ -1329,8 +1387,7 @@ class ProfileScreenState extends State<ProfileScreen>
       initialTime: _tahajjudTimes[index],
       builder: (ctx, child) => Theme(
         data: ThemeData.dark().copyWith(
-            colorScheme:
-                const ColorScheme.dark(primary: AppColors.gold)),
+            colorScheme: const ColorScheme.dark(primary: AppColors.gold)),
         child: child!,
       ),
     );
@@ -1372,8 +1429,7 @@ class ProfileScreenState extends State<ProfileScreen>
             ),
             const SizedBox(height: 20),
             ListTile(
-              leading:
-                  const Icon(Icons.camera_alt, color: AppColors.gold),
+              leading: const Icon(Icons.camera_alt, color: AppColors.gold),
               title: Text('Kamera',
                   style: GoogleFonts.notoSans(color: Colors.white)),
               onTap: () {
@@ -1382,8 +1438,8 @@ class ProfileScreenState extends State<ProfileScreen>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library,
-                  color: AppColors.turquoise),
+              leading:
+                  const Icon(Icons.photo_library, color: AppColors.turquoise),
               title: Text('Galeri',
                   style: GoogleFonts.notoSans(color: Colors.white)),
               onTap: () {
@@ -1393,8 +1449,7 @@ class ProfileScreenState extends State<ProfileScreen>
             ),
             if (_profilePhotoPath != null && _profilePhotoPath!.isNotEmpty)
               ListTile(
-                leading:
-                    const Icon(Icons.delete_outline, color: Colors.red),
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
                 title: Text('Fotoğrafı Kaldır',
                     style: GoogleFonts.notoSans(color: Colors.red)),
                 onTap: () async {
@@ -1424,8 +1479,8 @@ class ProfileScreenState extends State<ProfileScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Fotoğraf seçilemedi')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Fotoğraf seçilemedi')));
       }
     }
   }
@@ -1437,7 +1492,8 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   const _TabBarDelegate(this.tabBar, this.bgColor);
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) =>
+  Widget build(
+          BuildContext context, double shrinkOffset, bool overlapsContent) =>
       Container(color: bgColor, child: tabBar);
 
   @override
@@ -1445,6 +1501,5 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => tabBar.preferredSize.height;
   @override
-  bool shouldRebuild(covariant _TabBarDelegate old) =>
-      old.bgColor != bgColor;
+  bool shouldRebuild(covariant _TabBarDelegate old) => old.bgColor != bgColor;
 }

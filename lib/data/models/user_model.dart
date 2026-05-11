@@ -14,6 +14,12 @@ class UserModel {
   final int mercyDaysUsed;
   final String lastStreakDate;
 
+  // --- YENİ ALANLAR ---
+  final String bio;
+  final String gender; // 'erkek' | 'kadin' | ''
+  final String photoUrl; // Firebase Storage URL (boş olabilir)
+  final bool isEmailVerified;
+
   UserModel({
     required this.id,
     required this.nameSurname,
@@ -27,6 +33,11 @@ class UserModel {
     this.streakDays = 0,
     this.mercyDaysUsed = 0,
     this.lastStreakDate = '',
+    // YENİ
+    this.bio = '',
+    this.gender = '',
+    this.photoUrl = '',
+    this.isEmailVerified = false,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -46,6 +57,11 @@ class UserModel {
       streakDays: map['streakDays'] ?? 0,
       mercyDaysUsed: map['mercyDaysUsed'] ?? 0,
       lastStreakDate: map['lastStreakDate'] ?? '',
+      // YENİ
+      bio: map['bio'] ?? '',
+      gender: map['gender'] ?? '',
+      photoUrl: map['photoUrl'] ?? '',
+      isEmailVerified: (map['isEmailVerified'] as int? ?? 0) == 1,
     );
   }
 
@@ -64,6 +80,11 @@ class UserModel {
       'streakDays': streakDays,
       'mercyDaysUsed': mercyDaysUsed,
       'lastStreakDate': lastStreakDate,
+      // YENİ
+      'bio': bio,
+      'gender': gender,
+      'photoUrl': photoUrl,
+      'isEmailVerified': isEmailVerified ? 1 : 0,
     };
   }
 
@@ -75,11 +96,18 @@ class UserModel {
     int? streakDays,
     int? mercyDaysUsed,
     String? lastStreakDate,
+    // YENİ
+    String? nameSurname,
+    String? phone,
+    String? bio,
+    String? gender,
+    String? photoUrl,
+    bool? isEmailVerified,
   }) {
     return UserModel(
       id: id,
-      nameSurname: nameSurname,
-      phone: phone,
+      nameSurname: nameSurname ?? this.nameSurname,
+      phone: phone ?? this.phone,
       email: email,
       createdAt: createdAt,
       quranReadDays: quranReadDays ?? this.quranReadDays,
@@ -89,6 +117,11 @@ class UserModel {
       streakDays: streakDays ?? this.streakDays,
       mercyDaysUsed: mercyDaysUsed ?? this.mercyDaysUsed,
       lastStreakDate: lastStreakDate ?? this.lastStreakDate,
+      // YENİ
+      bio: bio ?? this.bio,
+      gender: gender ?? this.gender,
+      photoUrl: photoUrl ?? this.photoUrl,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
     );
   }
 
@@ -103,13 +136,13 @@ class UserModel {
   // Streak rengi — seviyeye göre değişir
   static List<Color> getStreakColors(int streak) {
     if (streak >= 30) {
-      return [const Color(0xFFFFD700), const Color(0xFFFFA500)]; // Altın
+      return [const Color(0xFFFFD700), const Color(0xFFFFA500)];
     } else if (streak >= 14) {
-      return [const Color(0xFF40B4C8), const Color(0xFF207080)]; // Turkuaz
+      return [const Color(0xFF40B4C8), const Color(0xFF207080)];
     } else if (streak >= 7) {
-      return [const Color(0xFF4CAF50), const Color(0xFF2E7D32)]; // Yeşil
+      return [const Color(0xFF4CAF50), const Color(0xFF2E7D32)];
     }
-    return [const Color(0xFF9E9E9E), const Color(0xFF616161)]; // Gri
+    return [const Color(0xFF9E9E9E), const Color(0xFF616161)];
   }
 
   static String getStreakBadge(int streak) {

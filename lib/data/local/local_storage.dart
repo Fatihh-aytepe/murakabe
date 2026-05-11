@@ -77,4 +77,9 @@ class LocalStorage {
   int get hadisOpenCount => _prefs.getInt('hadisOpenCount') ?? 0;
   Future<void> incrementHadisCount() =>
       _prefs.setInt('hadisOpenCount', hadisOpenCount + 1);
+
+  // ── YENİ: Alarm ses seçimi ────────────────────────────────────────────────
+  String? get alarmSoundId => _prefs.getString('alarmSoundId');
+  Future<void> setAlarmSoundId(String id) =>
+      _prefs.setString('alarmSoundId', id);
 }

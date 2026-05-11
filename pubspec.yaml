@@ -17,6 +17,11 @@ dependencies:
   firebase_auth: ^4.16.0
   cloud_firestore: ^4.14.0
   firebase_messaging: ^14.7.10
+  firebase_remote_config: ^4.3.4
+
+  # Update
+  package_info_plus: ^8.0.0
+  url_launcher: ^6.2.5
 
   # Local DB
   sqflite: ^2.3.0
@@ -68,5 +73,7 @@ flutter:
     - assets/data/ayetler.json
     - assets/data/hadisler.json
     - assets/data/esmaul_husna.json
+    - assets/sounds/
+    
     
     

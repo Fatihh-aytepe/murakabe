@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 
@@ -19,7 +19,7 @@ class QuranTrackerCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: isRead
             ? LinearGradient(
-                colors: [AppColors.success, AppColors.success.withOpacity(0.7)],
+                colors: [AppColors.success, AppColors.success.withValues(alpha: 0.7)],
               )
             : const LinearGradient(
                 colors: [Color(0xFF2C3E50), Color(0xFF3498DB)],
@@ -28,7 +28,7 @@ class QuranTrackerCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: (isRead ? AppColors.success : const Color(0xFF3498DB))
-                .withOpacity(0.3),
+                .withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -40,7 +40,7 @@ class QuranTrackerCard extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -67,7 +67,7 @@ class QuranTrackerCard extends StatelessWidget {
                       ? 'Mâşâallah! Devam et!'
                       : "Allah'ın kelamı kalplere şifa verir",
                   style: GoogleFonts.notoSans(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 12,
                   ),
                 ),

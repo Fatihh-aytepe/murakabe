@@ -17,7 +17,7 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'murakabe.db');
     return openDatabase(
       path,
-      version: 2,
+      version: 3, // 2 → 3: profil alanları eklendi
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -38,7 +38,11 @@ class DatabaseHelper {
         tahajjudAlarmTimes TEXT DEFAULT '[]',
         streakDays INTEGER DEFAULT 0,
         mercyDaysUsed INTEGER DEFAULT 0,
-        lastStreakDate TEXT DEFAULT ''
+        lastStreakDate TEXT DEFAULT '',
+        bio TEXT DEFAULT '',
+        gender TEXT DEFAULT '',
+        photoUrl TEXT DEFAULT '',
+        isEmailVerified INTEGER DEFAULT 0
       )
     ''');
 
@@ -101,17 +105,18 @@ class DatabaseHelper {
         hadisIndex INTEGER DEFAULT 0,
         ayetIndex INTEGER DEFAULT 0
       )
-    
     ''');
+
     await db.execute('''
-  CREATE TABLE rewards (
-    id TEXT PRIMARY KEY,
-    type TEXT,
-    title TEXT,
-    message TEXT,
-    earnedAt TEXT
-  )
-''');
+      CREATE TABLE rewards (
+        id TEXT PRIMARY KEY,
+        type TEXT,
+        title TEXT,
+        message TEXT,
+        earnedAt TEXT
+      )
+    ''');
+
     await _createCustomTaskTables(db);
   }
 
@@ -141,9 +146,25 @@ class DatabaseHelper {
     if (oldVersion < 2) {
       await _createCustomTaskTables(db);
     }
+    if (oldVersion < 3) {
+      // Profil alanları migration — ALTER TABLE ile eklenir
+      final cols = ['bio', 'gender', 'photoUrl', 'isEmailVerified'];
+      final defaults = ["''", "''", "''", '0'];
+      final types = ['TEXT', 'TEXT', 'TEXT', 'INTEGER'];
+      for (var i = 0; i < cols.length; i++) {
+        try {
+          await db.execute(
+            'ALTER TABLE users ADD COLUMN ${cols[i]} ${types[i]} DEFAULT ${defaults[i]}',
+          );
+        } catch (_) {
+          // Sütun zaten varsa sessizce geç
+        }
+      }
+    }
   }
 
-  // Genel metodlar
+  // ─── Genel metodlar ───────────────────────────────────────────────────────
+
   Future<int> insert(String table, Map<String, dynamic> data) async {
     final db = await database;
     return db.insert(table, data, conflictAlgorithm: ConflictAlgorithm.replace);

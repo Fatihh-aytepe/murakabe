@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/reward_service.dart';
@@ -38,7 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final _userRepo = UserRepository();
   final _taskRepo = CustomTaskRepository();
 
-  // GlobalKey'ler ile alt ekranları dışarıdan yenileyebiliyoruz
   final _profileKey = GlobalKey<ProfileScreenState>();
   final _notesKey = GlobalKey<NotesScreenState>();
 
@@ -145,27 +144,9 @@ class _HomeScreenState extends State<HomeScreen> {
     await NotificationService().scheduleThursdayTahajjud();
     await NotificationService().scheduleWeeklyFridaySummary();
 
-    // Aktif görevlerin bildirimlerini zamanla
-    final tasks = await _taskRepo.getActiveTasks();
-    for (final task in tasks) {
-      if (task.notificationTime.isNotEmpty) {
-        final parts = task.notificationTime.split(':');
-        if (parts.length == 2) {
-          final hour = int.tryParse(parts[0]) ?? 9;
-          final minute = int.tryParse(parts[1]) ?? 0;
-          final id = (task.id.hashCode.abs() % 10000) + 5000;
-          await NotificationService().scheduleTaskNotification(
-            id,
-            '${task.emoji} ${task.title}',
-            task.description.isNotEmpty
-                ? task.description
-                : '${task.title} göreviniz var!',
-            hour,
-            minute,
-          );
-        }
-      }
-    }
+    // Görev bildirimlerini senkronize et — silinmiş görevler iptal edilir,
+    // aktif olanlar yeniden zamanlanır. Merkezi ID CustomTaskRepository.taskNotifId()
+    await _taskRepo.syncNotifications();
   }
 
   Future<void> _refreshContent() async {
@@ -175,7 +156,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onTabChanged(int i) {
     setState(() => _selectedIndex = i);
-    // Sekme değişince ilgili ekranı yenile
     if (i == 1) _notesKey.currentState?.reload();
     if (i == 3) _profileKey.currentState?.reload();
   }
@@ -212,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
       color: AppColors.gold,
       child: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(child: const IslamicHeader()),
+          const SliverToBoxAdapter(child: IslamicHeader()),
           SliverPadding(
             padding: const EdgeInsets.all(16),
             sliver: SliverList(
@@ -268,8 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            HadisDetailScreen(hadis: _todayHadis!),
+                        builder: (_) => HadisDetailScreen(hadis: _todayHadis!),
                       ),
                     ).then((_) => _profileKey.currentState?.reload()),
                     onSave: () =>
@@ -320,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
         color: isDark ? const Color(0xFF1A2035) : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: AppColors.gold.withOpacity(0.15),
+            color: AppColors.gold.withValues(alpha: 0.15),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),

@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -122,15 +122,15 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
                           width: double.infinity,
                           padding: const EdgeInsets.all(28),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(28),
                             border: Border.all(
-                              color: AppColors.gold.withOpacity(0.4),
+                              color: AppColors.gold.withValues(alpha: 0.4),
                               width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.gold.withOpacity(0.15),
+                                color: AppColors.gold.withValues(alpha: 0.15),
                                 blurRadius: 40,
                                 spreadRadius: 5,
                               ),
@@ -151,7 +151,7 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
 
                               Container(
                                 height: 1,
-                                color: AppColors.gold.withOpacity(0.3),
+                                color: AppColors.gold.withValues(alpha: 0.3),
                               ),
                               const SizedBox(height: 20),
 
@@ -175,7 +175,7 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 14,
-                                  color: Colors.white.withOpacity(0.80),
+                                  color: Colors.white.withValues(alpha: 0.80),
                                   height: 1.9,
                                   fontStyle: FontStyle.italic,
                                 ),
@@ -184,7 +184,7 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
                               const SizedBox(height: 20),
                               Container(
                                 height: 1,
-                                color: AppColors.gold.withOpacity(0.3),
+                                color: AppColors.gold.withValues(alpha: 0.3),
                               ),
                               const SizedBox(height: 20),
 
@@ -193,10 +193,10 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: AppColors.gold.withOpacity(0.12),
+                                  color: AppColors.gold.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                      color: AppColors.gold.withOpacity(0.4)),
+                                      color: AppColors.gold.withValues(alpha: 0.4)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -234,7 +234,7 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               elevation: 8,
-                              shadowColor: AppColors.gold.withOpacity(0.4),
+                              shadowColor: AppColors.gold.withValues(alpha: 0.4),
                             ),
                             child: Text(
                               'Yolculuga Basla',
@@ -280,7 +280,7 @@ class _StarFieldPainter extends CustomPainter {
       final opacity =
           (0.3 + 0.5 * math.sin(progress * math.pi * 2 + s.phase))
               .clamp(0.1, 0.9);
-      paint.color = AppColors.gold.withOpacity(opacity);
+      paint.color = AppColors.gold.withValues(alpha: opacity);
       canvas.drawCircle(
           Offset(s.x * size.width, s.y * size.height), s.r, paint);
     }

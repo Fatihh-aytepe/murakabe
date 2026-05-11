@@ -13,8 +13,6 @@ class ContentRepository {
   final LocalStorage _storage = LocalStorage();
   final FirebaseService _firebase = FirebaseService();
 
-  String? get _uid => _storage.userId;
-
   List<EsmaModel>? _esmaCache;
   List<HadisModel>? _hadisCache;
   List<AyetModel>? _ayetCache;

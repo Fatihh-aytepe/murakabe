@@ -12,14 +12,22 @@ class CustomTaskRepository {
 
   String? get _uid => _storage.userId;
 
+  // ── Tek merkezi ID hesabı — hem burada hem home_screen bu metodu kullanır ──
+  // Aralık: 3000–3999 (home_screen'deki 5000+ ve eski 2000+ ile çakışmaz)
+  static int taskNotifId(String taskId) => 3000 + taskId.hashCode.abs() % 1000;
+
+  // ── Okuma ────────────────────────────────────────────────────────────────
+
   Future<List<CustomTaskModel>> getAllTasks() async {
     final rows =
         await _db.query('custom_tasks', where: null, orderBy: 'createdAt ASC');
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final completions = await _db.query('custom_task_completions',
-        where: 'completedDate = ?', whereArgs: [today]);
-    final completedIds =
-        completions.map((r) => r['taskId'] as String).toSet();
+    final completions = await _db.query(
+      'custom_task_completions',
+      where: 'completedDate = ?',
+      whereArgs: [today],
+    );
+    final completedIds = completions.map((r) => r['taskId'] as String).toSet();
 
     return rows.map((r) {
       final task = CustomTaskModel.fromMap(r);
@@ -33,6 +41,8 @@ class CustomTaskRepository {
     return all.where((t) => t.isActive).toList();
   }
 
+  // ── Ekleme ───────────────────────────────────────────────────────────────
+
   Future<void> addTask(CustomTaskModel task) async {
     await _db.insert('custom_tasks', task.toMap());
     if (_uid != null) {
@@ -45,31 +55,53 @@ class CustomTaskRepository {
     }
   }
 
+  // ── Güncelleme ───────────────────────────────────────────────────────────
+
   Future<void> updateTask(CustomTaskModel task) async {
-    await _db.update('custom_tasks', task.toMap(),
-        where: 'id = ?', whereArgs: [task.id]);
+    await _db.update(
+      'custom_tasks',
+      task.toMap(),
+      where: 'id = ?',
+      whereArgs: [task.id],
+    );
     if (_uid != null) {
       try {
         await _firebase.saveTask(_uid!, task.toMap());
       } catch (_) {}
     }
-    await NotificationService().cancelNotification(_taskNotifId(task.id));
+
+    // Önce eski bildirimi iptal et
+    await NotificationService().cancelNotification(taskNotifId(task.id));
+
+    // Görev aktifse ve saati varsa yeniden zamanla
     if (task.isActive && task.notificationTime.isNotEmpty) {
       await _scheduleTaskNotification(task);
     }
   }
 
+  // ── Silme ────────────────────────────────────────────────────────────────
+
   Future<void> deleteTask(String taskId) async {
+    // 1. Bildirimi iptal et — veritabanından SİLMEDEN önce
+    await NotificationService().cancelNotification(taskNotifId(taskId));
+
+    // 2. Veritabanından sil
     await _db.delete('custom_tasks', where: 'id = ?', whereArgs: [taskId]);
-    await _db.delete('custom_task_completions',
-        where: 'taskId = ?', whereArgs: [taskId]);
+    await _db.delete(
+      'custom_task_completions',
+      where: 'taskId = ?',
+      whereArgs: [taskId],
+    );
+
+    // 3. Firestore'dan sil
     if (_uid != null) {
       try {
         await _firebase.deleteTask(_uid!, taskId);
       } catch (_) {}
     }
-    await NotificationService().cancelNotification(_taskNotifId(taskId));
   }
+
+  // ── Tamamlama ────────────────────────────────────────────────────────────
 
   Future<void> markTaskCompleted(String taskId) async {
     final today = DateTime.now().toIso8601String().substring(0, 10);
@@ -96,9 +128,34 @@ class CustomTaskRepository {
 
   Future<void> unmarkTaskCompleted(String taskId) async {
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    await _db.delete('custom_task_completions',
-        where: 'taskId = ? AND completedDate = ?', whereArgs: [taskId, today]);
+    await _db.delete(
+      'custom_task_completions',
+      where: 'taskId = ? AND completedDate = ?',
+      whereArgs: [taskId, today],
+    );
   }
+
+  // ── Senkronizasyon (uygulama açılışında çağır) ───────────────────────────
+  // Aktif görevlerle bildirimleri senkronize eder.
+  // Silinmiş görevlerin bildirimleri iptal edilir, yeniler zamanlanır.
+  Future<void> syncNotifications() async {
+    final activeTasks = await getActiveTasks();
+    final activeIds = activeTasks.map((t) => t.id).toSet();
+
+    // Önce 3000–3999 aralığındaki tüm eski bildirimleri iptal et
+    for (int i = 3000; i < 4000; i++) {
+      await NotificationService().cancelNotification(i);
+    }
+
+    // Sadece aktif görevleri yeniden zamanla
+    for (final task in activeTasks) {
+      if (activeIds.contains(task.id) && task.notificationTime.isNotEmpty) {
+        await _scheduleTaskNotification(task);
+      }
+    }
+  }
+
+  // ── Yardımcılar ──────────────────────────────────────────────────────────
 
   Future<void> _scheduleTaskNotification(CustomTaskModel task) async {
     final parts = task.notificationTime.split(':');
@@ -111,14 +168,12 @@ class CustomTaskRepository {
       scheduledTime = scheduledTime.add(const Duration(days: 1));
     }
     await NotificationService().scheduleCustomReminder(
-      _taskNotifId(task.id),
+      taskNotifId(task.id),
       '${task.emoji} ${task.title}',
       task.description.isNotEmpty
           ? task.description
-          : 'Gunluk gorev seni bekliyor',
+          : '${task.title} göreviniz sizi bekliyor',
       scheduledTime,
     );
   }
-
-  int _taskNotifId(String taskId) => 2000 + taskId.hashCode.abs() % 1000;
 }

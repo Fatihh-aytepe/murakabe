@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:uuid/uuid.dart';
 import '../local/database_helper.dart';
 import '../local/local_storage.dart';
 import '../models/user_model.dart';
@@ -24,17 +23,28 @@ class UserRepository {
     return UserModel.fromMap(map);
   }
 
+  /// Firebase Auth ile kullanıcı oluşturur; UID'yi Firestore + SQLite'a yazar.
+  /// [password] yalnızca Auth kaydı için kullanılır, SQLite'a yazılmaz.
   Future<UserModel> createUser({
     required String nameSurname,
     required String phone,
     required String email,
+    required String password,
   }) async {
+    // 1. Firebase Auth kaydı + doğrulama maili
+    final authUser = await _firebase.registerWithEmail(
+      email: email,
+      password: password,
+    );
+
+    // Auth UID'sini kullan — UUID yerine
     final user = UserModel(
-      id: const Uuid().v4(),
+      id: authUser.uid,
       nameSurname: nameSurname,
       phone: phone,
       email: email,
       createdAt: DateTime.now(),
+      isEmailVerified: false,
     );
 
     final map = user.toMap();
@@ -42,10 +52,12 @@ class UserRepository {
     map['tahajjudAlarmTimes'] = jsonEncode(
         user.tahajjudAlarmTimes.map((e) => e.toIso8601String()).toList());
 
+    // 2. SQLite'a yaz
     await _db.insert('users', map);
     await _storage.setUserId(user.id);
     await _storage.setUserRegistered(true);
 
+    // 3. Firestore'a yaz (hata olursa sessizce geç — offline senaryosu)
     try {
       await _firebase.saveUser(user);
     } catch (_) {}
@@ -64,6 +76,16 @@ class UserRepository {
     try {
       await _firebase.saveUser(user);
     } catch (_) {}
+  }
+
+  /// E-posta doğrulama durumunu Firebase'den sorgulayıp SQLite'ı günceller.
+  Future<bool> syncEmailVerified() async {
+    final verified = await _firebase.reloadAndCheckVerified();
+    final user = await getCurrentUser();
+    if (user != null && verified && !user.isEmailVerified) {
+      await updateUser(user.copyWith(isEmailVerified: true));
+    }
+    return verified;
   }
 
   Future<void> markQuranRead(String date) async {

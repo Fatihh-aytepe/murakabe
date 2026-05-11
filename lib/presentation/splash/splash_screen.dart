@@ -1,9 +1,11 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/services/update_service.dart';
 import '../../data/local/local_storage.dart';
 import '../auth/login_screen.dart';
 import '../home/home_screen.dart';
@@ -47,6 +49,14 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
 
+    final updateInfo = await UpdateService().checkForUpdate();
+    if (!mounted) return;
+
+    if (updateInfo.hasUpdate && updateInfo.apkUrl.isNotEmpty) {
+      await _showUpdateDialog(updateInfo);
+      if (!mounted) return;
+    }
+
     final storage = LocalStorage();
     if (storage.isAdmin) {
       Navigator.pushReplacement(
@@ -64,6 +74,57 @@ class _SplashScreenState extends State<SplashScreen>
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     }
+  }
+
+  Future<void> _showUpdateDialog(UpdateInfo info) async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: !info.forceUpdate,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1B2A3B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Güncelleme Mevcut',
+          style: GoogleFonts.playfairDisplay(
+            color: AppColors.gold,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'Yeni sürüm (${info.latestVersion}) hazır!\n\nDaha iyi bir deneyim için güncellemenizi öneririz.',
+          style: GoogleFonts.notoSans(color: AppColors.white),
+        ),
+        actions: [
+          if (!info.forceUpdate)
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'Sonra',
+                style: TextStyle(color: AppColors.turquoiseLight),
+              ),
+            ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.gold,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () async {
+              final uri = Uri.parse(info.apkUrl);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+              if (!info.forceUpdate && ctx.mounted) {
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Güncelle'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -102,7 +163,7 @@ class _SplashScreenState extends State<SplashScreen>
                         border: Border.all(color: AppColors.gold, width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.gold.withOpacity(0.3),
+                            color: AppColors.gold.withValues(alpha: 0.3),
                             blurRadius: 30,
                             spreadRadius: 5,
                           ),
@@ -178,7 +239,7 @@ class _IslamicPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.gold.withOpacity(0.05)
+      ..color = AppColors.gold.withValues(alpha: 0.05)
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
 

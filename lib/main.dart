@@ -22,6 +22,7 @@ void main() async {
   await LocalStorage().init();
   await NotificationService().init();
   await AlarmService().init();
+  await AlarmService().createSoundChannels();
   await ConnectivityService().init();
   await ThemeService().init();
 

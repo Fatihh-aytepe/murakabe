@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/constants/app_colors.dart';
@@ -40,16 +40,16 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
         ),
         border:
-            Border(bottom: BorderSide(color: AppColors.gold.withOpacity(0.2))),
+            Border(bottom: BorderSide(color: AppColors.gold.withValues(alpha: 0.2))),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.gold.withOpacity(0.15),
+              color: AppColors.gold.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.gold.withOpacity(0.4)),
+              border: Border.all(color: AppColors.gold.withValues(alpha: 0.4)),
             ),
             child: const Icon(Icons.admin_panel_settings,
                 color: AppColors.gold, size: 24),
@@ -97,14 +97,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           hintStyle: const TextStyle(color: Colors.white38),
           prefixIcon: const Icon(Icons.search, color: Colors.white38),
           filled: true,
-          fillColor: Colors.white.withOpacity(0.05),
+          fillColor: Colors.white.withValues(alpha: 0.05),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -137,9 +137,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(label,
           style: TextStyle(
@@ -209,8 +209,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: missed > 0
-                ? Colors.red.withOpacity(0.3)
-                : AppColors.gold.withOpacity(0.15),
+                ? Colors.red.withValues(alpha: 0.3)
+                : AppColors.gold.withValues(alpha: 0.15),
           ),
         ),
         child: Row(
@@ -381,9 +381,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                   ),
                   child: const Row(
                     children: [
@@ -409,7 +409,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.15),
+                              color: Colors.red.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(d,

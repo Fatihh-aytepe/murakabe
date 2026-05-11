@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 
 class FirebaseService {
@@ -7,10 +8,64 @@ class FirebaseService {
   FirebaseService._internal();
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   CollectionReference _userCol() => _db.collection('users');
   CollectionReference _sub(String uid, String col) =>
       _userCol().doc(uid).collection(col);
+
+  // ─── AUTH ─────────────────────────────────────────────────────────────────
+
+  /// Firebase Auth ile yeni kullanıcı oluşturur ve doğrulama maili gönderir.
+  /// Dönen [UserCredential.user.uid] Firestore doküman ID'si olarak kullanılır.
+  Future<User> registerWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    final credential = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    final user = credential.user!;
+    // Doğrulama maili gönder
+    await user.sendEmailVerification();
+    return user;
+  }
+
+  /// Firebase Auth ile e-posta/şifre girişi.
+  Future<User> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    final credential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    return credential.user!;
+  }
+
+  /// Oturumu kapatır.
+  Future<void> signOut() => _auth.signOut();
+
+  /// Mevcut Auth kullanıcısı (null ise giriş yapılmamış).
+  User? get currentAuthUser => _auth.currentUser;
+
+  /// E-posta doğrulandı mı? (her açılışta yeniden sorgular)
+  Future<bool> reloadAndCheckVerified() async {
+    await _auth.currentUser?.reload();
+
+    return _auth.currentUser?.emailVerified ?? false;
+  }
+
+  /// Doğrulama mailini tekrar gönderir.
+  Future<void> resendVerificationEmail() async {
+    await _auth.currentUser?.sendEmailVerification();
+  }
+
+  /// Şifre sıfırlama maili gönderir.
+  Future<void> resetPassword(String email) async {
+    await _auth.sendPasswordResetEmail(email: email.trim());
+  }
 
   // ─── USER ─────────────────────────────────────────────────────────────────
   Future<void> saveUser(UserModel user) async {

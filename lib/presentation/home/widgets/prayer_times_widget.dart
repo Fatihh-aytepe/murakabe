@@ -1,4 +1,4 @@
-import 'package:adhan/adhan.dart';
+﻿import 'package:adhan/adhan.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -109,9 +109,7 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
     return '${hijri[2]} ${months[hijri[1]]} ${hijri[0]}';
   }
 
-  // Gregorian → Hicri takvim çevirisi (Julian Day tabanlı)
   List<int> _gregorianToHijri(int gy, int gm, int gd) {
-    // Julian Day Number hesapla
     int a = ((14 - gm) ~/ 12);
     int y = gy + 4800 - a;
     int m = gm + 12 * a - 3;
@@ -122,8 +120,6 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
         (y ~/ 100) +
         (y ~/ 400) -
         32045;
-
-    // JDN → Hicri
     int l = jdn - 1948440 + 10632;
     int n = (l - 1) ~/ 10631;
     l = l - 10631 * n + 354;
@@ -141,59 +137,135 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) return _buildSkeleton();
+    if (_result == null) return _buildError();
+    return _buildStrip();
+  }
+
+  // ── Yüklenirken iskelet ───────────────────────────────────────────────────
+  Widget _buildSkeleton() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+      height: 72,
+      decoration: _stripDecoration(),
+      child: const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child:
+              CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.gold.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
       ),
-      child: _isLoading
-          ? const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(
-                child: CircularProgressIndicator(color: AppColors.gold),
-              ),
-            )
-          : _result == null
-              ? _buildError()
-              : _buildContent(),
     );
   }
 
+  // ── Hata durumu ───────────────────────────────────────────────────────────
   Widget _buildError() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: _stripDecoration(),
+      child: Row(
         children: [
-          const Icon(Icons.location_off, color: Colors.white38, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            'Namaz vakitleri yüklenemedi\nKonum iznini kontrol edin',
-            style: GoogleFonts.notoSans(color: Colors.white54, fontSize: 13),
-            textAlign: TextAlign.center,
+          const Icon(Icons.location_off, color: Colors.white38, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Namaz vakitleri yüklenemedi',
+              style: GoogleFonts.notoSans(color: Colors.white54, fontSize: 12),
+            ),
           ),
-          const SizedBox(height: 12),
-          TextButton.icon(
+          TextButton(
             onPressed: () {
               setState(() => _isLoading = true);
               _loadPrayerTimes();
             },
-            icon: const Icon(Icons.refresh, color: AppColors.gold, size: 18),
-            label: Text(
-              'Tekrar Dene',
-              style: GoogleFonts.notoSans(color: AppColors.gold),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: Size.zero,
+            ),
+            child: Text('Dene',
+                style:
+                    GoogleFonts.notoSans(color: AppColors.gold, fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Ana şerit ─────────────────────────────────────────────────────────────
+  Widget _buildStrip() {
+    final pt = _result!.prayerTimes;
+
+    return Container(
+      decoration: _stripDecoration(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Üst satır: tarih + geri sayım ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
+            child: Row(
+              children: [
+                // Hicri tarih
+                Text(
+                  _getHijriDate(),
+                  style: GoogleFonts.amiri(
+                    color: AppColors.gold,
+                    fontSize: 13,
+                  ),
+                ),
+                const Spacer(),
+                // Canlı geri sayım
+                StreamBuilder<DateTime>(
+                  stream: _clockStream,
+                  builder: (_, __) {
+                    if (_result != null) _updateNextPrayer(pt);
+                    return Row(
+                      children: [
+                        Text(
+                          '$_nextPrayerName\'a ',
+                          style: GoogleFonts.notoSans(
+                            color: AppColors.turquoiseLight,
+                            fontSize: 11,
+                          ),
+                        ),
+                        Text(
+                          _formatDuration(_timeToNext),
+                          style: GoogleFonts.notoSans(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // ── Alt satır: yatay namaz vakitleri ──
+          SizedBox(
+            height: 58,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              itemCount: _prayers.length,
+              itemBuilder: (_, i) {
+                final p = _prayers[i];
+                final time = p['time'] as DateTime;
+                final now = DateTime.now();
+                final isNext = p['name'] == _nextPrayerName;
+                final isPast = time.isBefore(now);
+
+                return _buildPrayerCell(
+                  name: p['name'] as String,
+                  icon: p['icon'] as String,
+                  time: _formatTime(time),
+                  isNext: isNext,
+                  isPast: isPast,
+                );
+              },
             ),
           ),
         ],
@@ -201,136 +273,79 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
     );
   }
 
-  Widget _buildContent() {
-    final pt = _result!.prayerTimes;
-    return Column(
-      children: [
-        // Üst: Tarih + Geri sayım
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    DateFormat('dd MMMM yyyy', 'tr').format(DateTime.now()),
-                    style: GoogleFonts.notoSans(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                  Text(
-                    _getHijriDate(),
-                    style: GoogleFonts.amiri(
-                      color: AppColors.gold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-              // Geri sayım
-              StreamBuilder<DateTime>(
-                stream: _clockStream,
-                builder: (_, snap) {
-                  if (_result != null) {
-                    _updateNextPrayer(pt);
-                  }
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        _nextPrayerName,
-                        style: GoogleFonts.notoSans(
-                          color: AppColors.turquoiseLight,
-                          fontSize: 12,
-                        ),
-                      ),
-                      Text(
-                        _formatDuration(_timeToNext),
-                        style: GoogleFonts.playfairDisplay(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
+  Widget _buildPrayerCell({
+    required String name,
+    required String icon,
+    required String time,
+    required bool isNext,
+    required bool isPast,
+  }) {
+    final nameColor = isNext
+        ? AppColors.gold
+        : isPast
+            ? Colors.white24
+            : Colors.white54;
+    final timeColor = isNext
+        ? AppColors.gold
+        : isPast
+            ? Colors.white24
+            : Colors.white70;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isNext
+            ? AppColors.gold.withValues(alpha: 0.18)
+            : Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isNext
+              ? AppColors.gold.withValues(alpha: 0.6)
+              : Colors.white.withValues(alpha: 0.06),
+          width: isNext ? 1 : 0.5,
         ),
-
-        const Divider(color: Colors.white12, height: 1),
-
-        // Namaz vakitleri listesi
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: _prayers.map((p) {
-              final time = p['time'] as DateTime;
-              final now = DateTime.now();
-              final isNext = p['name'] == _nextPrayerName;
-              final isPast = time.isBefore(now);
-
-              return Container(
-                margin: const EdgeInsets.symmetric(vertical: 3),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isNext
-                      ? AppColors.gold.withOpacity(0.2)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  border: isNext
-                      ? Border.all(color: AppColors.gold.withOpacity(0.5))
-                      : null,
-                ),
-                child: Row(
-                  children: [
-                    Text(p['icon'] as String,
-                        style: const TextStyle(fontSize: 16)),
-                    const SizedBox(width: 10),
-                    Text(
-                      p['name'] as String,
-                      style: GoogleFonts.notoSans(
-                        color: isNext
-                            ? AppColors.gold
-                            : isPast
-                                ? Colors.white38
-                                : Colors.white70,
-                        fontSize: 13,
-                        fontWeight:
-                            isNext ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      _formatTime(time),
-                      style: GoogleFonts.playfairDisplay(
-                        color: isNext
-                            ? AppColors.gold
-                            : isPast
-                                ? Colors.white38
-                                : Colors.white,
-                        fontSize: 14,
-                        fontWeight:
-                            isNext ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                    if (isNext)
-                      const Padding(
-                        padding: EdgeInsets.only(left: 6),
-                        child: Icon(Icons.arrow_forward_ios,
-                            color: AppColors.gold, size: 12),
-                      ),
-                  ],
-                ),
-              );
-            }).toList(),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(icon, style: TextStyle(fontSize: isPast ? 12 : 14)),
+          const SizedBox(height: 2),
+          Text(
+            name,
+            style: GoogleFonts.notoSans(
+              color: nameColor,
+              fontSize: 10,
+              fontWeight: isNext ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
+          Text(
+            time,
+            style: GoogleFonts.notoSans(
+              color: timeColor,
+              fontSize: 11,
+              fontWeight: isNext ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  BoxDecoration _stripDecoration() {
+    return BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.gold.withValues(alpha: 0.12),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
         ),
       ],
     );
