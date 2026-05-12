@@ -50,6 +50,11 @@ android/app/google-services.json
 ios/GoogleService-Info.plist
 lib/firebase_options.dart
 
+# Android Keystore - SECRET (never commit these!)
+*.jks
+*.keystore
+android/key.properties
+
 # Environment variables
 .env
 .env.*
