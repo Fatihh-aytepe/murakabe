@@ -1,4 +1,5 @@
 ﻿import 'dart:math' as math;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,10 +7,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/services/update_service.dart';
+import '../../core/services/role_service.dart';
 import '../../data/local/local_storage.dart';
 import '../auth/login_screen.dart';
+import '../auth/auth_migration_screen.dart';
 import '../home/home_screen.dart';
-import '../admin/admin_panel_screen.dart';
+import '../community/owner_panel_screen.dart';
+import '../community/admin_dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -49,31 +53,61 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
 
+    // Güncelleme kontrolü
     final updateInfo = await UpdateService().checkForUpdate();
     if (!mounted) return;
-
     if (updateInfo.hasUpdate && updateInfo.apkUrl.isNotEmpty) {
       await _showUpdateDialog(updateInfo);
       if (!mounted) return;
     }
 
     final storage = LocalStorage();
-    if (storage.isAdmin) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AdminPanelScreen()),
-      );
-    } else if (storage.isUserRegistered) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+
+    // ── 1. Hiç kayıt yok → Login ──────────────────────────────────────────
+    if (!storage.isUserRegistered) {
+      _go(const LoginScreen());
+      return;
     }
+
+    // ── 2. Kayıt var ama Auth migration yapılmamış ─────────────────────────
+    // Eski kullanıcı: SQLite'da var, Firebase Auth'a geçmemiş
+    if (!storage.authMigrationDone) {
+      final authUser = FirebaseAuth.instance.currentUser;
+      if (authUser == null) {
+        // Firebase Auth oturumu yok → migration ekranına gönder
+        final oldUserId = storage.userId ?? '';
+        if (oldUserId.isNotEmpty) {
+          _go(AuthMigrationScreen(oldUserId: oldUserId));
+          return;
+        }
+      } else {
+        // Auth oturumu var ama migration flag yok → tamamlanmış say
+        await storage.setAuthMigrationDone();
+      }
+    }
+
+    // ── 3. Migration tamamlanmış → Role göre yönlendir ─────────────────────
+    final role = await RoleService().getCurrentRole();
+    if (!mounted) return;
+
+    switch (role) {
+      case UserRole.owner:
+        _go(const OwnerPanelScreen());
+        break;
+      case UserRole.admin:
+        _go(const AdminDashboardScreen());
+        break;
+      case UserRole.user:
+        _go(const HomeScreen());
+        break;
+    }
+  }
+
+  void _go(Widget screen) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => screen),
+    );
   }
 
   Future<void> _showUpdateDialog(UpdateInfo info) async {
@@ -86,9 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
         title: Text(
           'Güncelleme Mevcut',
           style: GoogleFonts.playfairDisplay(
-            color: AppColors.gold,
-            fontWeight: FontWeight.bold,
-          ),
+              color: AppColors.gold, fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Yeni sürüm (${info.latestVersion}) hazır!\n\nDaha iyi bir deneyim için güncellemenizi öneririz.',
@@ -98,18 +130,15 @@ class _SplashScreenState extends State<SplashScreen>
           if (!info.forceUpdate)
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'Sonra',
-                style: TextStyle(color: AppColors.turquoiseLight),
-              ),
+              child: const Text('Sonra',
+                  style: TextStyle(color: AppColors.turquoiseLight)),
             ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.gold,
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+                  borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () async {
               final uri = Uri.parse(info.apkUrl);
@@ -170,10 +199,8 @@ class _SplashScreenState extends State<SplashScreen>
                         ],
                       ),
                       child: ClipOval(
-                        child: Image.asset(
-                          'assets/images/logo.png',
-                          fit: BoxFit.cover,
-                        ),
+                        child: Image.asset('assets/images/logo.png',
+                            fit: BoxFit.cover),
                       ),
                     ),
                   ),

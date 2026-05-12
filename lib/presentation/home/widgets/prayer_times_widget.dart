@@ -1,4 +1,4 @@
-﻿import 'package:adhan/adhan.dart';
+import 'package:adhan/adhan.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -297,13 +297,13 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: isNext
-            ? AppColors.gold.withValues(alpha: 0.18)
-            : Colors.white.withValues(alpha: 0.04),
+            ? AppColors.gold.withOpacity(0.18)
+            : Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isNext
-              ? AppColors.gold.withValues(alpha: 0.6)
-              : Colors.white.withValues(alpha: 0.06),
+              ? AppColors.gold.withOpacity(0.6)
+              : Colors.white.withOpacity(0.06),
           width: isNext ? 1 : 0.5,
         ),
       ),
@@ -343,7 +343,7 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
-          color: AppColors.gold.withValues(alpha: 0.12),
+          color: AppColors.gold.withOpacity(0.12),
           blurRadius: 10,
           offset: const Offset(0, 4),
         ),

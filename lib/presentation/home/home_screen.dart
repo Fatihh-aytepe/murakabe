@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/reward_service.dart';
@@ -25,6 +26,11 @@ import '../hadis/hadis_detail_screen.dart';
 import '../rewards/murakabe_hosgeldin_screen.dart';
 import '../rewards/tahajjud_odul_screen.dart';
 import '../rewards/tebrik_karti_screen.dart';
+import '../quran/quran_screen.dart';
+import '../tefsir/tefhimul_kuran_screen.dart';
+import '../community/community_join_screen.dart';
+// import '../biliyormusun/biliyor_musun_screen.dart';
+// import '../quiz/quiz_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -40,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final _profileKey = GlobalKey<ProfileScreenState>();
   final _notesKey = GlobalKey<NotesScreenState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   EsmaModel? _todayEsma;
   HadisModel? _todayHadis;
@@ -117,7 +124,6 @@ class _HomeScreenState extends State<HomeScreen> {
           _isLoading = false;
         });
 
-        // Bildirimleri yalnızca bir kez zamanla (uygulama açıldığında)
         if (!_notificationsScheduled) {
           _notificationsScheduled = true;
           _scheduleAllNotifications(esma, hadis, ayet);
@@ -143,9 +149,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     await NotificationService().scheduleThursdayTahajjud();
     await NotificationService().scheduleWeeklyFridaySummary();
-
-    // Görev bildirimlerini senkronize et — silinmiş görevler iptal edilir,
-    // aktif olanlar yeniden zamanlanır. Merkezi ID CustomTaskRepository.taskNotifId()
     await _taskRepo.syncNotifications();
   }
 
@@ -160,10 +163,35 @@ class _HomeScreenState extends State<HomeScreen> {
     if (i == 3) _profileKey.currentState?.reload();
   }
 
+  void _goToTab(int i) {
+    _scaffoldKey.currentState?.closeEndDrawer();
+    setState(() => _selectedIndex = i);
+  }
+
+  void _goToPage(Widget page) {
+    _scaffoldKey.currentState?.closeEndDrawer();
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  }
+
+  void _showComingSoon(String name) {
+    _scaffoldKey.currentState?.closeEndDrawer();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$name yakında geliyor!'),
+        backgroundColor: const Color(0xFF1B3A4B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
+      key: _scaffoldKey,
+      // Sola kaydırınca sağdan açılan drawer
+      endDrawer: _buildDrawer(isDark),
       body: IndexedStack(
         index: _selectedIndex,
         children: [
@@ -179,6 +207,271 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: _buildBottomNav(isDark),
     );
   }
+
+  // ── DRAWER ───────────────────────────────────────────────────────────────
+
+  Widget _buildDrawer(bool isDark) {
+    return Drawer(
+      width: MediaQuery.of(context).size.width * 0.78,
+      backgroundColor:
+          isDark ? const Color(0xFF0A0E1A) : const Color(0xFF0D1B2A),
+      child: SafeArea(
+        child: Column(
+          children: [
+            _buildDrawerHeader(),
+            const SizedBox(height: 4),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  _buildDrawerSection('Sayfalar'),
+                  _buildDrawerItem(
+                    icon: Icons.home_outlined,
+                    label: 'Ana Sayfa',
+                    isActive: _selectedIndex == 0,
+                    onTap: () => _goToTab(0),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.note_outlined,
+                    label: 'Notlarım',
+                    isActive: _selectedIndex == 1,
+                    onTap: () => _goToTab(1),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.alarm_outlined,
+                    label: 'Hatırlatıcı',
+                    isActive: _selectedIndex == 2,
+                    onTap: () => _goToTab(2),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.person_outline,
+                    label: 'Profil',
+                    isActive: _selectedIndex == 3,
+                    onTap: () => _goToTab(3),
+                  ),
+                  const SizedBox(height: 8),
+                  const Divider(color: Colors.white12),
+                  const SizedBox(height: 4),
+                  _buildDrawerSection('Keşfet'),
+                  _buildDrawerItem(
+                    icon: Icons.menu_book_outlined,
+                    label: 'Kuran',
+                    onTap: () => _goToPage(const QuranScreen()),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.library_books_outlined,
+                    label: 'Meal / Tefsir',
+                    badge: 'Yakında',
+                    onTap: () => _showComingSoon('Meal / Tefsir'),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.lightbulb_outline,
+                    label: 'Biliyor musun?',
+                    badge: 'Yakında',
+                    onTap: () => _showComingSoon('Biliyor musun?'),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.quiz_outlined,
+                    label: 'Quiz',
+                    badge: 'Yakında',
+                    onTap: () => _showComingSoon('Quiz'),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.library_books_outlined,
+                    label: 'Tefhimul Kuran',
+                    onTap: () => _goToPage(const TefhimulKuranScreen()),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.group_outlined,
+                    label: 'Topluluk',
+                    onTap: () => _goToPage(const CommunityJoinScreen()),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+                style: GoogleFonts.amiri(
+                  color: AppColors.gold.withOpacity(0.4),
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
+        ),
+        border: Border(
+          bottom: BorderSide(color: AppColors.gold.withOpacity(0.2)),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.gold, width: 1.5),
+                ),
+                child: ClipOval(
+                  child:
+                      Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Murakabe',
+                    style: GoogleFonts.playfairDisplay(
+                      color: AppColors.gold,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (_currentUser != null)
+                    Text(
+                      _currentUser!.nameSurname,
+                      style: GoogleFonts.notoSans(
+                        color: Colors.white60,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+          if (_currentUser != null) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                _buildDrawerStat('🔥', '${_currentUser!.streakDays}', 'Seri'),
+                const SizedBox(width: 20),
+                _buildDrawerStat(
+                    '📖', '${_currentUser!.quranReadDays}', 'Kuran'),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerStat(String emoji, String value, String label) {
+    return Row(
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 14)),
+        const SizedBox(width: 4),
+        Text(
+          value,
+          style: GoogleFonts.playfairDisplay(
+            color: AppColors.gold,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: GoogleFonts.notoSans(color: Colors.white38, fontSize: 11),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDrawerSection(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 10, 0, 4),
+      child: Text(
+        title.toUpperCase(),
+        style: GoogleFonts.notoSans(
+          color: Colors.white24,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isActive = false,
+    String? badge,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color:
+              isActive ? AppColors.gold.withOpacity(0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color:
+                isActive ? AppColors.gold.withOpacity(0.4) : Colors.transparent,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon,
+                color: isActive ? AppColors.gold : Colors.white54, size: 20),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.notoSans(
+                  color: isActive ? AppColors.gold : Colors.white70,
+                  fontSize: 14,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+            if (badge != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.turquoise.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border:
+                      Border.all(color: AppColors.turquoise.withOpacity(0.4)),
+                ),
+                child: Text(
+                  badge,
+                  style: GoogleFonts.notoSans(
+                    color: AppColors.turquoiseLight,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── ANA SAYFA ─────────────────────────────────────────────────────────────
 
   Widget _buildHomePage() {
     if (_isLoading) {
@@ -293,13 +586,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── ALT NAV ───────────────────────────────────────────────────────────────
+
   Widget _buildBottomNav(bool isDark) {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A2035) : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: AppColors.gold.withValues(alpha: 0.15),
+            color: AppColors.gold.withOpacity(0.15),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),

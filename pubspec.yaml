@@ -22,6 +22,7 @@ dependencies:
   # Update
   package_info_plus: ^8.0.0
   url_launcher: ^6.2.5
+  syncfusion_flutter_pdfviewer: 33.2.5
 
   # Local DB
   sqflite: ^2.3.0
@@ -53,7 +54,8 @@ dependencies:
   # Namaz Vakitleri & Konum
   geolocator: ^12.0.0
   adhan: ^2.0.0+1
-  
+  audioplayers: ^5.2.1
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +76,7 @@ flutter:
     - assets/data/hadisler.json
     - assets/data/esmaul_husna.json
     - assets/sounds/
+    - assets/tefsir/tefhimul_kuran.pdf
     
     
     

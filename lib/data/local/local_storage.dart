@@ -65,7 +65,7 @@ class LocalStorage {
   Future<void> setTahajjudAlarmDate(String d) =>
       _prefs.setString('tahajjudAlarmDate', d);
 
-  // İçerik etkileşim sayaçları (hangi ödül verileceğini belirler)
+  // İçerik etkileşim sayaçları
   int get esmaOpenCount => _prefs.getInt('esmaOpenCount') ?? 0;
   Future<void> incrementEsmaCount() =>
       _prefs.setInt('esmaOpenCount', esmaOpenCount + 1);
@@ -78,8 +78,14 @@ class LocalStorage {
   Future<void> incrementHadisCount() =>
       _prefs.setInt('hadisOpenCount', hadisOpenCount + 1);
 
-  // ── YENİ: Alarm ses seçimi ────────────────────────────────────────────────
+  // Alarm ses seçimi
   String? get alarmSoundId => _prefs.getString('alarmSoundId');
   Future<void> setAlarmSoundId(String id) =>
       _prefs.setString('alarmSoundId', id);
+
+  // ── Firebase Auth migration ────────────────────────────────────────────────
+  // Eski kullanıcılar Firebase Auth'a geçiş yaptı mı?
+  bool get authMigrationDone => _prefs.getBool('authMigrationDone') ?? false;
+  Future<void> setAuthMigrationDone() =>
+      _prefs.setBool('authMigrationDone', true);
 }
