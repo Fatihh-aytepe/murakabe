@@ -55,6 +55,12 @@ Future<void> _requestPermissions() async {
   if (!canSchedule) {
     await NotificationService().requestExactAlarmPermission();
   }
+
+  // Pil optimizasyonu — alarm için kritik (Xiaomi/Samsung/Huawei)
+  final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
+  if (batteryStatus.isDenied) {
+    await Permission.ignoreBatteryOptimizations.request();
+  }
 }
 
 class MurakabeApp extends StatelessWidget {

@@ -20,7 +20,7 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
   Duration _timeToNext = Duration.zero;
   late Stream<DateTime> _clockStream;
 
-  final List<Map<String, dynamic>> _prayers = [];
+  List<Map<String, dynamic>> _prayers = [];
 
   @override
   void initState() {
@@ -45,28 +45,26 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
   }
 
   void _buildPrayerList(PrayerTimes pt) {
-    _prayers.clear();
-    _prayers.addAll([
-      {'name': 'İmsak', 'time': pt.fajr, 'icon': '🌙'},
-      {'name': 'Güneş', 'time': pt.sunrise, 'icon': '🌅'},
-      {'name': 'Öğle', 'time': pt.dhuhr, 'icon': '☀️'},
-      {'name': 'İkindi', 'time': pt.asr, 'icon': '🌤'},
-      {'name': 'Akşam', 'time': pt.maghrib, 'icon': '🌆'},
-      {'name': 'Yatsı', 'time': pt.isha, 'icon': '🌃'},
-    ]);
+    _prayers = [
+      {'name': 'İmsak',  'time': pt.fajr},
+      {'name': 'Güneş',  'time': pt.sunrise},
+      {'name': 'Öğle',   'time': pt.dhuhr},
+      {'name': 'İkindi', 'time': pt.asr},
+      {'name': 'Akşam',  'time': pt.maghrib},
+      {'name': 'Yatsı',  'time': pt.isha},
+    ];
   }
 
   void _updateNextPrayer(PrayerTimes pt) {
     final now = DateTime.now();
-    final prayers = [
-      {'name': 'İmsak', 'time': pt.fajr},
-      {'name': 'Öğle', 'time': pt.dhuhr},
+    final ordered = [
+      {'name': 'İmsak',  'time': pt.fajr},
+      {'name': 'Öğle',   'time': pt.dhuhr},
       {'name': 'İkindi', 'time': pt.asr},
-      {'name': 'Akşam', 'time': pt.maghrib},
-      {'name': 'Yatsı', 'time': pt.isha},
+      {'name': 'Akşam',  'time': pt.maghrib},
+      {'name': 'Yatsı',  'time': pt.isha},
     ];
-
-    for (final p in prayers) {
+    for (final p in ordered) {
       final t = p['time'] as DateTime;
       if (t.isAfter(now)) {
         _nextPrayerName = p['name'] as String;
@@ -78,9 +76,9 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
     _timeToNext = pt.fajr.add(const Duration(days: 1)).difference(now);
   }
 
-  String _formatTime(DateTime dt) => DateFormat('HH:mm').format(dt);
+  String _fmt(DateTime dt) => DateFormat('HH:mm').format(dt);
 
-  String _formatDuration(Duration d) {
+  String _fmtDuration(Duration d) {
     final h = d.inHours;
     final m = d.inMinutes % 60;
     final s = d.inSeconds % 60;
@@ -90,45 +88,28 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
 
   String _getHijriDate() {
     final now = DateTime.now();
-    final hijri = _gregorianToHijri(now.year, now.month, now.day);
+    final h = _toHijri(now.year, now.month, now.day);
     const months = [
-      '',
-      'Muharrem',
-      'Safer',
-      'Rebiülevvel',
-      'Rebiülahir',
-      'Cemaziyelevvel',
-      'Cemaziyelahir',
-      'Recep',
-      'Şaban',
-      'Ramazan',
-      'Şevval',
-      'Zilkade',
-      'Zilhicce',
+      '', 'Muharrem', 'Safer', 'Rebiülevvel', 'Rebiülahir',
+      'Cemaziyelevvel', 'Cemaziyelahir', 'Recep', 'Şaban',
+      'Ramazan', 'Şevval', 'Zilkade', 'Zilhicce',
     ];
-    return '${hijri[2]} ${months[hijri[1]]} ${hijri[0]}';
+    return '${h[2]} ${months[h[1]]} ${h[0]}';
   }
 
-  List<int> _gregorianToHijri(int gy, int gm, int gd) {
-    int a = ((14 - gm) ~/ 12);
+  List<int> _toHijri(int gy, int gm, int gd) {
+    int a = (14 - gm) ~/ 12;
     int y = gy + 4800 - a;
     int m = gm + 12 * a - 3;
-    int jdn = gd +
-        ((153 * m + 2) ~/ 5) +
-        365 * y +
-        (y ~/ 4) -
-        (y ~/ 100) +
-        (y ~/ 400) -
-        32045;
+    int jdn = gd + (153 * m + 2) ~/ 5 + 365 * y +
+        y ~/ 4 - y ~/ 100 + y ~/ 400 - 32045;
     int l = jdn - 1948440 + 10632;
     int n = (l - 1) ~/ 10631;
     l = l - 10631 * n + 354;
     int j = ((10985 - l) ~/ 5316) * ((50 * l) ~/ 17719) +
         (l ~/ 5670) * ((43 * l) ~/ 15238);
-    l = l -
-        ((30 - j) ~/ 15) * ((17719 * j) ~/ 50) -
-        (j ~/ 16) * ((15238 * j) ~/ 43) +
-        29;
+    l = l - ((30 - j) ~/ 15) * ((17719 * j) ~/ 50) -
+        (j ~/ 16) * ((15238 * j) ~/ 43) + 29;
     int hm = (24 * l) ~/ 709;
     int hd = l - (709 * hm) ~/ 24;
     int hy = 30 * n + j - 30;
@@ -137,145 +118,151 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return _buildSkeleton();
-    if (_result == null) return _buildError();
-    return _buildStrip();
+    if (_isLoading) return _skeleton();
+    if (_result == null) return _error();
+    return _card();
   }
 
-  // ── Yüklenirken iskelet ───────────────────────────────────────────────────
-  Widget _buildSkeleton() {
-    return Container(
-      height: 72,
-      decoration: _stripDecoration(),
-      child: const Center(
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child:
-              CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+  Widget _skeleton() => Container(
+        height: 110,
+        decoration: _cardDecoration(),
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+                color: AppColors.gold, strokeWidth: 2),
+          ),
         ),
-      ),
-    );
-  }
+      );
 
-  // ── Hata durumu ───────────────────────────────────────────────────────────
-  Widget _buildError() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: _stripDecoration(),
-      child: Row(
-        children: [
-          const Icon(Icons.location_off, color: Colors.white38, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Namaz vakitleri yüklenemedi',
-              style: GoogleFonts.notoSans(color: Colors.white54, fontSize: 12),
+  Widget _error() => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: _cardDecoration(),
+        child: Row(
+          children: [
+            const Icon(Icons.location_off, color: Colors.white38, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text('Namaz vakitleri yüklenemedi',
+                  style:
+                      GoogleFonts.notoSans(color: Colors.white54, fontSize: 12)),
             ),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() => _isLoading = true);
-              _loadPrayerTimes();
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              minimumSize: Size.zero,
+            TextButton(
+              onPressed: () {
+                setState(() => _isLoading = true);
+                _loadPrayerTimes();
+              },
+              style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: Size.zero),
+              child: Text('Dene',
+                  style:
+                      GoogleFonts.notoSans(color: AppColors.gold, fontSize: 12)),
             ),
-            child: Text('Dene',
-                style:
-                    GoogleFonts.notoSans(color: AppColors.gold, fontSize: 12)),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
 
-  // ── Ana şerit ─────────────────────────────────────────────────────────────
-  Widget _buildStrip() {
+  Widget _card() {
     final pt = _result!.prayerTimes;
-
     return Container(
-      decoration: _stripDecoration(),
+      decoration: _cardDecoration(),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Üst satır: tarih + geri sayım ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
-            child: Row(
-              children: [
-                // Hicri tarih
-                Text(
-                  _getHijriDate(),
-                  style: GoogleFonts.amiri(
-                    color: AppColors.gold,
-                    fontSize: 13,
-                  ),
-                ),
-                const Spacer(),
-                // Canlı geri sayım
-                StreamBuilder<DateTime>(
-                  stream: _clockStream,
-                  builder: (_, __) {
-                    if (_result != null) _updateNextPrayer(pt);
-                    return Row(
-                      children: [
-                        Text(
-                          '$_nextPrayerName\'a ',
-                          style: GoogleFonts.notoSans(
-                            color: AppColors.turquoiseLight,
-                            fontSize: 11,
-                          ),
-                        ),
-                        Text(
-                          _formatDuration(_timeToNext),
-                          style: GoogleFonts.notoSans(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ],
+          _topRow(pt),
+          const SizedBox(height: 2),
+          _prayerRow(),
+          const SizedBox(height: 6),
+        ],
+      ),
+    );
+  }
+
+  Widget _topRow(PrayerTimes pt) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+      child: Row(
+        children: [
+          // Hicri tarih
+          Flexible(
+            child: Text(
+              _getHijriDate(),
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.amiri(
+                color: AppColors.gold.withValues(alpha: 0.9),
+                fontSize: 13,
+              ),
             ),
           ),
-
-          // ── Alt satır: yatay namaz vakitleri ──
-          SizedBox(
-            height: 58,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-              itemCount: _prayers.length,
-              itemBuilder: (_, i) {
-                final p = _prayers[i];
-                final time = p['time'] as DateTime;
-                final now = DateTime.now();
-                final isNext = p['name'] == _nextPrayerName;
-                final isPast = time.isBefore(now);
-
-                return _buildPrayerCell(
-                  name: p['name'] as String,
-                  icon: p['icon'] as String,
-                  time: _formatTime(time),
-                  isNext: isNext,
-                  isPast: isPast,
-                );
-              },
-            ),
+          const SizedBox(width: 8),
+          // Canlı geri sayım
+          StreamBuilder<DateTime>(
+            stream: _clockStream,
+            builder: (_, __) {
+              if (_result != null) _updateNextPrayer(pt);
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.turquoise.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: AppColors.turquoise.withValues(alpha: 0.3),
+                      width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$_nextPrayerName\'a ',
+                      style: GoogleFonts.notoSans(
+                          color: AppColors.turquoiseLight, fontSize: 11),
+                    ),
+                    Text(
+                      _fmtDuration(_timeToNext),
+                      style: GoogleFonts.notoSans(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPrayerCell({
+  Widget _prayerRow() {
+    return SizedBox(
+      height: 62,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+        itemCount: _prayers.length,
+        itemBuilder: (_, i) {
+          final p = _prayers[i];
+          final time = p['time'] as DateTime;
+          final now = DateTime.now();
+          final isNext = p['name'] == _nextPrayerName;
+          final isPast = time.isBefore(now);
+          return _cell(
+            name: p['name'] as String,
+            time: _fmt(time),
+            isNext: isNext,
+            isPast: isPast,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _cell({
     required String name,
-    required String icon,
     required String time,
     required bool isNext,
     required bool isPast,
@@ -289,43 +276,47 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
         ? AppColors.gold
         : isPast
             ? Colors.white24
-            : Colors.white70;
+            : Colors.white;
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      duration: const Duration(milliseconds: 250),
+      width: 56,
+      margin: const EdgeInsets.symmetric(horizontal: 3),
       decoration: BoxDecoration(
         color: isNext
-            ? AppColors.gold.withOpacity(0.18)
-            : Colors.white.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(12),
+            ? AppColors.gold.withValues(alpha: 0.14)
+            : Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: isNext
-              ? AppColors.gold.withOpacity(0.6)
-              : Colors.white.withOpacity(0.06),
+              ? AppColors.gold.withValues(alpha: 0.5)
+              : Colors.white.withValues(alpha: 0.07),
           width: isNext ? 1 : 0.5,
         ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(icon, style: TextStyle(fontSize: isPast ? 12 : 14)),
-          const SizedBox(height: 2),
           Text(
             name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.notoSans(
               color: nameColor,
               fontSize: 10,
               fontWeight: isNext ? FontWeight.bold : FontWeight.normal,
             ),
           ),
-          Text(
-            time,
-            style: GoogleFonts.notoSans(
-              color: timeColor,
-              fontSize: 11,
-              fontWeight: isNext ? FontWeight.bold : FontWeight.normal,
+          const SizedBox(height: 3),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              time,
+              style: GoogleFonts.notoSans(
+                color: timeColor,
+                fontSize: 12,
+                fontWeight: isNext ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
           ),
         ],
@@ -333,18 +324,22 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
     );
   }
 
-  BoxDecoration _stripDecoration() {
+  BoxDecoration _cardDecoration() {
     return BoxDecoration(
       gradient: const LinearGradient(
-        colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
+        colors: [Color(0xFF1C3050), Color(0xFF243B5E)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
       borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: Colors.white.withValues(alpha: 0.08),
+        width: 0.8,
+      ),
       boxShadow: [
         BoxShadow(
-          color: AppColors.gold.withOpacity(0.12),
-          blurRadius: 10,
+          color: Colors.black.withValues(alpha: 0.25),
+          blurRadius: 12,
           offset: const Offset(0, 4),
         ),
       ],

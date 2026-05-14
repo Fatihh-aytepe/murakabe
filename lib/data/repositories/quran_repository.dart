@@ -32,7 +32,7 @@ class QuranSurah {
   final String nameTurkish;
   final String nameTransliteration;
   final int ayahCount;
-  final String revelationType; // Mekki / Medeni
+  final String revelationType;
 
   const QuranSurah({
     required this.number,
@@ -81,18 +81,55 @@ class QuranProgress {
 
 // ─── Kariler ──────────────────────────────────────────────────────────────────
 
+enum AudioCdn { everyayah, mp3quran }
+
 class Qari {
   final String id;
   final String name;
-  final String identifier; // EveryAyah CDN klasör adı
+  final String identifier;     // everyayah.com identifier (fallback)
+  final String islamicNetId;   // cdn.islamic.network edition (primary)
+  final AudioCdn cdn;
 
-  const Qari({required this.id, required this.name, required this.identifier});
+  const Qari({
+    required this.id,
+    required this.name,
+    required this.identifier,
+    this.islamicNetId = '',
+    this.cdn = AudioCdn.everyayah,
+  });
 }
 
 const List<Qari> kQariler = [
-  Qari(id: 'sudais', name: 'Abdurrahman es-Sudais', identifier: '05'),
-  Qari(id: 'ghamdi', name: 'Said el-Ghamdi', identifier: '10'),
-  Qari(id: 'husary', name: 'Mahmud Halil el-Husary', identifier: '04'),
+  Qari(
+    id: 'abdulbasit',
+    name: 'Abdulbasit Abdussamed',
+    identifier: 'Abdul_Basit_Murattal_64kbps',
+    islamicNetId: 'ar.abdulbasitmurattal',
+  ),
+  Qari(
+    id: 'alafasy',
+    name: 'Mishary Raşid Alafasi',
+    identifier: 'Mishary_Rashid_Al-Afasy_128kbps',
+    islamicNetId: 'ar.alafasy',
+  ),
+  Qari(
+    id: 'sudais',
+    name: 'Abdurrahman Al-Sudais',
+    identifier: 'Abdurrahmaan_As-Sudais_192kbps',
+    islamicNetId: 'ar.sudais',
+  ),
+  Qari(
+    id: 'muaiqly',
+    name: 'Mahir al Muaiqly',
+    identifier: 'Maher_Al_Muaiqly_64kbps',
+    islamicNetId: 'ar.mahermuaiqly128',
+  ),
+  Qari(
+    id: 'husary',
+    name: 'Mahmoud Halil El-Husary',
+    identifier: 'Husary_128kbps',
+    islamicNetId: 'ar.husary',
+  ),
 ];
 
 // ─── Repository ───────────────────────────────────────────────────────────────
@@ -103,7 +140,6 @@ class QuranRepository {
   QuranRepository._();
 
   static const String _baseUrl = 'https://api.quran.com/api/v4';
-  // Türkçe meal: Diyanet (translation_id=77)
   static const int _turkishTranslationId = 77;
 
   final _storage = LocalStorage();
@@ -185,7 +221,7 @@ class QuranRepository {
 
   List<QuranAyah> _parseVerses(List verses) {
     return verses.map((v) {
-      final key = v['verse_key'] as String; // örn: "2:255"
+      final key = v['verse_key'] as String;
       final parts = key.split(':');
       final surahNo = int.tryParse(parts[0]) ?? 1;
       final ayahNo = int.tryParse(parts[1]) ?? 1;
@@ -204,9 +240,12 @@ class QuranRepository {
   }
 
   // ── Ses URL ─────────────────────────────────────────────────────────────────
-  // EveryAyah CDN: https://everyayah.com/data/{identifier}/{padded_global_number}.mp3
-  String getAudioUrl(int globalAyahNumber, Qari qari) {
-    final padded = globalAyahNumber.toString().padLeft(6, '0');
+  String getAudioUrl(QuranAyah ayah, Qari qari) {
+    // cdn.islamic.network is the most reliable global CDN
+    if (qari.islamicNetId.isNotEmpty) {
+      return 'https://cdn.islamic.network/quran/audio/128/${qari.islamicNetId}/${ayah.globalNumber}.mp3';
+    }
+    final padded = ayah.globalNumber.toString().padLeft(6, '0');
     return 'https://everyayah.com/data/${qari.identifier}/$padded.mp3';
   }
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/role_service.dart';
-import '../../../data/local/local_storage.dart';
 import 'community_screen.dart';
 
 class CommunityJoinScreen extends StatefulWidget {
@@ -356,7 +355,7 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A2035),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.gold.withOpacity(0.2)),
+        border: Border.all(color: AppColors.gold.withValues(alpha: 0.2)),
       ),
       child: child,
     );

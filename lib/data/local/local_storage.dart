@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
@@ -88,4 +89,106 @@ class LocalStorage {
   bool get authMigrationDone => _prefs.getBool('authMigrationDone') ?? false;
   Future<void> setAuthMigrationDone() =>
       _prefs.setBool('authMigrationDone', true);
+
+  // Alarm bildirim kanalı versiyonu (ses güncellemesi için)
+  int get alarmChannelVersion => _prefs.getInt('alarm_channel_version') ?? 0;
+  Future<void> setAlarmChannelVersion(int v) =>
+      _prefs.setInt('alarm_channel_version', v);
+
+  // ── Çoklu hesap yönetimi ─────────────────────────────────────────────────
+  // Her hesap: {uid, email, name, lastUsed}
+  List<Map<String, dynamic>> getSavedAccounts() {
+    final raw = _prefs.getString('savedAccounts');
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      return List<Map<String, dynamic>>.from(
+          (jsonDecode(raw) as List).map((e) => Map<String, dynamic>.from(e)));
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> saveAccount({
+    required String uid,
+    required String email,
+    required String name,
+  }) async {
+    final accounts = getSavedAccounts();
+    accounts.removeWhere((a) => a['uid'] == uid);
+    accounts.insert(0, {
+      'uid': uid,
+      'email': email,
+      'name': name,
+      'lastUsed': DateTime.now().toIso8601String(),
+    });
+    await _prefs.setString('savedAccounts', jsonEncode(accounts));
+  }
+
+  Future<void> removeAccount(String uid) async {
+    final accounts = getSavedAccounts();
+    accounts.removeWhere((a) => a['uid'] == uid);
+    await _prefs.setString('savedAccounts', jsonEncode(accounts));
+  }
+
+  // ── Esmâ okuma serisi ─────────────────────────────────────────────────────
+  int get esmaStreak => _prefs.getInt('esmaStreak') ?? 0;
+  Future<void> setEsmaStreak(int v) => _prefs.setInt('esmaStreak', v);
+  String? get lastEsmaDate => _prefs.getString('lastEsmaDate');
+  Future<void> setLastEsmaDate(String d) => _prefs.setString('lastEsmaDate', d);
+  int get lastRewardedEsmaStreak => _prefs.getInt('lastRewardedEsmaStreak') ?? 0;
+  Future<void> setLastRewardedEsmaStreak(int v) =>
+      _prefs.setInt('lastRewardedEsmaStreak', v);
+
+  // ── Hadis okuma serisi ────────────────────────────────────────────────────
+  int get hadisStreak => _prefs.getInt('hadisStreak') ?? 0;
+  Future<void> setHadisStreak(int v) => _prefs.setInt('hadisStreak', v);
+  String? get lastHadisDate => _prefs.getString('lastHadisDate');
+  Future<void> setLastHadisDate(String d) =>
+      _prefs.setString('lastHadisDate', d);
+  int get lastRewardedHadisStreak => _prefs.getInt('lastRewardedHadisStreak') ?? 0;
+  Future<void> setLastRewardedHadisStreak(int v) =>
+      _prefs.setInt('lastRewardedHadisStreak', v);
+
+  // ── Kur\'ân serisi (lastRewardedStreak → kuran milestone izleyici) ─────────
+  // Not: lastRewardedStreak mevcut alan; kuran için yeniden kullanılır.
+
+  // ── Rozet milestone izleyiciler ───────────────────────────────────────────
+  int get lastRewardedKuranBadge => _prefs.getInt('lrKuranBadge') ?? 0;
+  Future<void> setLastRewardedKuranBadge(int v) =>
+      _prefs.setInt('lrKuranBadge', v);
+
+  int get lastRewardedEsmaBadge => _prefs.getInt('lrEsmaBadge') ?? 0;
+  Future<void> setLastRewardedEsmaBadge(int v) =>
+      _prefs.setInt('lrEsmaBadge', v);
+
+  int get lastRewardedHadisBadge => _prefs.getInt('lrHadisBadge') ?? 0;
+  Future<void> setLastRewardedHadisBadge(int v) =>
+      _prefs.setInt('lrHadisBadge', v);
+
+  int get lastRewardedKombineBadge => _prefs.getInt('lrKombineBadge') ?? 0;
+  Future<void> setLastRewardedKombineBadge(int v) =>
+      _prefs.setInt('lrKombineBadge', v);
+
+  int get lastRewardedTahajjudBadge => _prefs.getInt('lrTahajjudBadge') ?? 0;
+  Future<void> setLastRewardedTahajjudBadge(int v) =>
+      _prefs.setInt('lrTahajjudBadge', v);
+
+  bool get veteranBadgeAwarded => _prefs.getBool('veteranBadge') ?? false;
+  Future<void> setVeteranBadgeAwarded() => _prefs.setBool('veteranBadge', true);
+
+  // Teheccüd aylık kart: son verilen ay-yıl kaydı (örn. "2026-05")
+  String? get lastTahajjudMonthlyCard =>
+      _prefs.getString('lastTahajjudMonthlyCard');
+  Future<void> setLastTahajjudMonthlyCard(String ym) =>
+      _prefs.setString('lastTahajjudMonthlyCard', ym);
+
+  // Profilde gösterilecek rozet ID\'si
+  String? get displayedBadgeId => _prefs.getString('displayedBadgeId');
+  Future<void> setDisplayedBadgeId(String id) =>
+      _prefs.setString('displayedBadgeId', id);
+  Future<void> clearDisplayedBadgeId() => _prefs.remove('displayedBadgeId');
+
+  // Altın çerçeve (1 yıllık özel özellik)
+  bool get goldenFrameUnlocked => _prefs.getBool('goldenFrame') ?? false;
+  Future<void> setGoldenFrameUnlocked() => _prefs.setBool('goldenFrame', true);
 }

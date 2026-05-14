@@ -86,7 +86,7 @@ class AlarmService {
           sound: RawResourceAndroidNotificationSound(sound.id),
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.alarmClock,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );
@@ -118,10 +118,24 @@ class AlarmService {
   }
 
   // ── Ses kanallarını oluştur (uygulama başlangıcında çağır) ───────────────
+  // Android kanalları bir kez oluşturulunca ses ayarı güncellenemez.
+  // Bu yüzden kanal sürümünü SharedPreferences'ta tutuyoruz; değişince sil+yeniden oluştur.
+  static const int _channelVersion = 2;
+
   Future<void> createSoundChannels() async {
     final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     if (androidPlugin == null) return;
+
+    final savedVersion = LocalStorage().alarmChannelVersion;
+    if (savedVersion >= _channelVersion) return;
+
+    // Eski kanalları sil (ses güncellenmesi için zorunlu)
+    for (final sound in availableSounds) {
+      try {
+        await androidPlugin.deleteNotificationChannel('tahajjud_${sound.id}');
+      } catch (_) {}
+    }
 
     for (final sound in availableSounds) {
       await androidPlugin.createNotificationChannel(
@@ -131,9 +145,11 @@ class AlarmService {
           description: 'Teheccüd alarmı (${sound.label})',
           importance: Importance.max,
           enableVibration: true,
+          playSound: true,
           sound: RawResourceAndroidNotificationSound(sound.id),
         ),
       );
     }
+    await LocalStorage().setAlarmChannelVersion(_channelVersion);
   }
 }

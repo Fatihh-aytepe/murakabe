@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
@@ -65,6 +66,22 @@ class FirebaseService {
   /// Şifre sıfırlama maili gönderir.
   Future<void> resetPassword(String email) async {
     await _auth.sendPasswordResetEmail(email: email.trim());
+  }
+
+  /// E-posta değiştir: önce yeniden kimlik doğrula, sonra doğrulama maili gönder.
+  Future<void> updateEmail(String newEmail, String password) async {
+    final user = _auth.currentUser!;
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: password,
+    );
+    await user.reauthenticateWithCredential(credential);
+    await user.verifyBeforeUpdateEmail(newEmail);
+  }
+
+  /// Auth display name güncelle.
+  Future<void> updateDisplayName(String name) async {
+    await _auth.currentUser?.updateDisplayName(name);
   }
 
   // ─── USER ─────────────────────────────────────────────────────────────────
@@ -143,5 +160,36 @@ class FirebaseService {
   Future<Map<String, dynamic>?> getUserDetails(String uid) async {
     final doc = await _userCol().doc(uid).get();
     return doc.data() as Map<String, dynamic>?;
+  }
+
+  /// Firestore'daki kullanıcıyı SQLite'a yazılabilir Map olarak döner.
+  /// Timestamp → ISO string, List → JSON string dönüşümlerini yapar.
+  Future<Map<String, dynamic>?> getUserForSQLite(String uid) async {
+    try {
+      final doc = await _userCol().doc(uid).get();
+      if (!doc.exists) return null;
+      final raw = doc.data() as Map<String, dynamic>;
+      final map = Map<String, dynamic>.from(raw);
+      map['id'] = uid;
+
+      if (map['createdAt'] is Timestamp) {
+        map['createdAt'] =
+            (map['createdAt'] as Timestamp).toDate().toIso8601String();
+      } else {
+        map['createdAt'] ??= DateTime.now().toIso8601String();
+      }
+
+      map['missedQuranDays'] = map['missedQuranDays'] is List
+          ? jsonEncode(map['missedQuranDays'])
+          : (map['missedQuranDays']?.toString() ?? '[]');
+
+      map['tahajjudAlarmTimes'] = map['tahajjudAlarmTimes'] is List
+          ? jsonEncode(map['tahajjudAlarmTimes'])
+          : (map['tahajjudAlarmTimes']?.toString() ?? '[]');
+
+      return map;
+    } catch (_) {
+      return null;
+    }
   }
 }

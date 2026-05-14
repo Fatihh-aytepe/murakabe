@@ -1,4 +1,5 @@
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class UpdateService {
@@ -11,7 +12,10 @@ class UpdateService {
       final remoteConfig = FirebaseRemoteConfig.instance;
       await remoteConfig.setConfigSettings(RemoteConfigSettings(
         fetchTimeout: const Duration(seconds: 10),
-        minimumFetchInterval: const Duration(hours: 1),
+        // Debug modunda her açılışta Firebase'den taze veri çek;
+        // release modunda 1 saatte bir yeter.
+        minimumFetchInterval:
+            kDebugMode ? Duration.zero : const Duration(hours: 1),
       ));
       await remoteConfig.setDefaults({
         'latest_version': '1.0.0',
@@ -29,6 +33,11 @@ class UpdateService {
 
       final hasUpdate = _isNewer(latestVersion, currentVersion);
 
+      debugPrint(
+        '[UpdateService] current=$currentVersion latest=$latestVersion '
+        'hasUpdate=$hasUpdate forceUpdate=$forceUpdate',
+      );
+
       return UpdateInfo(
         hasUpdate: hasUpdate,
         latestVersion: latestVersion,
@@ -36,7 +45,8 @@ class UpdateService {
         apkUrl: apkUrl,
         forceUpdate: forceUpdate,
       );
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('[UpdateService] ERROR: $e\n$st');
       return const UpdateInfo(
         hasUpdate: false,
         latestVersion: '',

@@ -470,6 +470,47 @@ class NotificationService {
     return scheduled;
   }
 
+  // Kuran okumadıysa saat 19-23 arası saat başı hatırlatma
+  Future<void> scheduleHourlyQuranReminders(bool alreadyRead) async {
+    // Önceki saatlik hatırlatmaları temizle
+    for (int i = 0; i < 5; i++) {
+      await _plugin.cancel(quranNotifId + 20 + i);
+    }
+    if (alreadyRead) return;
+
+    final now = tz.TZDateTime.now(tz.local);
+    int slot = 0;
+    for (int hour = 20; hour <= 23; hour++) {
+      var scheduled = tz.TZDateTime(
+          tz.local, now.year, now.month, now.day, hour, 0);
+      if (scheduled.isBefore(now)) continue;
+      await _plugin.zonedSchedule(
+        quranNotifId + 20 + slot,
+        'Kuran Hatırlatıcı',
+        'Bugün henüz Kuran okumadınız. Birkaç sayfa bile olsa okuyun.',
+        scheduled,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'quran_channel',
+            'Kuran Hatırlatma',
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+      slot++;
+    }
+  }
+
+  Future<void> cancelHourlyQuranReminders() async {
+    for (int i = 0; i < 5; i++) {
+      await _plugin.cancel(quranNotifId + 20 + i);
+    }
+  }
+
   Future<void> cancelNotification(int id) => _plugin.cancel(id);
   Future<void> cancelAll() => _plugin.cancelAll();
 }

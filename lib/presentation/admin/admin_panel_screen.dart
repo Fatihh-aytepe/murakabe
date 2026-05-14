@@ -2,6 +2,7 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/services/role_service.dart';
 import '../../data/local/local_storage.dart';
 import '../auth/login_screen.dart';
 
@@ -12,8 +13,22 @@ class AdminPanelScreen extends StatefulWidget {
   State<AdminPanelScreen> createState() => _AdminPanelScreenState();
 }
 
-class _AdminPanelScreenState extends State<AdminPanelScreen> {
+class _AdminPanelScreenState extends State<AdminPanelScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +38,71 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         child: Column(
           children: [
             _buildHeader(),
-            _buildSearchBar(),
-            _buildStatChips(),
-            Expanded(child: _buildUserList()),
+            // Tab bar
+            Container(
+              color: const Color(0xFF0F1624),
+              child: TabBar(
+                controller: _tabController,
+                indicatorColor: AppColors.gold,
+                indicatorWeight: 2,
+                labelColor: AppColors.gold,
+                unselectedLabelColor: Colors.white38,
+                labelStyle: GoogleFonts.notoSans(
+                    fontWeight: FontWeight.bold, fontSize: 13),
+                tabs: [
+                  const Tab(text: 'Kullanıcılar'),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: RoleService().getPendingAdminRequests(),
+                    builder: (_, snap) {
+                      final count = snap.data?.docs.length ?? 0;
+                      return Tab(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('Başvurular'),
+                            if (count > 0) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '$count',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Kullanıcılar sekmesi
+                  Column(
+                    children: [
+                      _buildSearchBar(),
+                      _buildStatChips(),
+                      Expanded(child: _buildUserList()),
+                    ],
+                  ),
+                  // Admin başvuruları sekmesi
+                  _buildAdminRequests(),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -145,6 +222,265 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           style: TextStyle(
               color: color, fontSize: 12, fontWeight: FontWeight.bold)),
     );
+  }
+
+  Widget _buildAdminRequests() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: RoleService().getPendingAdminRequests(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+              child: CircularProgressIndicator(color: AppColors.gold));
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.inbox_outlined,
+                    size: 60, color: Colors.white12),
+                const SizedBox(height: 12),
+                Text('Bekleyen başvuru yok',
+                    style: GoogleFonts.notoSans(
+                        color: Colors.white38, fontSize: 14)),
+              ],
+            ),
+          );
+        }
+
+        final docs = snapshot.data!.docs;
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: docs.length,
+          itemBuilder: (_, i) {
+            final data = docs[i].data() as Map<String, dynamic>;
+            final uid = data['uid'] ?? docs[i].id;
+            final name = data['name'] ?? 'İsimsiz';
+            final reason = data['reason'] ?? '';
+            final appliedAt = data['appliedAt'];
+            String dateStr = '';
+            if (appliedAt is Timestamp) {
+              final dt = appliedAt.toDate();
+              dateStr =
+                  '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}';
+            }
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 14),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A2035),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                    color: AppColors.gold.withValues(alpha: 0.25)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                              colors: [AppColors.gold, AppColors.turquoise]),
+                        ),
+                        child: Center(
+                          child: Text(
+                            name.isNotEmpty ? name[0].toUpperCase() : '?',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(name,
+                                style: GoogleFonts.notoSans(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14)),
+                            if (dateStr.isNotEmpty)
+                              Text('Başvuru: $dateStr',
+                                  style: GoogleFonts.notoSans(
+                                      color: Colors.white38, fontSize: 11)),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: Colors.orange.withValues(alpha: 0.4)),
+                        ),
+                        child: Text('Bekliyor',
+                            style: GoogleFonts.notoSans(
+                                color: Colors.orange,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  if (reason.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.format_quote,
+                              color: AppColors.gold, size: 16),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(reason,
+                                style: GoogleFonts.notoSans(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    height: 1.5)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.close,
+                              color: Colors.red, size: 16),
+                          label: Text('Reddet',
+                              style: GoogleFonts.notoSans(
+                                  color: Colors.red, fontSize: 13)),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.red),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => _confirmAction(
+                            uid: uid,
+                            name: name,
+                            approve: false,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.check,
+                              color: Colors.white, size: 16),
+                          label: Text('Onayla',
+                              style: GoogleFonts.notoSans(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green.shade700,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => _confirmAction(
+                            uid: uid,
+                            name: name,
+                            approve: true,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmAction(
+      {required String uid,
+      required String name,
+      required bool approve}) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2035),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          approve ? 'Başvuruyu Onayla' : 'Başvuruyu Reddet',
+          style: GoogleFonts.playfairDisplay(
+              color: AppColors.gold, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          approve
+              ? '$name kişisine admin yetkisi verilecek. Emin misiniz?'
+              : '$name kişisinin başvurusu reddedilecek.',
+          style: GoogleFonts.notoSans(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Vazgeç',
+                style: GoogleFonts.notoSans(color: Colors.white38)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: approve ? Colors.green.shade700 : Colors.red,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(approve ? 'Onayla' : 'Reddet',
+                style: GoogleFonts.notoSans(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      if (approve) {
+        await RoleService().approveAdmin(uid);
+      } else {
+        await RoleService().rejectAdmin(uid);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(approve
+                ? '$name artık admin oldu.'
+                : '$name başvurusu reddedildi.'),
+            backgroundColor:
+                approve ? Colors.green.shade700 : Colors.red.shade700,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('İşlem başarısız'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   Widget _buildUserList() {

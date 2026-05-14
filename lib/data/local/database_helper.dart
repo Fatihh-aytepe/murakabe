@@ -17,7 +17,7 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'murakabe.db');
     return openDatabase(
       path,
-      version: 3, // 2 → 3: profil alanları eklendi
+      version: 4, // 3 → 4: rozetler tablosu eklendi
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -118,6 +118,18 @@ class DatabaseHelper {
     ''');
 
     await _createCustomTaskTables(db);
+    await _createBadgesTable(db);
+  }
+
+  Future<void> _createBadgesTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS badges (
+        id TEXT PRIMARY KEY,
+        badgeId TEXT NOT NULL,
+        earnedAt TEXT NOT NULL,
+        isDisplayed INTEGER DEFAULT 0
+      )
+    ''');
   }
 
   Future<void> _createCustomTaskTables(Database db) async {
@@ -156,10 +168,11 @@ class DatabaseHelper {
           await db.execute(
             'ALTER TABLE users ADD COLUMN ${cols[i]} ${types[i]} DEFAULT ${defaults[i]}',
           );
-        } catch (_) {
-          // Sütun zaten varsa sessizce geç
-        }
+        } catch (_) {}
       }
+    }
+    if (oldVersion < 4) {
+      await _createBadgesTable(db);
     }
   }
 

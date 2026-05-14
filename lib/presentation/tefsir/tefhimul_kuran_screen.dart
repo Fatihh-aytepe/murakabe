@@ -19,7 +19,6 @@ class _TefhimulKuranScreenState extends State<TefhimulKuranScreen> {
 
   int _currentPage = 1;
   int _totalPages = 0;
-  bool _isLoading = true;
   bool _showToolbar = true;
 
   // Yer imleri: sayfa numaraları listesi
@@ -435,7 +434,6 @@ class _TefhimulKuranScreenState extends State<TefhimulKuranScreen> {
                 onDocumentLoaded: (details) {
                   setState(() {
                     _totalPages = details.document.pages.count;
-                    _isLoading = false;
                   });
                   // Kayıtlı sayfaya git
                   if (_currentPage > 1) {
@@ -447,7 +445,6 @@ class _TefhimulKuranScreenState extends State<TefhimulKuranScreen> {
                   _saveCurrentPage(details.newPageNumber);
                 },
                 onDocumentLoadFailed: (details) {
-                  setState(() => _isLoading = false);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('PDF yüklenemedi: ${details.description}'),

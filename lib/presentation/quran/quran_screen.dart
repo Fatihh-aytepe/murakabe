@@ -116,6 +116,7 @@ class _QuranScreenState extends State<QuranScreen>
                       QuranPageView(
                         initialPage: _progress?.lastPage ?? 1,
                         selectedQari: _selectedQari,
+                        selectedAyah: _selectedAyah,
                         onProgressChanged: (page, surah, ayah) =>
                             _saveProgress(page: page, surah: surah, ayah: ayah),
                         onAyahSelected: _onAyahSelected,
@@ -124,6 +125,7 @@ class _QuranScreenState extends State<QuranScreen>
                         initialSurah: _progress?.lastSurah ?? 1,
                         initialAyah: _progress?.lastAyah ?? 1,
                         selectedQari: _selectedQari,
+                        selectedAyah: _selectedAyah,
                         onProgressChanged: (page, surah, ayah) =>
                             _saveProgress(page: page, surah: surah, ayah: ayah),
                         onAyahSelected: _onAyahSelected,
@@ -138,8 +140,7 @@ class _QuranScreenState extends State<QuranScreen>
             qari: _selectedQari,
             availableQariler: kQariler,
             onQariChanged: _onQariChanged,
-            audioUrlBuilder: (ayah, qari) =>
-                _repo.getAudioUrl(ayah.globalNumber, qari),
+            audioUrlBuilder: (ayah, qari) => _repo.getAudioUrl(ayah, qari),
           ),
         ],
       ),

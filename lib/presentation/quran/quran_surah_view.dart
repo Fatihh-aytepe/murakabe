@@ -8,6 +8,7 @@ class QuranSurahView extends StatefulWidget {
   final int initialSurah;
   final int initialAyah;
   final Qari selectedQari;
+  final QuranAyah? selectedAyah;
   final void Function(int page, int surah, int ayah) onProgressChanged;
   final void Function(QuranAyah ayah) onAyahSelected;
 
@@ -16,6 +17,7 @@ class QuranSurahView extends StatefulWidget {
     required this.initialSurah,
     required this.initialAyah,
     required this.selectedQari,
+    this.selectedAyah,
     required this.onProgressChanged,
     required this.onAyahSelected,
   });
@@ -158,9 +160,9 @@ class _QuranSurahViewState extends State<QuranSurahView> {
                   ),
                   Text(
                     surah.nameArabic,
-                    style: GoogleFonts.amiri(
+                    style: GoogleFonts.scheherazadeNew(
                       color: AppColors.gold,
-                      fontSize: 18,
+                      fontSize: 20,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -224,7 +226,7 @@ class _QuranSurahViewState extends State<QuranSurahView> {
               ),
               Text(
                 surah.nameArabic,
-                style: GoogleFonts.amiri(color: AppColors.gold, fontSize: 20),
+                style: GoogleFonts.scheherazadeNew(color: AppColors.gold, fontSize: 22),
               ),
             ],
           ),
@@ -249,32 +251,65 @@ class _QuranSurahViewState extends State<QuranSurahView> {
   }
 
   Widget _buildAyahTile(QuranAyah ayah, bool isDark) {
+    final isSelected =
+        widget.selectedAyah?.globalNumber == ayah.globalNumber;
     final arabicColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
     final turkishColor = isDark ? Colors.white60 : AppColors.textSecondary;
 
     return GestureDetector(
       onTap: () => widget.onAyahSelected(ayah),
       onLongPress: () => _showNoteSheet(ayah),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
         margin: const EdgeInsets.only(bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.03)
-              : Colors.black.withValues(alpha: 0.02),
+          color: isSelected
+              ? AppColors.gold.withValues(alpha: 0.12)
+              : isDark
+                  ? Colors.white.withValues(alpha: 0.03)
+                  : Colors.black.withValues(alpha: 0.02),
+          border: isSelected
+              ? Border.all(
+                  color: AppColors.gold.withValues(alpha: 0.5), width: 1)
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
-                _buildAyahNumber(ayah.number),
+                _buildAyahNumber(ayah.number, isSelected),
                 const Spacer(),
-                Text(
-                  'Sayfa ${ayah.page}',
-                  style: GoogleFonts.notoSans(color: Colors.grey, fontSize: 10),
-                ),
+                if (isSelected)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.gold.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.volume_up,
+                            color: AppColors.gold, size: 10),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Seçili',
+                          style: GoogleFonts.notoSans(
+                              color: AppColors.gold, fontSize: 9),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Text(
+                    'Sayfa ${ayah.page}',
+                    style:
+                        GoogleFonts.notoSans(color: Colors.grey, fontSize: 10),
+                  ),
               ],
             ),
             const SizedBox(height: 8),
@@ -282,9 +317,9 @@ class _QuranSurahViewState extends State<QuranSurahView> {
               ayah.arabic,
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,
-              style: GoogleFonts.amiri(
-                fontSize: 22,
-                color: arabicColor,
+              style: GoogleFonts.scheherazadeNew(
+                fontSize: 24,
+                color: isSelected ? AppColors.gold : arabicColor,
                 height: 2.2,
               ),
             ),
@@ -303,19 +338,27 @@ class _QuranSurahViewState extends State<QuranSurahView> {
     );
   }
 
-  Widget _buildAyahNumber(int number) {
+  Widget _buildAyahNumber(int number, [bool isSelected = false]) {
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.6)),
+        color: isSelected ? AppColors.gold : Colors.transparent,
+        border: Border.all(
+          color: isSelected
+              ? AppColors.gold
+              : AppColors.gold.withValues(alpha: 0.6),
+        ),
       ),
       child: Center(
         child: Text(
           '$number',
           style: GoogleFonts.notoSans(
-              color: AppColors.gold, fontSize: 10, fontWeight: FontWeight.bold),
+            color: isSelected ? Colors.white : AppColors.gold,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -415,16 +458,14 @@ class _QuranSurahViewState extends State<QuranSurahView> {
                       title: 'Ayet ${ayah.surahNumber}:${ayah.number}',
                       content: content,
                     );
-                    if (ctx.mounted) {
+                    if (mounted && ctx.mounted) {
                       Navigator.pop(ctx);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Tefekkür notu kaydedildi'),
-                            backgroundColor: AppColors.success,
-                          ),
-                        );
-                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Tefekkür notu kaydedildi'),
+                          backgroundColor: AppColors.success,
+                        ),
+                      );
                     }
                   },
                   child: Text('Notu Kaydet',

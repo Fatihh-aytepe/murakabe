@@ -50,9 +50,11 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
     await RewardRepository().saveReward(
       type: 'welcome',
       title: 'Murakabe Yoluna Hos Geldin',
-      message: 'Kalbin daima Allah\'in gozeti altinda oldugu bilincini tasiman,'
-          ' ruhunu arindirman ve tefekkur etmen icin bu yola girdin.'
-          ' Bu adim, manevi yolculugunun en kiymetli anlaridir.',
+      message: 'Murakabe yolculuğunun ilk meyvesi bugün kalbine düştü. '
+          'Rabbimizin her an bizimle olduğunu hissetmek, hayatın telaşından sıyrılıp '
+          'kendi içimizde bir nefeslik huzur bulmak için buradayız. '
+          'Bu heyecanlı yolda seninle beraber yürümek çok güzel. '
+          'Ruhunu besleyeceğin, tefekkürle parlayacağın harika anlar seni bekliyor.',
     );
     await RewardService().markWelcomeDone();
   }
@@ -196,7 +198,8 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
                                   color: AppColors.gold.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                      color: AppColors.gold.withValues(alpha: 0.4)),
+                                      color: AppColors.gold
+                                          .withValues(alpha: 0.4)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -228,13 +231,13 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.gold,
                               foregroundColor: Colors.white,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 18),
+                              padding: const EdgeInsets.symmetric(vertical: 18),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               elevation: 8,
-                              shadowColor: AppColors.gold.withValues(alpha: 0.4),
+                              shadowColor:
+                                  AppColors.gold.withValues(alpha: 0.4),
                             ),
                             child: Text(
                               'Yolculuga Basla',
@@ -277,9 +280,8 @@ class _StarFieldPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
     for (final s in _stars) {
-      final opacity =
-          (0.3 + 0.5 * math.sin(progress * math.pi * 2 + s.phase))
-              .clamp(0.1, 0.9);
+      final opacity = (0.3 + 0.5 * math.sin(progress * math.pi * 2 + s.phase))
+          .clamp(0.1, 0.9);
       paint.color = AppColors.gold.withValues(alpha: opacity);
       canvas.drawCircle(
           Offset(s.x * size.width, s.y * size.height), s.r, paint);

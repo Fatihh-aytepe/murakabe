@@ -40,33 +40,34 @@ class RoleService {
   }) async {
     if (_uid == null) return;
 
-    // Daha önce başvuru var mı?
-    final existing = await _db
-        .collection('adminRequests')
-        .where('uid', isEqualTo: _uid)
-        .where('status', isEqualTo: 'pending')
-        .get();
-    if (existing.docs.isNotEmpty) {
-      throw Exception('Zaten bekleyen bir başvurunuz var');
-    }
+    // Kullanıcının kendi dokümanını doğrudan oku (collection query yerine)
+    try {
+      final existing =
+          await _db.collection('adminRequests').doc(_uid).get();
+      if (existing.exists && existing.data()?['status'] == 'pending') {
+        throw Exception('Zaten bekleyen bir başvurunuz var');
+      }
+    } on Exception {
+      rethrow;
+    } catch (_) {}
 
     await _db.collection('adminRequests').doc(_uid).set({
       'uid': _uid,
       'name': name,
       'reason': reason,
-      'status': 'pending', // pending | approved | rejected
+      'status': 'pending',
       'appliedAt': FieldValue.serverTimestamp(),
     });
 
-    // Sahibin FCM token'ına bildirim gönder (Cloud Function ile yapılır)
-    // Şimdilik Firestore'a yazıyoruz, CF okur ve gönderir
-    await _db.collection('notifications').add({
-      'type': 'admin_request',
-      'fromUid': _uid,
-      'fromName': name,
-      'createdAt': FieldValue.serverTimestamp(),
-      'read': false,
-    });
+    try {
+      await _db.collection('notifications').add({
+        'type': 'admin_request',
+        'fromUid': _uid,
+        'fromName': name,
+        'createdAt': FieldValue.serverTimestamp(),
+        'read': false,
+      });
+    } catch (_) {}
   }
 
   // ── Sahip: admin başvurusunu onayla ──────────────────────────────────────
@@ -88,13 +89,14 @@ class RoleService {
 
     await batch.commit();
 
-    // Kullanıcıya bildirim
-    await _db.collection('notifications').add({
-      'type': 'admin_approved',
-      'targetUid': targetUid,
-      'createdAt': FieldValue.serverTimestamp(),
-      'read': false,
-    });
+    try {
+      await _db.collection('notifications').add({
+        'type': 'admin_approved',
+        'targetUid': targetUid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'read': false,
+      });
+    } catch (_) {}
   }
 
   // ── Sahip: admin başvurusunu reddet ──────────────────────────────────────
@@ -104,12 +106,14 @@ class RoleService {
       'resolvedAt': FieldValue.serverTimestamp(),
     });
 
-    await _db.collection('notifications').add({
-      'type': 'admin_rejected',
-      'targetUid': targetUid,
-      'createdAt': FieldValue.serverTimestamp(),
-      'read': false,
-    });
+    try {
+      await _db.collection('notifications').add({
+        'type': 'admin_rejected',
+        'targetUid': targetUid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'read': false,
+      });
+    } catch (_) {}
   }
 
   // ── Admin: Topluluk kur ───────────────────────────────────────────────────

@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,11 +20,16 @@ import '../../data/models/custom_task_model.dart';
 import '../../data/repositories/content_repository.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/repositories/reward_repository.dart';
+import '../../data/remote/firebase_service.dart';
 import '../../data/repositories/custom_task_repository.dart';
 import '../rewards/tebrik_karti_screen.dart';
 import '../esma/esma_detail_screen.dart';
 import '../ayet/ayet_detail_screen.dart';
 import '../hadis/hadis_detail_screen.dart';
+import '../home/home_screen.dart';
+import '../auth/login_screen.dart';
+import '../badges/badges_screen.dart';
+import '../../core/constants/badge_definitions.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onTasksChanged;
@@ -41,6 +48,8 @@ class ProfileScreenState extends State<ProfileScreen>
   final _rewardRepo = RewardRepository();
   final _taskRepo = CustomTaskRepository();
   final _imagePicker = ImagePicker();
+  final AudioPlayer _previewPlayer = AudioPlayer();
+  bool _isPreviewing = false;
 
   UserModel? _user;
   List<EsmaModel> _savedEsmas = [];
@@ -57,6 +66,9 @@ class ProfileScreenState extends State<ProfileScreen>
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
     _loadData();
+    _previewPlayer.onPlayerComplete.listen((_) {
+      if (mounted) setState(() => _isPreviewing = false);
+    });
   }
 
   // HomeScreen GlobalKey üzerinden çağrılır
@@ -85,6 +97,7 @@ class ProfileScreenState extends State<ProfileScreen>
 
   @override
   void dispose() {
+    _previewPlayer.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -229,6 +242,54 @@ class ProfileScreenState extends State<ProfileScreen>
           Text(
             _user?.email ?? '',
             style: GoogleFonts.notoSans(fontSize: 13, color: Colors.white60),
+          ),
+          const SizedBox(height: 6),
+          _buildDisplayedBadgeChip(),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              OutlinedButton.icon(
+                onPressed: _user != null ? _showEditProfileSheet : null,
+                icon: const Icon(Icons.edit_outlined,
+                    size: 14, color: AppColors.gold),
+                label: Text(
+                  'Profili Düzenle',
+                  style:
+                      GoogleFonts.notoSans(color: AppColors.gold, fontSize: 12),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.gold, width: 1),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+              const SizedBox(width: 10),
+              OutlinedButton.icon(
+                onPressed: _showAccountsSheet,
+                icon: const Icon(Icons.people_outline,
+                    size: 14, color: AppColors.turquoise),
+                label: Text(
+                  'Hesaplar',
+                  style: GoogleFonts.notoSans(
+                      color: AppColors.turquoise, fontSize: 12),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side:
+                      const BorderSide(color: AppColors.turquoise, width: 1),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           // Tema toggle
@@ -991,18 +1052,68 @@ class ProfileScreenState extends State<ProfileScreen>
     }
   }
 
+  Widget _buildDisplayedBadgeChip() {
+    final badgeId = LocalStorage().displayedBadgeId;
+    if (badgeId == null) return const SizedBox.shrink();
+    final def = badgeDefById(badgeId);
+    if (def == null) return const SizedBox.shrink();
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const BadgesScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: def.gradient),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: def.primaryColor.withValues(alpha: 0.4),
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(def.emoji.characters.first,
+                style: const TextStyle(fontSize: 14)),
+            const SizedBox(width: 6),
+            Text(
+              def.name,
+              style: GoogleFonts.notoSans(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ── Heybem ───────────────────────────────────────────────────────────────
 
   Widget _buildHeybemList() {
+    // NestedScrollView içinde CustomScrollView + SliverFillRemaining çöküyor;
+    // basit ListView.builder kullan.
     if (_rewards.isEmpty) {
-      return _buildEmptyState(
-          'Henüz heybenizde bir şey yok\nTeheccüd ve Kuran ödülleriniz burada görünür');
+      return ListView(
+        children: [
+          _buildRozetlerimBanner(),
+          _buildEmptyState(
+              'Henüz heybenizde bir şey yok\nTeheccüd ve Kur\'ân ödülleriniz burada görünür'),
+        ],
+      );
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _rewards.length,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      itemCount: _rewards.length + 1, // +1 banner için
       itemBuilder: (_, i) {
-        final reward = _rewards[i];
+        if (i == 0) return _buildRozetlerimBanner();
+        final reward = _rewards[i - 1];
         return GestureDetector(
           onTap: () => Navigator.push(
             context,
@@ -1023,7 +1134,8 @@ class ProfileScreenState extends State<ProfileScreen>
                 colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
+              border: Border.all(
+                  color: AppColors.gold.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -1036,7 +1148,13 @@ class ProfileScreenState extends State<ProfileScreen>
                   ),
                   child: Center(
                     child: Text(
-                      reward.type == 'tahajjud' ? '🌙' : '📖',
+                      reward.type == 'tahajjud'
+                          ? '🌙'
+                          : reward.type.contains('esma')
+                              ? '✨'
+                              : reward.type.contains('hadis')
+                                  ? '📜'
+                                  : '📖',
                       style: const TextStyle(fontSize: 22),
                     ),
                   ),
@@ -1066,7 +1184,8 @@ class ProfileScreenState extends State<ProfileScreen>
                       Text(
                         _formatRewardDate(reward.earnedAt),
                         style: GoogleFonts.notoSans(
-                            color: AppColors.turquoiseLight, fontSize: 10),
+                            color: AppColors.turquoiseLight,
+                            fontSize: 10),
                       ),
                     ],
                   ),
@@ -1078,6 +1197,62 @@ class ProfileScreenState extends State<ProfileScreen>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildRozetlerimBanner() {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const BadgesScreen()),
+      ),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF4A148C), Color(0xFFD4AF37)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF4A148C).withValues(alpha: 0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const Text('🏅', style: TextStyle(fontSize: 28)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Rozetlerim',
+                    style: GoogleFonts.playfairDisplay(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Kazandığın rozetleri görüntüle ve profilde göster',
+                    style: GoogleFonts.notoSans(
+                        color: Colors.white70, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios,
+                color: Colors.white70, size: 16),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1253,33 +1428,79 @@ class ProfileScreenState extends State<ProfileScreen>
             ),
           ),
           const SizedBox(height: 10),
-          DropdownButton<String>(
-            value: current.id,
-            isExpanded: true,
-            dropdownColor: isDark ? const Color(0xFF1A2035) : Colors.white,
-            underline: const SizedBox(),
-            style: GoogleFonts.notoSans(
-              color: isDark ? Colors.white : AppColors.textPrimary,
-              fontSize: 14,
-            ),
-            icon: const Icon(Icons.music_note, color: AppColors.gold, size: 20),
-            items: AlarmService.availableSounds
-                .map((s) => DropdownMenuItem(
-                      value: s.id,
-                      child: Text(s.label),
-                    ))
-                .toList(),
-            onChanged: (val) async {
-              if (val == null) return;
-              final sound =
-                  AlarmService.availableSounds.firstWhere((s) => s.id == val);
-              await _alarmService.setSelectedSound(sound);
-              setState(() {});
-            },
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButton<String>(
+                  value: current.id,
+                  isExpanded: true,
+                  dropdownColor: isDark ? const Color(0xFF1A2035) : Colors.white,
+                  underline: const SizedBox(),
+                  style: GoogleFonts.notoSans(
+                    color: isDark ? Colors.white : AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                  icon: const Icon(Icons.music_note, color: AppColors.gold, size: 20),
+                  items: AlarmService.availableSounds
+                      .map((s) => DropdownMenuItem(
+                            value: s.id,
+                            child: Text(s.label),
+                          ))
+                      .toList(),
+                  onChanged: (val) async {
+                    if (val == null) return;
+                    await _previewPlayer.stop();
+                    if (mounted) setState(() => _isPreviewing = false);
+                    final sound =
+                        AlarmService.availableSounds.firstWhere((s) => s.id == val);
+                    await _alarmService.setSelectedSound(sound);
+                    setState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _toggleSoundPreview,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _isPreviewing
+                        ? Colors.red.withValues(alpha: 0.15)
+                        : AppColors.gold.withValues(alpha: 0.15),
+                    border: Border.all(
+                      color: _isPreviewing ? Colors.red : AppColors.gold,
+                    ),
+                  ),
+                  child: Icon(
+                    _isPreviewing ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                    color: _isPreviewing ? Colors.red : AppColors.gold,
+                    size: 18,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _toggleSoundPreview() async {
+    if (_isPreviewing) {
+      await _previewPlayer.stop();
+      if (mounted) setState(() => _isPreviewing = false);
+    } else {
+      if (mounted) setState(() => _isPreviewing = true);
+      try {
+        await _previewPlayer.play(
+          AssetSource('sounds/${_alarmService.selectedSound.id}.mp3'),
+        );
+      } catch (_) {
+        if (mounted) setState(() => _isPreviewing = false);
+      }
+    }
   }
 
   Widget _buildAlarmTile(TimeOfDay time, int index) {
@@ -1396,6 +1617,871 @@ class ProfileScreenState extends State<ProfileScreen>
 
   void _removeAlarm(int index) {
     setState(() => _tahajjudTimes.removeAt(index));
+  }
+
+  Future<void> _showEditProfileSheet() async {
+    if (_user == null) return;
+    final nameCtrl = TextEditingController(text: _user!.nameSurname);
+    final phoneCtrl = TextEditingController(text: _user!.phone);
+    bool isSaving = false;
+    String? errorMsg;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final bgColor = isDark ? const Color(0xFF1A2035) : Colors.white;
+          final textColor = isDark ? Colors.white : AppColors.textPrimary;
+          final borderColor = Colors.grey.withValues(alpha: 0.3);
+
+          InputDecoration fieldDecor(String label, IconData icon) =>
+              InputDecoration(
+                labelText: label,
+                labelStyle:
+                    TextStyle(color: textColor.withValues(alpha: 0.6)),
+                prefixIcon: Icon(icon, color: AppColors.gold, size: 20),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: borderColor),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: AppColors.gold),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              );
+
+          return Padding(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Profili Düzenle',
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.gold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: nameCtrl,
+                      style: TextStyle(color: textColor),
+                      decoration: fieldDecor('Ad Soyad', Icons.person_outline),
+                      textCapitalization: TextCapitalization.words,
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: phoneCtrl,
+                      style: TextStyle(color: textColor),
+                      decoration:
+                          fieldDecor('Telefon', Icons.phone_outlined),
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: borderColor),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.email_outlined,
+                              color: AppColors.gold, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'E-posta',
+                                  style: TextStyle(
+                                      color:
+                                          textColor.withValues(alpha: 0.6),
+                                      fontSize: 12),
+                                ),
+                                Text(
+                                  _user?.email ?? '',
+                                  style: TextStyle(
+                                      color: textColor, fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.pop(ctx);
+                              await Future.delayed(
+                                  const Duration(milliseconds: 300));
+                              if (mounted) await _showEmailChangeDialog();
+                            },
+                            child: Text(
+                              'Değiştir',
+                              style: GoogleFonts.notoSans(
+                                  color: AppColors.turquoise, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (errorMsg != null) ...[
+                      const SizedBox(height: 8),
+                      Text(errorMsg!,
+                          style: const TextStyle(
+                              color: Colors.red, fontSize: 12)),
+                    ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                final name = nameCtrl.text.trim();
+                                final phone = phoneCtrl.text.trim();
+                                String? err;
+                                if (name.length < 2) {
+                                  err =
+                                      'Ad soyad en az 2 karakter olmalıdır.';
+                                } else if (phone.isNotEmpty &&
+                                    !RegExp(r'^[0-9]{10,11}$').hasMatch(
+                                        phone.replaceAll(
+                                            RegExp(r'[\s\-\+\(\)]'),
+                                            ''))) {
+                                  err =
+                                      'Geçerli bir telefon numarası giriniz.';
+                                }
+                                if (err != null) {
+                                  setSheetState(() => errorMsg = err);
+                                  return;
+                                }
+                                setSheetState(() {
+                                  isSaving = true;
+                                  errorMsg = null;
+                                });
+                                try {
+                                  await _userRepo.updateUser(
+                                    _user!.copyWith(
+                                        nameSurname: name, phone: phone),
+                                  );
+                                  try {
+                                    await FirebaseService()
+                                        .updateDisplayName(name);
+                                  } catch (_) {}
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                  if (mounted) await _loadData();
+                                } catch (e) {
+                                  setSheetState(() {
+                                    isSaving = false;
+                                    errorMsg = 'Güncelleme başarısız.';
+                                  });
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: isSaving
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2),
+                              )
+                            : Text(
+                                'Kaydet',
+                                style: GoogleFonts.notoSans(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    nameCtrl.dispose();
+    phoneCtrl.dispose();
+  }
+
+  Future<void> _showEmailChangeDialog() async {
+    final emailCtrl = TextEditingController();
+    final passwordCtrl = TextEditingController();
+    bool isSaving = false;
+    bool showPassword = false;
+    String? errorMsg;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final dialogBg = isDark ? const Color(0xFF1A2035) : Colors.white;
+          final textColor = isDark ? Colors.white : AppColors.textPrimary;
+          final subColor =
+              isDark ? Colors.white60 : AppColors.textSecondary;
+
+          return Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            backgroundColor: dialogBg,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.turquoise.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.email_outlined,
+                            color: AppColors.turquoise, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'E-posta Değiştir',
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Güvenlik için mevcut şifrenizi ve yeni e-posta adresinizi girin.',
+                    style: GoogleFonts.notoSans(
+                        color: subColor, fontSize: 13, height: 1.5),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    style: TextStyle(color: textColor),
+                    decoration: InputDecoration(
+                      labelText: 'Yeni E-posta',
+                      labelStyle: TextStyle(color: subColor),
+                      prefixIcon: const Icon(Icons.email_outlined,
+                          color: AppColors.turquoise, size: 20),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            const BorderSide(color: AppColors.turquoise),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: passwordCtrl,
+                    obscureText: !showPassword,
+                    style: TextStyle(color: textColor),
+                    decoration: InputDecoration(
+                      labelText: 'Mevcut Şifre',
+                      labelStyle: TextStyle(color: subColor),
+                      prefixIcon: const Icon(Icons.lock_outline,
+                          color: AppColors.turquoise, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          showPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          size: 18,
+                          color: AppColors.textLight,
+                        ),
+                        onPressed: () => setDialogState(
+                            () => showPassword = !showPassword),
+                      ),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            const BorderSide(color: AppColors.turquoise),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  if (errorMsg != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: Colors.red.withValues(alpha: 0.4)),
+                      ),
+                      child: Text(errorMsg!,
+                          style: const TextStyle(
+                              color: Colors.red, fontSize: 12)),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: Text('Vazgeç',
+                              style: GoogleFonts.notoSans(
+                                  color: AppColors.textLight)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: isSaving
+                              ? null
+                              : () async {
+                                  final newEmail =
+                                      emailCtrl.text.trim();
+                                  final password = passwordCtrl.text;
+                                  if (!RegExp(
+                                          r'^[\w\.\-\+]+@[\w\-]+\.\w{2,}$')
+                                      .hasMatch(newEmail)) {
+                                    setDialogState(() => errorMsg =
+                                        'Geçerli bir e-posta adresi giriniz.');
+                                    return;
+                                  }
+                                  if (password.length < 6) {
+                                    setDialogState(() => errorMsg =
+                                        'Şifre en az 6 karakter olmalıdır.');
+                                    return;
+                                  }
+                                  setDialogState(() {
+                                    isSaving = true;
+                                    errorMsg = null;
+                                  });
+                                  try {
+                                    await FirebaseService()
+                                        .updateEmail(newEmail, password);
+                                    if (ctx.mounted) Navigator.pop(ctx);
+                                    if (mounted) _showEmailChangeSentDialog(newEmail);
+                                  } on FirebaseAuthException catch (e) {
+                                    String msg;
+                                    switch (e.code) {
+                                      case 'wrong-password':
+                                      case 'invalid-credential':
+                                        msg =
+                                            'Şifre hatalı. Lütfen tekrar deneyin.';
+                                        break;
+                                      case 'email-already-in-use':
+                                        msg =
+                                            'Bu e-posta adresi zaten kullanımda.';
+                                        break;
+                                      case 'invalid-email':
+                                        msg = 'Geçersiz e-posta adresi.';
+                                        break;
+                                      case 'requires-recent-login':
+                                        msg =
+                                            'Güvenlik için tekrar giriş yapmanız gerekmektedir.';
+                                        break;
+                                      default:
+                                        msg =
+                                            'Bir hata oluştu. Lütfen tekrar deneyin.';
+                                    }
+                                    setDialogState(() {
+                                      isSaving = false;
+                                      errorMsg = msg;
+                                    });
+                                  } catch (_) {
+                                    setDialogState(() {
+                                      isSaving = false;
+                                      errorMsg =
+                                          'Beklenmeyen bir hata oluştu.';
+                                    });
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.turquoise,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: isSaving
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                      color: Colors.white, strokeWidth: 2),
+                                )
+                              : Text(
+                                  'Değiştir',
+                                  style: GoogleFonts.notoSans(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    emailCtrl.dispose();
+    passwordCtrl.dispose();
+  }
+
+  void _showEmailChangeSentDialog(String newEmail) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.mark_email_read_outlined,
+                    color: Colors.green, size: 30),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Doğrulama Gönderildi',
+                style: GoogleFonts.playfairDisplay(
+                    fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '$newEmail adresine doğrulama bağlantısı gönderildi.\nBağlantıya tıkladıktan sonra e-postanız güncellenecektir.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.notoSans(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.5),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text('Tamam',
+                      style: GoogleFonts.notoSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAccountsSheet() {
+    final currentUid = LocalStorage().userId;
+    final accounts = LocalStorage().getSavedAccounts();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => Container(
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+              top: 12,
+              left: 20,
+              right: 20),
+          decoration: const BoxDecoration(
+            color: Color(0xFF1A2035),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(Icons.people_outline,
+                      color: AppColors.turquoise, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Hesaplar',
+                      style: GoogleFonts.playfairDisplay(
+                          color: AppColors.gold,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (accounts.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text('Kayıtlı hesap yok.',
+                      style: GoogleFonts.notoSans(
+                          color: Colors.white38, fontSize: 13)),
+                )
+              else
+                ...accounts.map((acc) {
+                  final isCurrent = acc['uid'] == currentUid;
+                  return GestureDetector(
+                    onTap: isCurrent
+                        ? null
+                        : () {
+                            Navigator.pop(ctx);
+                            _switchAccount(acc);
+                          },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isCurrent
+                            ? AppColors.gold.withValues(alpha: 0.1)
+                            : Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isCurrent
+                              ? AppColors.gold.withValues(alpha: 0.4)
+                              : Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isCurrent
+                                  ? AppColors.gold.withValues(alpha: 0.2)
+                                  : Colors.white.withValues(alpha: 0.08),
+                            ),
+                            child: Center(
+                              child: Text(
+                                (acc['name'] as String? ?? '?')
+                                    .isNotEmpty
+                                    ? (acc['name'] as String)[0].toUpperCase()
+                                    : '?',
+                                style: TextStyle(
+                                  color: isCurrent
+                                      ? AppColors.gold
+                                      : Colors.white54,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  acc['name'] as String? ?? '',
+                                  style: GoogleFonts.notoSans(
+                                    color: isCurrent
+                                        ? AppColors.gold
+                                        : Colors.white,
+                                    fontWeight: isCurrent
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                Text(
+                                  acc['email'] as String? ?? '',
+                                  style: GoogleFonts.notoSans(
+                                      color: Colors.white38, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isCurrent)
+                            const Icon(Icons.check_circle,
+                                color: AppColors.gold, size: 18)
+                          else
+                            const Icon(Icons.chevron_right,
+                                color: Colors.white24, size: 18),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              const SizedBox(height: 4),
+              // Hesap Ekle
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _addNewAccount();
+                },
+                icon: const Icon(Icons.add, color: AppColors.turquoise,
+                    size: 18),
+                label: Text('Hesap Ekle',
+                    style: GoogleFonts.notoSans(
+                        color: AppColors.turquoise, fontSize: 13)),
+              ),
+              const Divider(color: Colors.white12),
+              // Çıkış Yap
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _logout();
+                },
+                icon: const Icon(Icons.logout, color: Colors.red, size: 18),
+                label: Text('Çıkış Yap',
+                    style: GoogleFonts.notoSans(
+                        color: Colors.red, fontSize: 13)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _switchAccount(Map<String, dynamic> acc) async {
+    final email = acc['email'] as String? ?? '';
+    final passCtrl = TextEditingController();
+    bool isSaving = false;
+    String? errorMsg;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            backgroundColor: isDark ? const Color(0xFF1A2035) : Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Hesaba Geç',
+                      style: GoogleFonts.playfairDisplay(
+                          color: AppColors.gold,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 6),
+                  Text(email,
+                      style: GoogleFonts.notoSans(
+                          color: Colors.white54, fontSize: 12)),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: passCtrl,
+                    obscureText: true,
+                    autofocus: true,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Şifre',
+                      labelStyle: const TextStyle(color: Colors.white38),
+                      prefixIcon: const Icon(Icons.lock_outline,
+                          color: AppColors.gold, size: 18),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: AppColors.gold),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  if (errorMsg != null) ...[
+                    const SizedBox(height: 8),
+                    Text(errorMsg!,
+                        style:
+                            const TextStyle(color: Colors.red, fontSize: 12)),
+                  ],
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: Text('İptal',
+                                  style: GoogleFonts.notoSans(
+                                      color: Colors.white38)))),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.gold,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: isSaving
+                              ? null
+                              : () async {
+                                  setDlg(() {
+                                    isSaving = true;
+                                    errorMsg = null;
+                                  });
+                                  try {
+                                    await FirebaseService().signInWithEmail(
+                                        email: email,
+                                        password: passCtrl.text);
+                                    final authUser =
+                                        FirebaseService().currentAuthUser!;
+                                    await LocalStorage()
+                                        .setUserId(authUser.uid);
+                                    await LocalStorage()
+                                        .setUserRegistered(true);
+                                    await LocalStorage().saveAccount(
+                                      uid: authUser.uid,
+                                      email: email,
+                                      name: acc['name'] as String? ?? email,
+                                    );
+                                    // Yerel veri yoksa Firestore'dan geri yükle
+                                    final existing = await _userRepo
+                                        .getCurrentUser();
+                                    if (existing == null) {
+                                      await UserRepository()
+                                          .restoreFromFirestore(authUser.uid);
+                                    }
+                                    if (ctx.mounted) Navigator.pop(ctx);
+                                    if (mounted) {
+                                      Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const HomeScreen()),
+                                        (_) => false,
+                                      );
+                                    }
+                                  } catch (_) {
+                                    setDlg(() {
+                                      isSaving = false;
+                                      errorMsg = 'Şifre hatalı.';
+                                    });
+                                  }
+                                },
+                          child: isSaving
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                      color: Colors.white, strokeWidth: 2))
+                              : Text('Giriş Yap',
+                                  style: GoogleFonts.notoSans(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    passCtrl.dispose();
+  }
+
+  void _addNewAccount() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (_) => false,
+    );
+  }
+
+  Future<void> _logout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Çıkış Yap',
+            style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold)),
+        content: const Text('Hesabınızdan çıkış yapmak istiyor musunuz?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Vazgeç')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Çıkış Yap',
+                  style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await FirebaseService().signOut();
+    await LocalStorage().setUserRegistered(false);
+    await LocalStorage().setUserId('');
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (_) => false,
+      );
+    }
   }
 
   Future<void> _showPhotoOptions() async {

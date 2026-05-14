@@ -86,16 +86,31 @@ class _QuranAudioBarState extends State<QuranAudioBar> {
       return;
     }
 
-    // Yeni ses yükle
     setState(() => _isLoading = true);
     try {
       final url = widget.audioUrlBuilder(widget.ayah!, widget.qari);
-      await _player.play(UrlSource(url));
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ses yüklenemedi')),
-        );
+      await _player.setSourceUrl(url);
+      await _player.resume();
+    } catch (_) {
+      // Fallback: cdn.islamic.network with Abdul Basit
+      try {
+        final fallback =
+            'https://cdn.islamic.network/quran/audio/128/ar.abdulbasitmurattal/${widget.ayah!.globalNumber}.mp3';
+        await _player.setSourceUrl(fallback);
+        await _player.resume();
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '${widget.ayah!.surahNumber}:${widget.ayah!.number} ayeti yüklenemedi. '
+                'Farklı bir kari deneyin.',
+              ),
+              backgroundColor: Colors.red.shade700,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -132,7 +147,7 @@ class _QuranAudioBarState extends State<QuranAudioBar> {
         color: bg,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha:0.15),
             blurRadius: 12,
             offset: const Offset(0, -3),
           ),
@@ -151,9 +166,9 @@ class _QuranAudioBarState extends State<QuranAudioBar> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.gold.withOpacity(0.12),
+                    color: AppColors.gold.withValues(alpha:0.12),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.gold.withOpacity(0.4)),
+                    border: Border.all(color: AppColors.gold.withValues(alpha:0.4)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -196,9 +211,9 @@ class _QuranAudioBarState extends State<QuranAudioBar> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textDirection: TextDirection.rtl,
-                            style: GoogleFonts.amiri(
+                            style: GoogleFonts.scheherazadeNew(
                               color: AppColors.gold,
-                              fontSize: 13,
+                              fontSize: 15,
                             ),
                           ),
                         ],

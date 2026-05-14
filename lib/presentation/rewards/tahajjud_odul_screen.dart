@@ -80,7 +80,7 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
         ),
         child: Stack(
           children: [
-            // Yildiz arkaplan
+            // Yıldız arkaplan
             const Positioned.fill(child: _NightSkyPainterWidget()),
 
             SafeArea(
@@ -93,7 +93,7 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                         horizontal: 24, vertical: 16),
                     child: Column(
                       children: [
-                        // Ay ikonu - yukari asagi animasyonlu
+                        // Ay ikonu - yukarı aşağı animasyonlu
                         AnimatedBuilder(
                           animation: _moonFloat,
                           builder: (_, __) => Transform.translate(
@@ -147,8 +147,8 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '"Gecenin bir bolumunde de uyanip sana mahsus fazla bir ibadet olarak"'
-                          ' namaz kil." — Isra: 79',
+                          '"Gecenin bir bölümünde de uyanıp sana mahsus fazla bir ibadet olarak'
+                          ' namaz kıl." — İsrâ: 79',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.notoSans(
                             fontSize: 12,
@@ -159,7 +159,7 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
 
                         const SizedBox(height: 28),
 
-                        // Ana odül karti
+                        // Ana ödül kartı
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(28),
@@ -174,13 +174,14 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                             ),
                             borderRadius: BorderRadius.circular(28),
                             border: Border.all(
-                              color: const Color(0xFF4080FF).withValues(alpha: 0.5),
+                              color: const Color(0xFF4080FF)
+                                  .withValues(alpha: 0.5),
                               width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color:
-                                    const Color(0xFF2040A0).withValues(alpha: 0.4),
+                                color: const Color(0xFF2040A0)
+                                    .withValues(alpha: 0.4),
                                 blurRadius: 30,
                                 spreadRadius: 5,
                               ),
@@ -189,7 +190,7 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                           child: Column(
                             children: [
                               Text(
-                                'Teheccud Odulu',
+                                'Teheccüd Ödülü',
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize: 24,
                                   color: Colors.white,
@@ -203,7 +204,8 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                                   gradient: LinearGradient(
                                     colors: [
                                       Colors.transparent,
-                                      const Color(0xFF4080FF).withValues(alpha: 0.8),
+                                      const Color(0xFF4080FF)
+                                          .withValues(alpha: 0.8),
                                       Colors.transparent,
                                     ],
                                   ),
@@ -211,11 +213,11 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                               ),
                               const SizedBox(height: 20),
                               Text(
-                                'Bu gece milyonlar uykudayken sen Rabbinle bulustun.\n\n'
-                                'Gece namazinin en ozel ani; alemin sussup sadece'
-                                ' kalplerin konustugu o derin sessizlik aninda,'
-                                ' Arsin sahibi ile yalniz kalabilmektir.\n\n'
-                                'Bu sadakat, kalbinde hic sonmeyecek bir kandil yakti.'
+                                'Bu gece milyonlar uykudayken sen Rabbinle buluştun.\n\n'
+                                'Gece namazının en özel anı; âlemin susup sadece'
+                                ' kalplerin konuştuğu o derin sessizlik anında,'
+                                ' Arşın sahibi ile yalnız kalabilmektir.\n\n'
+                                'Bu sadakat, kalbinde hiç sönmeyecek bir kandil yaktı.'
                                 ' Allah bu ibadeti kabul eylesin.',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.notoSans(
@@ -227,7 +229,7 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                               ),
                               const SizedBox(height: 20),
 
-                              // Yildiz rozeti
+                              // Yıldız rozeti
                               const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -240,7 +242,7 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Teheccud Sadigi',
+                                'Teheccüd Sadığı',
                                 style: GoogleFonts.playfairDisplay(
                                   color: AppColors.gold,
                                   fontSize: 14,
@@ -269,14 +271,13 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF2040A0),
                               foregroundColor: Colors.white,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               elevation: 8,
-                              shadowColor:
-                                  const Color(0xFF2040A0).withValues(alpha: 0.5),
+                              shadowColor: const Color(0xFF2040A0)
+                                  .withValues(alpha: 0.5),
                             ),
                           ),
                         ),
@@ -303,7 +304,7 @@ class _TahajjudOdulScreenState extends State<TahajjudOdulScreen>
   }
 }
 
-// Statik yildiz arkaplan (hafif, sabit)
+// Statik yıldız arkaplan (hafif, sabit)
 class _NightSkyPainterWidget extends StatelessWidget {
   const _NightSkyPainterWidget();
 

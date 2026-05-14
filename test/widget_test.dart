@@ -1,7 +1,2 @@
-import 'package:flutter_test/flutter_test.dart';
-
-void main() {
-  testWidgets('Murakabe smoke test', (WidgetTester tester) async {
-    // Test boş bırakıldı
-  });
-}
+// Uygulama testleri test/services/ altında bulunmaktadır.
+// Bu dosya yer tutucu olarak bırakılmıştır.

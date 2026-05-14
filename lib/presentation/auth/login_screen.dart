@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -22,14 +23,12 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Kayıt alanları
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _registerEmailController = TextEditingController();
   final _registerPassController = TextEditingController();
   final _registerPassConfirmController = TextEditingController();
 
-  // Giriş alanları
   final _loginEmailController = TextEditingController();
   final _loginPassController = TextEditingController();
 
@@ -38,7 +37,6 @@ class _LoginScreenState extends State<LoginScreen>
   bool _registerPassConfirmVisible = false;
   bool _loginPassVisible = false;
 
-  // Hata mesajları
   String? _nameError;
   String? _phoneError;
   String? _registerEmailError;
@@ -47,7 +45,6 @@ class _LoginScreenState extends State<LoginScreen>
   String? _loginEmailError;
   String? _loginPassError;
 
-  // Admin gizli giriş
   int _tapCount = 0;
   bool _showAdminFields = false;
   final _adminEmailController = TextEditingController();
@@ -75,7 +72,91 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  // ─── DOĞRULAMA ────────────────────────────────────────────────────────────
+  // ── Hata dialog'u ─────────────────────────────────────────────────────────
+
+  void _showErrorDialog(String message, {bool isSuccess = false}) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (_) => Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A2035),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSuccess
+                  ? Colors.green.withValues(alpha: 0.5)
+                  : Colors.red.withValues(alpha: 0.5),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (isSuccess ? Colors.green : Colors.red)
+                    .withValues(alpha: 0.2),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: (isSuccess ? Colors.green : Colors.red)
+                      .withValues(alpha: 0.15),
+                ),
+                child: Icon(
+                  isSuccess ? Icons.check_circle_outline : Icons.error_outline,
+                  color: isSuccess ? Colors.green : Colors.red.shade300,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                isSuccess ? 'Başarılı' : 'Hata',
+                style: GoogleFonts.playfairDisplay(
+                  color: isSuccess ? Colors.green : Colors.red.shade300,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.notoSans(
+                    color: Colors.white70, fontSize: 14, height: 1.5),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        isSuccess ? Colors.green : Colors.red.shade700,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text(
+                    'Tamam',
+                    style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Doğrulama ─────────────────────────────────────────────────────────────
 
   bool _validateEmail(String email) {
     final regex = RegExp(r'^[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}$');
@@ -83,13 +164,11 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   bool _validatePhone(String phone) {
-    // Türkiye formatı: 05xx xxx xx xx — sadece rakam, 11 hane, 05 ile başlar
     final digits = phone.replaceAll(RegExp(r'\D'), '');
     return digits.length == 11 && digits.startsWith('05');
   }
 
   bool _validatePassword(String pass) {
-    // En az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam
     if (pass.length < 8) return false;
     if (!pass.contains(RegExp(r'[A-Z]'))) return false;
     if (!pass.contains(RegExp(r'[a-z]'))) return false;
@@ -149,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen>
     return valid;
   }
 
-  // ─── KAYIT ────────────────────────────────────────────────────────────────
+  // ── Kayıt ─────────────────────────────────────────────────────────────────
 
   Future<void> _handleRegister() async {
     if (!_validateRegisterForm()) return;
@@ -164,7 +243,6 @@ class _LoginScreenState extends State<LoginScreen>
       );
 
       if (!mounted) return;
-      // Doğrulama maili gönderildi — bekleme ekranına git
       await Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -175,22 +253,15 @@ class _LoginScreenState extends State<LoginScreen>
       );
     } on Exception catch (e) {
       if (!mounted) return;
-      final msg = _parseFirebaseError(e.toString());
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg),
-          backgroundColor: Colors.red.shade700,
-        ),
-      );
+      _showErrorDialog(_parseFirebaseError(e.toString()));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  // ─── GİRİŞ ────────────────────────────────────────────────────────────────
+  // ── Giriş ─────────────────────────────────────────────────────────────────
 
   Future<void> _handleLogin() async {
-    // Admin gizli girişi
     if (_showAdminFields &&
         _adminEmailController.text == AppStrings.adminEmail &&
         _adminPassController.text == AppStrings.adminPassword) {
@@ -206,58 +277,68 @@ class _LoginScreenState extends State<LoginScreen>
     if (!_validateLoginForm()) return;
     setState(() => _isLoading = true);
 
+    final navigator = Navigator.of(context);
+    final email = _loginEmailController.text.trim();
+
     try {
       await FirebaseService().signInWithEmail(
-        email: _loginEmailController.text.trim(),
+        email: email,
         password: _loginPassController.text,
       );
 
       final authUser = FirebaseService().currentAuthUser;
       if (authUser == null) throw Exception('Giriş başarısız');
 
-      // E-posta doğrulandı mı?
       await authUser.reload();
       if (!authUser.emailVerified) {
         if (!mounted) return;
-        await Navigator.pushReplacement(
-          context,
+        await navigator.pushReplacement(
           MaterialPageRoute(
-            builder: (_) => EmailVerificationScreen(
-              email: _loginEmailController.text.trim(),
-            ),
+            builder: (_) => EmailVerificationScreen(email: email),
           ),
         );
         return;
       }
 
-      // Kullanıcı yerel kayıtlı mı?
-      final stored = LocalStorage().userId;
-      if (stored == null || stored != authUser.uid) {
-        // İlk giriş — yerel kayıt yok → profil kurulum
-        await LocalStorage().setUserId(authUser.uid);
-        await LocalStorage().setUserRegistered(true);
+      // Her girişte userId ve kayıtlı hesap listesini güncelle
+      await LocalStorage().setUserId(authUser.uid);
+      await LocalStorage().setUserRegistered(true);
+      await LocalStorage().saveAccount(
+        uid: authUser.uid,
+        email: email,
+        name: authUser.displayName ?? email,
+      );
+
+      // 1. Yerel SQLite'da kullanıcı var mı? (normal açılış)
+      final existing = await UserRepository().getCurrentUser();
+      if (existing != null) {
         if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
-        );
+        navigator.pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomeScreen()));
         return;
       }
 
+      // 2. SQLite boş (yeniden yükleme) → Firestore'dan geri yükle
+      final restored =
+          await UserRepository().restoreFromFirestore(authUser.uid);
+      if (restored) {
+        if (!mounted) return;
+        navigator.pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomeScreen()));
+        return;
+      }
+
+      // 3. Gerçekten yeni kullanıcı → profil kurulum
       if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    } on Exception catch (e) {
+      navigator.pushReplacement(
+          MaterialPageRoute(builder: (_) => const ProfileSetupScreen()));
+    } catch (e) {
+      debugPrint('[Login] ERROR: $e');
       if (!mounted) return;
-      final msg = _parseFirebaseError(e.toString());
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg),
-          backgroundColor: Colors.red.shade700,
-        ),
-      );
+      final msg = e is Exception
+          ? _parseFirebaseError(e.toString())
+          : 'Beklenmeyen hata: $e';
+      _showErrorDialog(msg);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -279,7 +360,7 @@ class _LoginScreenState extends State<LoginScreen>
     return 'Bir hata oluştu. Lütfen tekrar deneyin.';
   }
 
-  // ─── BUILD ────────────────────────────────────────────────────────────────
+  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -295,7 +376,6 @@ class _LoginScreenState extends State<LoginScreen>
         child: SafeArea(
           child: Column(
             children: [
-              // Üst logo bölümü
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
                 child: Column(
@@ -345,7 +425,6 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                     ),
                     const SizedBox(height: 24),
-                    // Tab bar
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.07),
@@ -370,8 +449,6 @@ class _LoginScreenState extends State<LoginScreen>
                   ],
                 ),
               ),
-
-              // Form içeriği
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
@@ -388,7 +465,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ─── KAYIT FORMU ──────────────────────────────────────────────────────────
+  // ── Kayıt formu ───────────────────────────────────────────────────────────
 
   Widget _buildRegisterTab() {
     return SingleChildScrollView(
@@ -462,7 +539,8 @@ class _LoginScreenState extends State<LoginScreen>
                   _registerPassConfirmVisible = !_registerPassConfirmVisible),
             ),
             errorText: _registerPassConfirmError,
-            onChanged: (_) => setState(() => _registerPassConfirmError = null),
+            onChanged: (_) =>
+                setState(() => _registerPassConfirmError = null),
           ),
           const SizedBox(height: 28),
           SizedBox(
@@ -499,7 +577,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ─── GİRİŞ FORMU ──────────────────────────────────────────────────────────
+  // ── Giriş formu ───────────────────────────────────────────────────────────
 
   Widget _buildLoginTab() {
     return SingleChildScrollView(
@@ -590,13 +668,11 @@ class _LoginScreenState extends State<LoginScreen>
                       return;
                     }
                     try {
-                      await FirebaseService().resetPassword(
-                        _loginEmailController.text.trim(),
-                      );
+                      await FirebaseService().resetPassword(email);
                       if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Şifre sıfırlama maili gönderildi')),
+                      _showErrorDialog(
+                        'Şifre sıfırlama maili gönderildi.\nGelen kutunuzu kontrol edin.',
+                        isSuccess: true,
                       );
                     } catch (_) {}
                   },
@@ -611,7 +687,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ─── ORTAK FIELD ──────────────────────────────────────────────────────────
+  // ── Ortak field ───────────────────────────────────────────────────────────
 
   Widget _buildField({
     required TextEditingController controller,
@@ -634,14 +710,16 @@ class _LoginScreenState extends State<LoginScreen>
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: AppColors.gold.withValues(alpha: 0.8)),
+        labelStyle:
+            TextStyle(color: AppColors.gold.withValues(alpha: 0.8)),
         prefixIcon: Icon(icon, color: AppColors.turquoise, size: 20),
         suffixIcon: suffixIcon,
         errorText: errorText,
         errorStyle:
             GoogleFonts.notoSans(fontSize: 11, color: Colors.red.shade300),
         helperText: helperText,
-        helperStyle: GoogleFonts.notoSans(fontSize: 10, color: Colors.white38),
+        helperStyle:
+            GoogleFonts.notoSans(fontSize: 10, color: Colors.white38),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
@@ -671,7 +749,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-// ─── E-POSTA DOĞRULAMA BEKLEME EKRANI ─────────────────────────────────────
+// ─── E-posta Doğrulama Bekleme Ekranı ─────────────────────────────────────────
 
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
@@ -685,6 +763,33 @@ class EmailVerificationScreen extends StatefulWidget {
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   bool _isChecking = false;
   bool _resent = false;
+  Timer? _pollTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Otomatik kontrol: her 4 saniyede bir doğrulama durumunu sorgula
+    _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      _autoCheck();
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _autoCheck() async {
+    if (_isChecking) return;
+    try {
+      final verified = await UserRepository().syncEmailVerified();
+      if (verified && mounted) {
+        _pollTimer?.cancel();
+        _navigateAfterVerification();
+      }
+    } catch (_) {}
+  }
 
   Future<void> _checkVerified() async {
     setState(() => _isChecking = true);
@@ -692,17 +797,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       final verified = await UserRepository().syncEmailVerified();
       if (!mounted) return;
       if (verified) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
-        );
+        _pollTimer?.cancel();
+        _navigateAfterVerification();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'E-posta henüz doğrulanmamış. Gelen kutunuzu kontrol edin.'),
-            backgroundColor: Colors.orange,
-          ),
+        _showDialog(
+          'Henüz doğrulanmamış',
+          'E-posta henüz doğrulanmamış. Gelen kutunuzu ve spam klasörünü kontrol edin.',
+          isError: true,
         );
       }
     } finally {
@@ -710,12 +811,49 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     }
   }
 
+  void _navigateAfterVerification() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+    );
+  }
+
+  void _showDialog(String title, String message, {bool isError = false}) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2035),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          title,
+          style: GoogleFonts.playfairDisplay(
+            color: isError ? Colors.orange : Colors.green,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          message,
+          style:
+              GoogleFonts.notoSans(color: Colors.white70, fontSize: 14, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Tamam',
+                style: GoogleFonts.notoSans(color: AppColors.gold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _resend() async {
     await FirebaseService().resendVerificationEmail();
     if (!mounted) return;
     setState(() => _resent = true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Doğrulama maili tekrar gönderildi')),
+    _showDialog(
+      'Mail Gönderildi',
+      'Doğrulama maili tekrar gönderildi.\nSpam klasörünü de kontrol edin.',
     );
   }
 
@@ -741,7 +879,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.gold.withValues(alpha: 0.15),
-                    border: Border.all(color: AppColors.gold.withValues(alpha: 0.4)),
+                    border: Border.all(
+                        color: AppColors.gold.withValues(alpha: 0.4)),
                   ),
                   child: const Icon(Icons.mark_email_unread_outlined,
                       color: AppColors.gold, size: 56),
@@ -757,10 +896,29 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '${widget.email}\nadresine doğrulama linki gönderdik.\nLinke tıkladıktan sonra aşağıdaki butona basın.',
+                  '${widget.email}\nadresine doğrulama linki gönderdik.\nLinke tıkladıktan sonra otomatik olarak devam edilecek.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.notoSans(
                       color: Colors.white70, fontSize: 14, height: 1.6),
+                ),
+                const SizedBox(height: 12),
+                // Otomatik kontrol göstergesi
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                          color: AppColors.turquoiseLight, strokeWidth: 2),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Doğrulama bekleniyor...',
+                      style: GoogleFonts.notoSans(
+                          color: AppColors.turquoiseLight, fontSize: 12),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 40),
                 SizedBox(

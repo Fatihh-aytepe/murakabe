@@ -65,6 +65,24 @@ class UserRepository {
     return user;
   }
 
+  /// Uygulama yeniden yüklendiğinde Firestore'dan SQLite'a kullanıcıyı geri yükler.
+  Future<bool> restoreFromFirestore(String uid) async {
+    try {
+      final map = await _firebase.getUserForSQLite(uid);
+      if (map == null) return false;
+      final existing =
+          await _db.query('users', where: 'id = ?', whereArgs: [uid]);
+      if (existing.isNotEmpty) {
+        await _db.update('users', map, where: 'id = ?', whereArgs: [uid]);
+      } else {
+        await _db.insert('users', map);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> updateUser(UserModel user) async {
     final map = user.toMap();
     map['missedQuranDays'] = jsonEncode(user.missedQuranDays);

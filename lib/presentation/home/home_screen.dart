@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/notification_service.dart';
@@ -10,27 +10,25 @@ import '../../data/repositories/content_repository.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/repositories/custom_task_repository.dart';
 import '../../data/models/custom_task_model.dart';
+import '../../data/models/user_model.dart';
 import '../esma/esma_detail_screen.dart';
 import '../profile/profile_screen.dart';
 import '../notes/notes_screen.dart';
 import '../reminders/reminders_screen.dart';
+import '../community/community_join_screen.dart';
 import 'widgets/content_card.dart';
 import 'widgets/islamic_header.dart';
 import 'widgets/quran_tracker_card.dart';
-import 'widgets/prayer_times_widget.dart';
 import 'widgets/custom_task_card.dart';
-import '../../data/models/user_model.dart';
 import 'widgets/streak_card.dart';
 import '../ayet/ayet_detail_screen.dart';
 import '../hadis/hadis_detail_screen.dart';
 import '../rewards/murakabe_hosgeldin_screen.dart';
 import '../rewards/tahajjud_odul_screen.dart';
 import '../rewards/tebrik_karti_screen.dart';
+import '../../core/services/badge_service.dart';
 import '../quran/quran_screen.dart';
 import '../tefsir/tefhimul_kuran_screen.dart';
-import '../community/community_join_screen.dart';
-// import '../biliyormusun/biliyor_musun_screen.dart';
-// import '../quiz/quiz_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -69,37 +67,108 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _checkRewards() async {
+    if (!mounted) return;
+    // Navigator'ı async gap'lerden önce yakala — context geçerliliği için kritik.
+    final nav = Navigator.of(context);
     final rewardService = RewardService();
+    final badgeService = BadgeService();
 
     if (rewardService.shouldShowWelcome) {
       if (!mounted) return;
-      await Navigator.of(context).push(MaterialPageRoute(
+      await nav.push(MaterialPageRoute(
         builder: (_) => MurakabeHosgeldinScreen(
-          onDone: () => Navigator.of(context).pop(),
+          onDone: () => nav.pop(),
         ),
       ));
       return;
     }
 
     if (_currentUser != null) {
-      final streakReward =
-          await rewardService.checkStreakReward(_currentUser!.streakDays);
-      if (streakReward != null && mounted) {
-        await Navigator.of(context).push(MaterialPageRoute(
+      // Kur'ân serisi
+      final kuranReward = await rewardService
+          .checkKuranStreakReward(_currentUser!.streakDays);
+      if (!mounted) return;
+      if (kuranReward != null) {
+        await nav.push(MaterialPageRoute(
           builder: (_) => TebrikKartiScreen(
-            type: streakReward.type,
-            title: streakReward.title,
-            message: streakReward.message,
+            type: kuranReward.type,
+            title: kuranReward.title,
+            message: kuranReward.message,
+            autoSave: false,
+          ),
+        ));
+      }
+
+      // Esmâ serisi
+      if (!mounted) return;
+      final esmaReward = await rewardService.checkEsmaStreakReward();
+      if (!mounted) return;
+      if (esmaReward != null) {
+        await nav.push(MaterialPageRoute(
+          builder: (_) => TebrikKartiScreen(
+            type: esmaReward.type,
+            title: esmaReward.title,
+            message: esmaReward.message,
+            autoSave: false,
+          ),
+        ));
+      }
+
+      // Hadis serisi
+      if (!mounted) return;
+      final hadisReward = await rewardService.checkHadisStreakReward();
+      if (!mounted) return;
+      if (hadisReward != null) {
+        await nav.push(MaterialPageRoute(
+          builder: (_) => TebrikKartiScreen(
+            type: hadisReward.type,
+            title: hadisReward.title,
+            message: hadisReward.message,
             autoSave: false,
           ),
         ));
       }
     }
 
+    // Teheccüd gece ödülü
+    if (!mounted) return;
     final showTahajjud = await rewardService.checkTahajjudReward();
-    if (showTahajjud && mounted) {
-      await Navigator.of(context).push(MaterialPageRoute(
+    if (!mounted) return;
+    if (showTahajjud) {
+      await nav.push(MaterialPageRoute(
         builder: (_) => const TahajjudOdulScreen(),
+      ));
+    }
+
+    // Teheccüd aylık kart (ayda 4 gece)
+    if (!mounted) return;
+    final showMonthlyCard = await badgeService.checkTahajjudMonthlyCard();
+    if (!mounted) return;
+    if (showMonthlyCard) {
+      await nav.push(MaterialPageRoute(
+        builder: (_) => const TebrikKartiScreen(
+          type: 'tahajjud_aylik',
+          title: 'Aylık Teheccüd Sadığı',
+          message: 'Bu ay 4 gece teheccüd namazı kıldın. Gecenin bu'
+              ' sessizliğinde Rabbine koşman, kalbine nur katar. Mâşallah!',
+          autoSave: true,
+        ),
+      ));
+    }
+
+    // Rozet kontrolü
+    if (!mounted || _currentUser == null) return;
+    final earnedBadges = await badgeService.checkAndAward(_currentUser!);
+    for (final badge in earnedBadges) {
+      if (!mounted) return;
+      await nav.push(MaterialPageRoute(
+        builder: (_) => TebrikKartiScreen(
+          type: 'rozet_${badge.id}',
+          title: '🏅 Yeni Rozet: ${badge.name}',
+          message: '${badge.description}\n\n${badge.tierLabel} seviyesinde bir'
+              ' rozet kazandın! Profilindeki Heybem bölümünden rozetlerini görebilirsin.',
+          autoSave: false,
+        ),
       ));
     }
   }
@@ -149,6 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     await NotificationService().scheduleThursdayTahajjud();
     await NotificationService().scheduleWeeklyFridaySummary();
+    await NotificationService().scheduleHourlyQuranReminders(_quranReadToday);
     await _taskRepo.syncNotifications();
   }
 
@@ -164,17 +234,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToTab(int i) {
-    _scaffoldKey.currentState?.closeEndDrawer();
+    _scaffoldKey.currentState?.closeDrawer();
     setState(() => _selectedIndex = i);
   }
 
   void _goToPage(Widget page) {
-    _scaffoldKey.currentState?.closeEndDrawer();
+    _scaffoldKey.currentState?.closeDrawer();
     Navigator.push(context, MaterialPageRoute(builder: (_) => page));
   }
 
   void _showComingSoon(String name) {
-    _scaffoldKey.currentState?.closeEndDrawer();
+    _scaffoldKey.currentState?.closeDrawer();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$name yakında geliyor!'),
@@ -188,23 +258,32 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      key: _scaffoldKey,
-      // Sola kaydırınca sağdan açılan drawer
-      endDrawer: _buildDrawer(isDark),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          _buildHomePage(),
-          NotesScreen(key: _notesKey),
-          const RemindersScreen(),
-          ProfileScreen(
-            key: _profileKey,
-            onTasksChanged: _refreshContent,
-          ),
-        ],
+
+    return PopScope(
+      canPop: _selectedIndex == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          setState(() => _selectedIndex = 0);
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        // Soldan açılan drawer — sağa kaydırınca açılır
+        drawer: _buildDrawer(isDark),
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            _buildHomePage(),
+            NotesScreen(key: _notesKey),
+            const CommunityJoinScreen(),
+            ProfileScreen(
+              key: _profileKey,
+              onTasksChanged: _refreshContent,
+            ),
+          ],
+        ),
+        bottomNavigationBar: _buildBottomNav(isDark),
       ),
-      bottomNavigationBar: _buildBottomNav(isDark),
     );
   }
 
@@ -240,6 +319,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   _buildDrawerItem(
                     icon: Icons.alarm_outlined,
                     label: 'Hatırlatıcı',
+                    onTap: () => _goToPage(const RemindersScreen()),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.group_outlined,
+                    label: 'Topluluk',
                     isActive: _selectedIndex == 2,
                     onTap: () => _goToTab(2),
                   ),
@@ -252,12 +336,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 8),
                   const Divider(color: Colors.white12),
                   const SizedBox(height: 4),
-                  _buildDrawerSection('Keşfet'),
+                  _buildDrawerSection('Okumalar'),
                   _buildDrawerItem(
                     icon: Icons.menu_book_outlined,
-                    label: 'Kuran',
+                    label: 'Kuran-ı Kerim',
                     onTap: () => _goToPage(const QuranScreen()),
                   ),
+                  _buildDrawerItem(
+                    icon: Icons.auto_stories_outlined,
+                    label: 'Tefhimul Kuran',
+                    onTap: () => _goToPage(const TefhimulKuranScreen()),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.auto_stories_outlined,
+                    label: 'Feyzül Furkan',
+                    badge: 'Yakında',
+                    onTap: () => _showComingSoon('Feyzül Furkan'),
+                  ),
+                  const SizedBox(height: 8),
+                  const Divider(color: Colors.white12),
+                  const SizedBox(height: 4),
+                  _buildDrawerSection('Keşfet'),
                   _buildDrawerItem(
                     icon: Icons.lightbulb_outline,
                     label: 'Biliyor musun?',
@@ -270,32 +369,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     badge: 'Yakında',
                     onTap: () => _showComingSoon('Quiz'),
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.group_outlined,
-                    label: 'Topluluk',
-                    onTap: () => _goToPage(const CommunityJoinScreen()),
-                  ),
-                  const SizedBox(height: 8),
-                  const Divider(color: Colors.white12),
-                  const SizedBox(height: 4),
-                  _buildDrawerSection('Okumalar'),
-                  _buildDrawerItem(
-                    icon: Icons.auto_stories_outlined,
-                    label: 'Tefhimul Kuran',
-                    onTap: () => _goToPage(const TefhimulKuranScreen()),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.auto_stories_outlined,
-                    label: 'Feyzül Furkan',
-                    badge: 'Yakında',
-                    onTap: () => _showComingSoon('Feyzül Furkan'),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.auto_stories_outlined,
-                    label: 'Hayatüssahabe',
-                    badge: 'Yakında',
-                    onTap: () => _showComingSoon('Hayatüssahabe'),
-                  ),
                 ],
               ),
             ),
@@ -304,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Text(
                 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
                 style: GoogleFonts.amiri(
-                  color: AppColors.gold.withOpacity(0.4),
+                  color: AppColors.gold.withValues(alpha:0.4),
                   fontSize: 14,
                 ),
               ),
@@ -324,7 +397,7 @@ class _HomeScreenState extends State<HomeScreen> {
           colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
         ),
         border: Border(
-          bottom: BorderSide(color: AppColors.gold.withOpacity(0.2)),
+          bottom: BorderSide(color: AppColors.gold.withValues(alpha:0.2)),
         ),
       ),
       child: Column(
@@ -436,11 +509,12 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color:
-              isActive ? AppColors.gold.withOpacity(0.15) : Colors.transparent,
+              isActive ? AppColors.gold.withValues(alpha:0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color:
-                isActive ? AppColors.gold.withOpacity(0.4) : Colors.transparent,
+            color: isActive
+                ? AppColors.gold.withValues(alpha:0.4)
+                : Colors.transparent,
           ),
         ),
         child: Row(
@@ -460,12 +534,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             if (badge != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.turquoise.withOpacity(0.2),
+                  color: AppColors.turquoise.withValues(alpha:0.2),
                   borderRadius: BorderRadius.circular(8),
                   border:
-                      Border.all(color: AppColors.turquoise.withOpacity(0.4)),
+                      Border.all(color: AppColors.turquoise.withValues(alpha:0.4)),
                 ),
                 child: Text(
                   badge,
@@ -495,13 +570,16 @@ class _HomeScreenState extends State<HomeScreen> {
       color: AppColors.gold,
       child: CustomScrollView(
         slivers: [
-          const SliverToBoxAdapter(child: IslamicHeader()),
+          SliverToBoxAdapter(
+            child: IslamicHeader(
+              user: _currentUser,
+              onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
+          ),
           SliverPadding(
             padding: const EdgeInsets.all(16),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                const PrayerTimesWidget(),
-                const SizedBox(height: 16),
                 if (_todayEsma != null)
                   ContentCard(
                     type: 'esma',
@@ -565,6 +643,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     final today =
                         DateTime.now().toIso8601String().substring(0, 10);
                     await _userRepo.markQuranRead(today);
+                    // Kuran okundu → saatlik hatırlatıcıları iptal et
+                    await NotificationService().cancelHourlyQuranReminders();
                     final updatedUser = await _userRepo.getCurrentUser();
                     if (mounted) {
                       setState(() {
@@ -604,7 +684,7 @@ class _HomeScreenState extends State<HomeScreen> {
         color: isDark ? const Color(0xFF1A2035) : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: AppColors.gold.withOpacity(0.15),
+            color: AppColors.gold.withValues(alpha:0.15),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -628,8 +708,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Notlarım',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.alarm_outlined),
-            label: 'Hatırlatıcı',
+            icon: Icon(Icons.group_outlined),
+            label: 'Topluluk',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

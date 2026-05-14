@@ -114,44 +114,50 @@ class _SplashScreenState extends State<SplashScreen>
     await showDialog<void>(
       context: context,
       barrierDismissible: !info.forceUpdate,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1B2A3B),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Güncelleme Mevcut',
-          style: GoogleFonts.playfairDisplay(
-              color: AppColors.gold, fontWeight: FontWeight.bold),
-        ),
-        content: Text(
-          'Yeni sürüm (${info.latestVersion}) hazır!\n\nDaha iyi bir deneyim için güncellemenizi öneririz.',
-          style: GoogleFonts.notoSans(color: AppColors.white),
-        ),
-        actions: [
-          if (!info.forceUpdate)
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Sonra',
-                  style: TextStyle(color: AppColors.turquoiseLight)),
-            ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.gold,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            onPressed: () async {
-              final uri = Uri.parse(info.apkUrl);
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
-              }
-              if (!info.forceUpdate && ctx.mounted) {
-                Navigator.pop(ctx);
-              }
-            },
-            child: const Text('Güncelle'),
+      builder: (ctx) => PopScope(
+        canPop: !info.forceUpdate,
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF1B2A3B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Güncelleme Mevcut',
+            style: GoogleFonts.playfairDisplay(
+                color: AppColors.gold, fontWeight: FontWeight.bold),
           ),
-        ],
+          content: Text(
+            'Yeni sürüm (${info.latestVersion}) hazır!\n\n'
+            'Kurulum adımları:\n'
+            '1. İndirdikten sonra önce mevcut uygulamayı kaldırın\n'
+            '2. İndirilen APK dosyasını kurun',
+            style: GoogleFonts.notoSans(color: AppColors.white),
+          ),
+          actions: [
+            if (!info.forceUpdate)
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Sonra',
+                    style: TextStyle(color: AppColors.turquoiseLight)),
+              ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.gold,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () async {
+                final uri = Uri.parse(info.apkUrl);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+                if (!info.forceUpdate && ctx.mounted) {
+                  Navigator.pop(ctx);
+                }
+              },
+              child: const Text('Güncelle'),
+            ),
+          ],
+        ),
       ),
     );
   }

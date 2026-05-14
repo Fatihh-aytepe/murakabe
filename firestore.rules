@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Yardımcı fonksiyonlar ──────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/roles/owner) &&
+        get(/databases/$(database)/documents/roles/owner).data.uid == request.auth.uid;
+    }
+
+    function isAdmin() {
+      return isAuth() && (
+        isOwner() ||
+        (exists(/databases/$(database)/documents/roles/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isMember(communityId) {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/communities/$(communityId)/members/$(request.auth.uid));
+    }
+
+    // ── Kullanıcı dokümanları ──────────────────────────────────────────────
+    match /users/{userId} {
+      allow read, write: if isAuth() && request.auth.uid == userId;
+
+      match /{sub}/{docId} {
+        allow read, write: if isAuth() && request.auth.uid == userId;
+      }
+    }
+
+    // ── Roller (sadece Admin SDK yazabilir, okuma herkese açık) ───────────
+    match /roles/{docId} {
+      allow read: if isAuth();
+      allow write: if false;
+    }
+
+    // ── Admin başvuruları ─────────────────────────────────────────────────
+    match /adminRequests/{userId} {
+      // Kullanıcı kendi başvurusunu okuyup yazabilir
+      allow read, write: if isAuth() && request.auth.uid == userId;
+      // Sahip tüm başvuruları okuyup güncelleyebilir
+      allow read, update: if isOwner();
+    }
+
+    // ── Bildirimler ────────────────────────────────────────────────────────
+    match /notifications/{notifId} {
+      allow create: if isAuth();
+      allow read, update: if isOwner();
+    }
+
+    // ── Topluluklar ────────────────────────────────────────────────────────
+    match /communities/{communityId} {
+      allow read: if isAuth();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+
+      // Üyeler
+      match /members/{userId} {
+        allow read: if isAuth();
+        // Kullanıcı kendi üyeliğini oluşturabilir (katılma)
+        allow create: if isAuth() && request.auth.uid == userId;
+        allow update, delete: if isAdmin();
+      }
+
+      // Mesajlar
+      match /messages/{messageId} {
+        allow read: if isMember(communityId);
+        allow create: if isMember(communityId) &&
+                         request.resource.data.senderUid == request.auth.uid;
+        allow update, delete: if isAdmin();
+      }
+
+      // Duyurular
+      match /announcements/{announcementId} {
+        allow read: if isMember(communityId);
+        allow write: if isAdmin();
+      }
+
+      // Görevler
+      match /tasks/{taskId} {
+        allow read: if isMember(communityId);
+        allow write: if isAdmin();
+      }
+    }
+  }
+}

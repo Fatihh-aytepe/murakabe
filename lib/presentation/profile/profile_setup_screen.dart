@@ -261,12 +261,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       icon: Icons.female,
                       value: 'kadin',
                     ),
-                    const SizedBox(width: 12),
-                    _buildGenderCard(
-                      label: 'Belirtme',
-                      icon: Icons.person_outline,
-                      value: '',
-                    ),
                   ],
                 ),
 

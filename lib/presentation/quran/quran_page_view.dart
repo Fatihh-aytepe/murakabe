@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/quran_repository.dart';
 import '../../../data/repositories/note_repository.dart';
@@ -8,6 +7,7 @@ import '../../../data/repositories/note_repository.dart';
 class QuranPageView extends StatefulWidget {
   final int initialPage;
   final Qari selectedQari;
+  final QuranAyah? selectedAyah;
   final void Function(int page, int surah, int ayah) onProgressChanged;
   final void Function(QuranAyah ayah) onAyahSelected;
 
@@ -15,6 +15,7 @@ class QuranPageView extends StatefulWidget {
     super.key,
     required this.initialPage,
     required this.selectedQari,
+    this.selectedAyah,
     required this.onProgressChanged,
     required this.onAyahSelected,
   });
@@ -202,48 +203,76 @@ class _QuranPageViewState extends State<QuranPageView> {
     Color turkishColor,
     bool isDark,
   ) {
+    final isSelected =
+        widget.selectedAyah?.globalNumber == ayah.globalNumber;
+
     return GestureDetector(
-      // Tek tıklama → ses çal
       onTap: () => widget.onAyahSelected(ayah),
-      // Uzun basma → not al
       onLongPress: () => _showNoteSheet(ayah),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
         margin: const EdgeInsets.only(bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: isDark
-              ? Colors.white.withOpacity(0.03)
-              : Colors.black.withOpacity(0.02),
+          color: isSelected
+              ? AppColors.gold.withValues(alpha: 0.12)
+              : isDark
+                  ? Colors.white.withValues(alpha: 0.03)
+                  : Colors.black.withValues(alpha: 0.02),
+          border: isSelected
+              ? Border.all(color: AppColors.gold.withValues(alpha: 0.5), width: 1)
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Ayet numarası
             Row(
               children: [
-                _buildAyahNumber(ayah.number),
+                _buildAyahNumber(ayah.number, isSelected),
                 const Spacer(),
-                Text(
-                  '${ayah.surahNumber}:${ayah.number}',
-                  style: GoogleFonts.notoSans(color: Colors.grey, fontSize: 10),
-                ),
+                if (isSelected)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.gold.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.volume_up,
+                            color: AppColors.gold, size: 10),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Seçili',
+                          style: GoogleFonts.notoSans(
+                              color: AppColors.gold, fontSize: 9),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Text(
+                    '${ayah.surahNumber}:${ayah.number}',
+                    style:
+                        GoogleFonts.notoSans(color: Colors.grey, fontSize: 10),
+                  ),
               ],
             ),
             const SizedBox(height: 8),
-            // Arapça
             Text(
               ayah.arabic,
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,
-              style: GoogleFonts.amiri(
-                fontSize: 22,
-                color: arabicColor,
+              style: GoogleFonts.scheherazadeNew(
+                fontSize: 24,
+                color: isSelected ? AppColors.gold : arabicColor,
                 height: 2.2,
               ),
             ),
             const SizedBox(height: 6),
-            // Türkçe meal
             Text(
               ayah.turkish,
               style: GoogleFonts.notoSans(
@@ -258,19 +287,27 @@ class _QuranPageViewState extends State<QuranPageView> {
     );
   }
 
-  Widget _buildAyahNumber(int number) {
+  Widget _buildAyahNumber(int number, [bool isSelected = false]) {
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.gold.withOpacity(0.6)),
+        color: isSelected ? AppColors.gold : Colors.transparent,
+        border: Border.all(
+          color: isSelected
+              ? AppColors.gold
+              : AppColors.gold.withValues(alpha: 0.6),
+        ),
       ),
       child: Center(
         child: Text(
           '$number',
           style: GoogleFonts.notoSans(
-              color: AppColors.gold, fontSize: 10, fontWeight: FontWeight.bold),
+            color: isSelected ? Colors.white : AppColors.gold,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -361,7 +398,7 @@ class _QuranPageViewState extends State<QuranPageView> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -407,7 +444,7 @@ class _QuranPageViewState extends State<QuranPageView> {
                     if (content.isEmpty) return;
                     final title = 'Ayet ${ayah.surahNumber}:${ayah.number}';
                     await _noteRepo.addNote(title: title, content: content);
-                    if (ctx.mounted) {
+                    if (mounted && ctx.mounted) {
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
