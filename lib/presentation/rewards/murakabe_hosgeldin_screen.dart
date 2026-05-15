@@ -49,7 +49,7 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
   Future<void> _saveWelcomeReward() async {
     await RewardRepository().saveReward(
       type: 'welcome',
-      title: 'Murakabe Yoluna Hos Geldin',
+      title: 'Murakabe Yoluna Hoş Geldin',
       message: 'Murakabe yolculuğunun ilk meyvesi bugün kalbine düştü. '
           'Rabbimizin her an bizimle olduğunu hissetmek, hayatın telaşından sıyrılıp '
           'kendi içimizde bir nefeslik huzur bulmak için buradayız. '
@@ -169,11 +169,11 @@ class _MurakabeHosgeldinScreenState extends State<MurakabeHosgeldinScreen>
                               const SizedBox(height: 16),
 
                               Text(
-                                'Murakabe; kulun daima Allah\'in gozetimi altinda oldugu'
-                                ' bilinci (ihsan) ile kalbini arindirmasi, ic dunyasini'
+                                'Murakabe; kulun daima Allah\'in gözetimi altında olduğu'
+                                ' bilinci (ihsan) ile kalbini arındırması, iç dünyasını'
                                 ' kontrol etmesi ve tefekkur etmesi halidir.\n\n'
-                                '"Allah\'i goruyormus gibi ibadet et; sen O\'nu gormesen'
-                                ' de O seni gormektedir."\n— Cibril Hadisi',
+                                '"Allah\'ı görüyormuş gibi ibadet et; sen O\'nu görmesen'
+                                ' de O seni görmektedir."\n— Cibril Hadisi',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 14,

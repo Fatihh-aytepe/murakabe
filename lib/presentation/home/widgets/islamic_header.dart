@@ -23,23 +23,46 @@ class _IslamicHeaderState extends State<IslamicHeader> {
   Duration _timeToNext = Duration.zero;
   late Stream<DateTime> _clockStream;
   List<Map<String, dynamic>> _prayers = [];
+  final ScrollController _prayerScrollCtrl = ScrollController();
+
+  @override
+  void dispose() {
+    _prayerScrollCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
-    _clockStream =
-        Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
+    _clockStream = Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now())
+        .asBroadcastStream();
     _loadPrayerTimes();
   }
 
   Future<void> _loadPrayerTimes() async {
-    final result = await _getPrayerTimes();
-    if (result != null && mounted) {
-      setState(() {
-        _result = result;
-        _buildPrayerList(result.prayerTimes);
-        _updateNextPrayer(result.prayerTimes);
-      });
+    try {
+      final result = await _getPrayerTimes();
+      if (result != null && mounted) {
+        setState(() {
+          _result = result;
+          _buildPrayerList(result.prayerTimes);
+          _updateNextPrayer(result.prayerTimes);
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_prayerScrollCtrl.hasClients) return;
+          final nextIdx =
+              _prayers.indexWhere((p) => p['name'] == _nextPrayerName);
+          if (nextIdx > 0) {
+            final target = ((nextIdx - 1) * 62.0).clamp(
+                0.0, _prayerScrollCtrl.position.maxScrollExtent);
+            _prayerScrollCtrl.animateTo(target,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOut);
+          }
+        });
+      }
+    } catch (_) {
+      // Namaz vakitleri yüklenemezse sessizce geçilir, iskelet kalır
     }
   }
 
@@ -88,7 +111,7 @@ class _IslamicHeaderState extends State<IslamicHeader> {
   String _greeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'Hayırlı Sabahlar';
-    if (hour < 17) return 'Hayırlı Öğleler';
+    if (hour < 17) return 'Hayırlı Günler';
     if (hour < 20) return 'Hayırlı Akşamlar';
     return 'Hayırlı Geceler';
   }
@@ -96,8 +119,19 @@ class _IslamicHeaderState extends State<IslamicHeader> {
   String _formatDate() {
     final now = DateTime.now();
     const months = [
-      '', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
+      '',
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık',
     ];
     const days = ['', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
     return '${days[now.weekday]}, ${now.day} ${months[now.month]} ${now.year}';
@@ -163,49 +197,6 @@ class _IslamicHeaderState extends State<IslamicHeader> {
                       ),
                     ),
                   ),
-                  // Sonraki vakite geri sayım
-                  if (_result != null) ...[
-                    const SizedBox(width: 8),
-                    StreamBuilder<DateTime>(
-                      stream: _clockStream,
-                      builder: (_, __) {
-                        _updateNextPrayer(_result!.prayerTimes);
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: AppColors.turquoise.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                                color:
-                                    AppColors.turquoise.withValues(alpha: 0.25)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.access_time,
-                                  color: AppColors.turquoiseLight, size: 11),
-                              const SizedBox(width: 3),
-                              Text(
-                                '$_nextPrayerName ',
-                                style: GoogleFonts.notoSans(
-                                    color: AppColors.turquoiseLight,
-                                    fontSize: 10),
-                              ),
-                              Text(
-                                _fmtDuration(_timeToNext),
-                                style: GoogleFonts.notoSans(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ],
                 ],
               ),
 
@@ -213,9 +204,7 @@ class _IslamicHeaderState extends State<IslamicHeader> {
 
               // ── Greeting + name ──
               Text(
-                _firstName().isEmpty
-                    ? _greeting()
-                    : '${_greeting()},',
+                _firstName().isEmpty ? _greeting() : '${_greeting()},',
                 style: GoogleFonts.notoSans(
                   fontSize: 13,
                   color: Colors.white.withValues(alpha: 0.6),
@@ -266,34 +255,60 @@ class _IslamicHeaderState extends State<IslamicHeader> {
       builder: (_, __) {
         if (_result != null) _updateNextPrayer(_result!.prayerTimes);
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 58,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _prayers.length,
-                      itemBuilder: (_, i) {
-                        final p = _prayers[i];
-                        final time = p['time'] as DateTime;
-                        final now = DateTime.now();
-                        final isNext = p['name'] == _nextPrayerName;
-                        final isPast = time.isBefore(now);
-                        return _cell(
-                          name: p['name'] as String,
-                          time: _fmt(time),
-                          isNext: isNext,
-                          isPast: isPast,
-                          onTap: () =>
-                              _showDetailSheet(p['name'] as String, time),
-                        );
-                      },
+            // Geri sayım — sağa dayalı, prayer cards'ın hemen üstünde
+            Container(
+              margin: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.turquoise.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                    color: AppColors.turquoise.withValues(alpha: 0.3),
+                    width: 0.8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$_nextPrayerName\'a ',
+                    style: GoogleFonts.notoSans(
+                        color: AppColors.turquoiseLight, fontSize: 11),
+                  ),
+                  Text(
+                    _fmtDuration(_timeToNext),
+                    style: GoogleFonts.notoSans(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ),
+            // Kaydırmalı namaz vakitleri
+            SizedBox(
+              height: 58,
+              child: ListView.builder(
+                controller: _prayerScrollCtrl,
+                scrollDirection: Axis.horizontal,
+                itemCount: _prayers.length,
+                itemBuilder: (_, i) {
+                  final p = _prayers[i];
+                  final time = p['time'] as DateTime;
+                  final now = DateTime.now();
+                  final isNext = p['name'] == _nextPrayerName;
+                  final isPast = time.isBefore(now);
+                  return _cell(
+                    name: p['name'] as String,
+                    time: _fmt(time),
+                    isNext: isNext,
+                    isPast: isPast,
+                    onTap: () => _showDetailSheet(p['name'] as String, time),
+                  );
+                },
+              ),
             ),
           ],
         );
@@ -399,8 +414,19 @@ class PrayerTimesDetailSheet extends StatelessWidget {
   String _dayLabel(DateTime d) {
     const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
     const months = [
-      '', 'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz',
-      'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara',
+      '',
+      'Oca',
+      'Şub',
+      'Mar',
+      'Nis',
+      'May',
+      'Haz',
+      'Tem',
+      'Ağu',
+      'Eyl',
+      'Eki',
+      'Kas',
+      'Ara',
     ];
     return '${days[d.weekday - 1]}, ${d.day} ${months[d.month]}';
   }
@@ -562,8 +588,7 @@ class PrayerTimesDetailSheet extends StatelessWidget {
             style: GoogleFonts.notoSans(
               color: isHighlighted ? AppColors.gold : Colors.white54,
               fontSize: 10,
-              fontWeight:
-                  isHighlighted ? FontWeight.bold : FontWeight.normal,
+              fontWeight: isHighlighted ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           const SizedBox(height: 4),

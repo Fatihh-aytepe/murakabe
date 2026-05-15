@@ -2314,6 +2314,8 @@ class ProfileScreenState extends State<ProfileScreen>
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
+          final textColor = isDark ? Colors.white : AppColors.textPrimary;
+          final subColor = isDark ? Colors.white54 : AppColors.textSecondary;
           return Dialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -2332,16 +2334,16 @@ class ProfileScreenState extends State<ProfileScreen>
                   const SizedBox(height: 6),
                   Text(email,
                       style: GoogleFonts.notoSans(
-                          color: Colors.white54, fontSize: 12)),
+                          color: subColor, fontSize: 12)),
                   const SizedBox(height: 16),
                   TextField(
                     controller: passCtrl,
                     obscureText: true,
                     autofocus: true,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: textColor),
                     decoration: InputDecoration(
                       labelText: 'Şifre',
-                      labelStyle: const TextStyle(color: Colors.white38),
+                      labelStyle: TextStyle(color: subColor),
                       prefixIcon: const Icon(Icons.lock_outline,
                           color: AppColors.gold, size: 18),
                       border: OutlineInputBorder(
@@ -2366,7 +2368,7 @@ class ProfileScreenState extends State<ProfileScreen>
                               onPressed: () => Navigator.pop(ctx),
                               child: Text('İptal',
                                   style: GoogleFonts.notoSans(
-                                      color: Colors.white38)))),
+                                      color: subColor)))),
                       const SizedBox(width: 8),
                       Expanded(
                         child: ElevatedButton(

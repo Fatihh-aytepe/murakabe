@@ -1,11 +1,17 @@
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/role_service.dart';
 import 'community_screen.dart';
+import 'admin_dashboard_screen.dart';
+import 'owner_panel_screen.dart';
 
 class CommunityJoinScreen extends StatefulWidget {
-  const CommunityJoinScreen({super.key});
+  final VoidCallback? onBack;
+  const CommunityJoinScreen({super.key, this.onBack});
 
   @override
   State<CommunityJoinScreen> createState() => _CommunityJoinScreenState();
@@ -18,27 +24,65 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
   final _reasonCtrl = TextEditingController();
 
   bool _isLoading = false;
+  bool _showJoinForm = false;
   bool _showAdminApply = false;
-  String? _joinedCommunityId;
+  bool _showCreateForm = false;
+  UserRole _userRole = UserRole.user;
+  StreamSubscription<DocumentSnapshot>? _roleSub;
+  final _communityNameCtrl = TextEditingController();
+  final _communityDescCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _checkExistingCommunity();
+    _checkRole().then((_) {
+      if (mounted) _listenRoleChanges();
+    });
   }
 
-  Future<void> _checkExistingCommunity() async {
-    // Kullanıcının zaten üye olduğu topluluk var mı?
-    _roleService.getUserCommunities().listen((snap) {
-      if (snap.docs.isNotEmpty && mounted) {
-        // members subcollection'dan community ID'yi al
-        final ref = snap.docs.first.reference;
-        final communityId = ref.parent.parent?.id;
-        if (communityId != null) {
-          setState(() => _joinedCommunityId = communityId);
+  @override
+  void dispose() {
+    _roleSub?.cancel();
+    _codeCtrl.dispose();
+    _nameCtrl.dispose();
+    _reasonCtrl.dispose();
+    _communityNameCtrl.dispose();
+    _communityDescCtrl.dispose();
+    super.dispose();
+  }
+
+  // Rol değişikliklerini gerçek zamanlı dinle (admin onaylandığında otomatik güncelle)
+  void _listenRoleChanges() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    _roleSub = FirebaseFirestore.instance
+        .collection('roles')
+        .doc(uid)
+        .snapshots()
+        .listen((doc) async {
+      if (!mounted) return;
+      if (doc.exists && doc.data()?['role'] == 'admin') {
+        final wasNotAdmin = _userRole != UserRole.admin;
+        setState(() => _userRole = UserRole.admin);
+        if (wasNotAdmin) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Admin yetkiniz onaylandı!',
+                style: GoogleFonts.notoSans(color: Colors.white),
+              ),
+              backgroundColor: const Color(0xFF2E7D32),
+              duration: const Duration(seconds: 3),
+            ),
+          );
         }
       }
     });
+  }
+
+  Future<void> _checkRole() async {
+    final role = await _roleService.getCurrentRole();
+    if (mounted) setState(() => _userRole = role);
   }
 
   Future<void> _joinCommunity() async {
@@ -49,13 +93,45 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
     try {
       await _roleService.joinCommunity(code);
       if (!mounted) return;
+      _codeCtrl.clear();
+      setState(() => _showJoinForm = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Topluluğa katıldınız!'),
           backgroundColor: Color(0xFF2E7D32),
         ),
       );
-      _checkExistingCommunity();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _createCommunity() async {
+    final name = _communityNameCtrl.text.trim();
+    final desc = _communityDescCtrl.text.trim();
+    if (name.isEmpty) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await _roleService.createCommunity(name: name, description: desc);
+      if (!mounted) return;
+      _communityNameCtrl.clear();
+      _communityDescCtrl.clear();
+      setState(() => _showCreateForm = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Topluluk başarıyla oluşturuldu!'),
+          backgroundColor: Color(0xFF2E7D32),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -108,7 +184,7 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
             // Başlık
             SliverToBoxAdapter(
               child: Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(8, 16, 16, 16),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
@@ -119,225 +195,341 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                     IconButton(
                       icon: const Icon(Icons.arrow_back_ios,
                           color: Colors.white, size: 20),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        if (widget.onBack != null) {
+                          widget.onBack!();
+                        } else {
+                          Navigator.maybePop(context);
+                        }
+                      },
                     ),
-                    Text(
-                      'Topluluk',
-                      style: GoogleFonts.playfairDisplay(
-                        color: AppColors.gold,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        'Topluluk',
+                        style: GoogleFonts.playfairDisplay(
+                          color: AppColors.gold,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
+                    // Owner panel hızlı erişimi
+                    if (_userRole == UserRole.owner)
+                      TextButton.icon(
+                        icon: const Icon(Icons.shield_outlined,
+                            color: AppColors.gold, size: 16),
+                        label: Text(
+                          'Sahip Paneli',
+                          style: GoogleFonts.notoSans(
+                              color: AppColors.gold,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const OwnerPanelScreen()),
+                        ),
+                      ),
                   ],
                 ),
               ),
             ),
 
             SliverPadding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  // Zaten üyeyse direkt aç
-                  if (_joinedCommunityId != null) ...[
-                    _buildCard(
-                      child: Column(
+                  // ── Üye olunan topluluklar listesi ──────────────────────
+                  StreamBuilder<QuerySnapshot>(
+                    stream: _roleService.getUserCommunities(),
+                    builder: (_, snap) {
+                      final docs = snap.data?.docs ?? [];
+                      if (docs.isEmpty) {
+                        return _buildEmptyState();
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.group,
-                              color: AppColors.gold, size: 48),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Topluluğunuz hazır',
-                            style: GoogleFonts.playfairDisplay(
-                              color: AppColors.gold,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.forum_outlined,
-                                  color: Colors.white),
-                              label: Text(
-                                'Kanala Git',
-                                style: GoogleFonts.notoSans(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.gold,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                              ),
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => CommunityScreen(
-                                      communityId: _joinedCommunityId!),
-                                ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 4, bottom: 12),
+                            child: Text(
+                              'TOPLULUKLARIM',
+                              style: GoogleFonts.notoSans(
+                                color: Colors.white38,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.4,
                               ),
                             ),
                           ),
+                          ...docs.map((memberDoc) {
+                            final communityId =
+                                memberDoc.reference.parent.parent?.id;
+                            if (communityId == null) {
+                              return const SizedBox.shrink();
+                            }
+                            final memberData =
+                                memberDoc.data() as Map<String, dynamic>;
+                            final isAdminOfThis =
+                                memberData['role'] == 'admin';
+                            return _CommunityCard(
+                              communityId: communityId,
+                              isAdminOfThis: isAdminOfThis,
+                            );
+                          }),
                         ],
-                      ),
-                    ),
-                  ] else ...[
-                    // Davet koduyla katıl
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Admin: Topluluk Oluştur ───────────────────────────
+                  if (_userRole == UserRole.admin || _userRole == UserRole.owner)
                     _buildCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.vpn_key,
-                                  color: AppColors.turquoise, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Topluluğa Katıl',
-                                style: GoogleFonts.playfairDisplay(
-                                  color: AppColors.gold,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                          GestureDetector(
+                            onTap: () => setState(
+                                () => _showCreateForm = !_showCreateForm),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.add_business_outlined,
+                                    color: AppColors.gold, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Topluluk Oluştur',
+                                  style: GoogleFonts.playfairDisplay(
+                                    color: AppColors.gold,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Icon(
+                                  _showCreateForm
+                                      ? Icons.expand_less
+                                      : Icons.expand_more,
+                                  color: Colors.white38,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (_showCreateForm) ...[
+                            const SizedBox(height: 14),
+                            _field(_communityNameCtrl, 'Topluluk Adı',
+                                Icons.group_outlined),
+                            const SizedBox(height: 10),
+                            _field(
+                              _communityDescCtrl,
+                              'Açıklama (isteğe bağlı)',
+                              Icons.description_outlined,
+                              maxLines: 3,
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : _createCommunity,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.gold,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2),
+                                      )
+                                    : Text(
+                                        'Oluştur',
+                                        style: GoogleFonts.notoSans(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                  // ── Kullanıcı: Yeni topluluğa katıl (davet kodu) ─────
+                  if (_userRole == UserRole.user) ...[
+                    _buildCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: () => setState(
+                                () => _showJoinForm = !_showJoinForm),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.add_circle_outline,
+                                    color: AppColors.turquoise, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Topluluğa Katıl',
+                                  style: GoogleFonts.playfairDisplay(
+                                    color: AppColors.gold,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Icon(
+                                  _showJoinForm
+                                      ? Icons.expand_less
+                                      : Icons.expand_more,
+                                  color: Colors.white38,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (_showJoinForm) ...[
+                            const SizedBox(height: 14),
+                            TextField(
+                              controller: _codeCtrl,
+                              textCapitalization: TextCapitalization.characters,
+                              style: GoogleFonts.notoSans(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 3,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Davet Kodu (8 hane)',
+                                hintStyle: const TextStyle(
+                                    color: Colors.white38, letterSpacing: 1),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                      color: Colors.white24),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide:
+                                      const BorderSide(color: AppColors.gold),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          TextField(
-                            controller: _codeCtrl,
-                            textCapitalization: TextCapitalization.characters,
-                            style: GoogleFonts.notoSans(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 3,
                             ),
-                            decoration: InputDecoration(
-                              hintText: 'Davet Kodu (8 hane)',
-                              hintStyle: const TextStyle(
-                                  color: Colors.white38, letterSpacing: 1),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.white24),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: AppColors.gold),
-                                borderRadius: BorderRadius.circular(12),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : _joinCommunity,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.turquoise,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2),
+                                      )
+                                    : Text(
+                                        'Katıl',
+                                        style: GoogleFonts.notoSans(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold),
+                                      ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _joinCommunity,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.turquoise,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                          color: Colors.white, strokeWidth: 2),
-                                    )
-                                  : Text(
-                                      'Katıl',
-                                      style: GoogleFonts.notoSans(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // ── Admin başvurusu ───────────────────────────────────
+                    _buildCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: () => setState(
+                                () => _showAdminApply = !_showAdminApply),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.admin_panel_settings,
+                                    color: AppColors.gold, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Admin Başvurusu',
+                                  style: GoogleFonts.playfairDisplay(
+                                    color: AppColors.gold,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Icon(
+                                  _showAdminApply
+                                      ? Icons.expand_less
+                                      : Icons.expand_more,
+                                  color: Colors.white38,
+                                ),
+                              ],
                             ),
                           ),
+                          if (_showAdminApply) ...[
+                            const SizedBox(height: 14),
+                            Text(
+                              'Topluluk kurabilmek için admin yetkisi gereklidir. Başvurunuz uygulama sahibine iletilecektir.',
+                              style: GoogleFonts.notoSans(
+                                  color: Colors.white54, fontSize: 12),
+                            ),
+                            const SizedBox(height: 12),
+                            _field(_nameCtrl, 'Adınız Soyadınız',
+                                Icons.person_outline),
+                            const SizedBox(height: 10),
+                            _field(
+                              _reasonCtrl,
+                              'Neden admin olmak istiyorsunuz?',
+                              Icons.edit_note,
+                              maxLines: 4,
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : _applyForAdmin,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.gold,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(12)),
+                                ),
+                                child: Text(
+                                  'Başvur',
+                                  style: GoogleFonts.notoSans(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
                   ],
-
-                  const SizedBox(height: 16),
-
-                  // Admin başvurusu
-                  _buildCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        GestureDetector(
-                          onTap: () => setState(
-                              () => _showAdminApply = !_showAdminApply),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.admin_panel_settings,
-                                  color: AppColors.gold, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Admin Başvurusu',
-                                style: GoogleFonts.playfairDisplay(
-                                  color: AppColors.gold,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Spacer(),
-                              Icon(
-                                _showAdminApply
-                                    ? Icons.expand_less
-                                    : Icons.expand_more,
-                                color: Colors.white38,
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (_showAdminApply) ...[
-                          const SizedBox(height: 14),
-                          Text(
-                            'Topluluk kurabilmek için admin yetkisi gereklidir. Başvurunuz uygulama sahibine iletilecektir.',
-                            style: GoogleFonts.notoSans(
-                                color: Colors.white54, fontSize: 12),
-                          ),
-                          const SizedBox(height: 12),
-                          _field(_nameCtrl, 'Adınız Soyadınız',
-                              Icons.person_outline),
-                          const SizedBox(height: 10),
-                          _field(
-                            _reasonCtrl,
-                            'Neden admin olmak istiyorsunuz?',
-                            Icons.edit_note,
-                            maxLines: 4,
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _applyForAdmin,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.gold,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: Text(
-                                'Başvur',
-                                style: GoogleFonts.notoSans(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
 
                   const SizedBox(height: 40),
                 ]),
@@ -346,6 +538,42 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A2035),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.gold.withValues(alpha: 0.15)),
+          ),
+          child: Column(
+            children: [
+              const Icon(Icons.group_outlined,
+                  color: Colors.white24, size: 48),
+              const SizedBox(height: 12),
+              Text(
+                'Henüz bir topluluğa katılmadınız',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.notoSans(
+                    color: Colors.white54, fontSize: 14),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Davet kodunuz varsa aşağıdan katılabilirsiniz.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.notoSans(
+                    color: Colors.white38, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 
@@ -384,6 +612,201 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
           borderRadius: BorderRadius.circular(10),
         ),
       ),
+    );
+  }
+}
+
+// ── Topluluk kartı (isim + üye sayısı + Kanala Git + Yönet) ─────────────────
+
+class _CommunityCard extends StatelessWidget {
+  final String communityId;
+  final bool isAdminOfThis;
+
+  const _CommunityCard({
+    required this.communityId,
+    required this.isAdminOfThis,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('communities')
+          .doc(communityId)
+          .snapshots(),
+      builder: (_, snap) {
+        final data = snap.data?.data() as Map<String, dynamic>? ?? {};
+        final name = data['name'] as String? ?? 'Topluluk';
+        final desc = data['description'] as String? ?? '';
+        final memberCount = data['memberCount'] as int? ?? 0;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isAdminOfThis
+                  ? [
+                      AppColors.gold.withValues(alpha: 0.12),
+                      const Color(0xFF1A2035),
+                    ]
+                  : [
+                      AppColors.turquoise.withValues(alpha: 0.08),
+                      const Color(0xFF1A2035),
+                    ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isAdminOfThis
+                  ? AppColors.gold.withValues(alpha: 0.35)
+                  : AppColors.turquoise.withValues(alpha: 0.25),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: (isAdminOfThis ? AppColors.gold : AppColors.turquoise)
+                          .withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isAdminOfThis
+                          ? Icons.admin_panel_settings_outlined
+                          : Icons.group_outlined,
+                      color: isAdminOfThis
+                          ? AppColors.gold
+                          : AppColors.turquoise,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: GoogleFonts.playfairDisplay(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            const Icon(Icons.people_outline,
+                                color: Colors.white38, size: 12),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$memberCount üye',
+                              style: GoogleFonts.notoSans(
+                                  color: Colors.white38, fontSize: 12),
+                            ),
+                            if (isAdminOfThis) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.gold.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Yönetici',
+                                  style: GoogleFonts.notoSans(
+                                      color: AppColors.gold, fontSize: 10),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (desc.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  desc,
+                  style: GoogleFonts.notoSans(
+                      color: Colors.white54, fontSize: 12),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.forum_outlined,
+                          size: 16, color: AppColors.turquoise),
+                      label: Text(
+                        'Kanala Git',
+                        style: GoogleFonts.notoSans(
+                            color: AppColors.turquoise,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                            color: AppColors.turquoise.withValues(alpha: 0.5)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              CommunityScreen(communityId: communityId),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (isAdminOfThis) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.settings_outlined,
+                            size: 16, color: Colors.black),
+                        label: Text(
+                          'Yönet',
+                          style: GoogleFonts.notoSans(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AdminDashboardScreen(
+                                communityId: communityId),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

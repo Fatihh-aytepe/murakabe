@@ -92,10 +92,12 @@ class _QuranAudioBarState extends State<QuranAudioBar> {
       await _player.setSourceUrl(url);
       await _player.resume();
     } catch (_) {
-      // Fallback: cdn.islamic.network with Abdul Basit
+      // Fallback: everyayah.com ile aynı kariyi dene
       try {
+        final padded =
+            widget.ayah!.globalNumber.toString().padLeft(6, '0');
         final fallback =
-            'https://cdn.islamic.network/quran/audio/128/ar.abdulbasitmurattal/${widget.ayah!.globalNumber}.mp3';
+            'https://everyayah.com/data/${widget.qari.identifier}/$padded.mp3';
         await _player.setSourceUrl(fallback);
         await _player.resume();
       } catch (_) {

@@ -1,6 +1,7 @@
 import '../../core/constants/badge_definitions.dart';
 import '../../data/local/local_storage.dart';
 import '../../data/models/user_model.dart';
+import '../../data/remote/firebase_service.dart';
 import '../../data/repositories/badge_repository.dart';
 
 class BadgeService {
@@ -102,6 +103,14 @@ class BadgeService {
         }
         await _storage.setVeteranBadgeAwarded();
         await _storage.setGoldenFrameUnlocked();
+      }
+    }
+
+    // Kazanılan rozet varsa milestone'ları Firestore'a yedekle
+    if (earned.isNotEmpty) {
+      final uid = _storage.userId;
+      if (uid != null) {
+        FirebaseService().saveUserPrefs(uid, _storage.toSyncMap());
       }
     }
 

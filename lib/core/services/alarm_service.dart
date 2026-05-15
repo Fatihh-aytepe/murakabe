@@ -23,13 +23,13 @@ class AlarmService {
   // ── Kullanılabilir alarm sesleri ──────────────────────────────────────────
   // Dosyalar android/app/src/main/res/raw/ klasörüne kopyalanmalı (küçük harf, rakam, _ kabul edilir)
   static const List<AlarmSound> availableSounds = [
-    AlarmSound(id: 'alarm_fajr', label: 'Sabah Ezanı'),
-    AlarmSound(id: 'alarm_ney', label: 'Ney Sesi'),
-    AlarmSound(id: 'alarm_kuran', label: 'Kur\'an Tilaveti'),
-    AlarmSound(id: 'alarm_sala', label: 'Salâ'),
-    AlarmSound(id: 'alarm_tesbih', label: 'Tesbih'),
-    AlarmSound(id: 'alarm_soft', label: 'Yumuşak Melodi'),
-    AlarmSound(id: 'alarm_default', label: 'Varsayılan'),
+    AlarmSound(id: 'alarm_fajr', label: 'Mehter Marşı'),
+    AlarmSound(id: 'alarm_ney', label: 'Karadeniz'),
+    AlarmSound(id: 'alarm_kuran', label: 'Namaz uykudan daha hayırlıdır'),
+    AlarmSound(id: 'alarm_sala', label: 'Zikir'),
+    AlarmSound(id: 'alarm_tesbih', label: 'Ezan'),
+    AlarmSound(id: 'alarm_soft', label: 'Pala'),
+    AlarmSound(id: 'alarm_default', label: 'Ramiz dayı'),
   ];
 
   static const AlarmSound defaultSound =

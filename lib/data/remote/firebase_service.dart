@@ -86,7 +86,7 @@ class FirebaseService {
 
   // ─── USER ─────────────────────────────────────────────────────────────────
   Future<void> saveUser(UserModel user) async {
-    await _userCol().doc(user.id).set(user.toMap(), SetOptions(merge: true));
+    await _userCol().doc(user.id).set(user.toFirestoreMap(), SetOptions(merge: true));
   }
 
   // ─── NOTES ────────────────────────────────────────────────────────────────
@@ -151,6 +151,58 @@ class FirebaseService {
       'isPrayed': true,
       'prayedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  // ─── USER PREFS SYNC ──────────────────────────────────────────────────────
+  // Streak, rozet ve tercih verilerini users/{uid} dokümanına kaydeder.
+  // Uygulama silme/yeniden yüklemede bu veriler Firestore'dan geri yüklenir.
+  Future<void> saveUserPrefs(String uid, Map<String, dynamic> prefs) async {
+    try {
+      await _userCol().doc(uid).set(prefs, SetOptions(merge: true));
+    } catch (_) {}
+  }
+
+  // users/{uid} dokümanını okur; yoksa null döner.
+  Future<Map<String, dynamic>?> getUserPrefs(String uid) async {
+    try {
+      final doc = await _userCol().doc(uid).get();
+      return doc.data() as Map<String, dynamic>?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ─── SUBCOLLECTION RESTORE ────────────────────────────────────────────────
+
+  // Bir subcollection'ın tüm dokümanlarını döner.
+  // Timestamp alanları otomatik olarak ISO string'e çevrilir.
+  // Her map'te '_docId' anahtarı altında Firestore doküman ID'si bulunur.
+  Future<List<Map<String, dynamic>>> getSubcollection(
+      String uid, String col) async {
+    try {
+      final snap = await _sub(uid, col).get();
+      return snap.docs.map((d) {
+        final data = _sanitize(
+            Map<String, dynamic>.from(d.data() as Map<String, dynamic>));
+        data['_docId'] = d.id;
+        return data;
+      }).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Map<String, dynamic> _sanitize(Map<String, dynamic> map) =>
+      map.map((k, v) => MapEntry(
+            k,
+            v is Timestamp ? v.toDate().toIso8601String() : v,
+          ));
+
+  // ─── BADGES ───────────────────────────────────────────────────────────────
+  Future<void> saveBadgeRecord(String uid, Map<String, dynamic> badge) async {
+    try {
+      await _sub(uid, 'badges').doc(badge['badgeId'] as String).set(badge);
+    } catch (_) {}
   }
 
   // ─── ADMIN ────────────────────────────────────────────────────────────────

@@ -24,6 +24,7 @@ class _QuranScreenState extends State<QuranScreen>
   // Ses çubuğu için seçili ayet
   QuranAyah? _selectedAyah;
   Qari _selectedQari = kQariler.first;
+  bool _showMeal = true;
 
   @override
   void initState() {
@@ -117,6 +118,7 @@ class _QuranScreenState extends State<QuranScreen>
                         initialPage: _progress?.lastPage ?? 1,
                         selectedQari: _selectedQari,
                         selectedAyah: _selectedAyah,
+                        showMeal: _showMeal,
                         onProgressChanged: (page, surah, ayah) =>
                             _saveProgress(page: page, surah: surah, ayah: ayah),
                         onAyahSelected: _onAyahSelected,
@@ -126,6 +128,7 @@ class _QuranScreenState extends State<QuranScreen>
                         initialAyah: _progress?.lastAyah ?? 1,
                         selectedQari: _selectedQari,
                         selectedAyah: _selectedAyah,
+                        showMeal: _showMeal,
                         onProgressChanged: (page, surah, ayah) =>
                             _saveProgress(page: page, surah: surah, ayah: ayah),
                         onAyahSelected: _onAyahSelected,
@@ -185,6 +188,34 @@ class _QuranScreenState extends State<QuranScreen>
               ],
             ),
           ),
+          // Meal toggle
+          GestureDetector(
+            onTap: () => setState(() => _showMeal = !_showMeal),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: _showMeal
+                    ? AppColors.gold.withValues(alpha: 0.15)
+                    : AppColors.turquoise.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: _showMeal
+                      ? AppColors.gold.withValues(alpha: 0.5)
+                      : AppColors.turquoise.withValues(alpha: 0.5),
+                ),
+              ),
+              child: Text(
+                _showMeal ? 'Mealli' : 'Mealsiz',
+                style: GoogleFonts.notoSans(
+                  color: _showMeal ? AppColors.gold : AppColors.turquoise,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
           // Kaldığım yere git
           if (_progress != null)
             TextButton.icon(

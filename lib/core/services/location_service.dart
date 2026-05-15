@@ -17,9 +17,12 @@ class LocationService {
     if (permission == LocationPermission.deniedForever) return _getLastKnown();
 
     try {
+      // forceAndroidLocationManager: Google Play Services (DEVELOPER_ERROR)
+      // yerine native Android LocationManager kullanır
       return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.medium,
-        timeLimit: const Duration(seconds: 12),
+        timeLimit: const Duration(seconds: 10),
+        forceAndroidLocationManager: true,
       );
     } catch (_) {
       return _getLastKnown();

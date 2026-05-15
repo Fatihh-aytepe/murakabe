@@ -8,6 +8,7 @@ class QuranPageView extends StatefulWidget {
   final int initialPage;
   final Qari selectedQari;
   final QuranAyah? selectedAyah;
+  final bool showMeal;
   final void Function(int page, int surah, int ayah) onProgressChanged;
   final void Function(QuranAyah ayah) onAyahSelected;
 
@@ -16,6 +17,7 @@ class QuranPageView extends StatefulWidget {
     required this.initialPage,
     required this.selectedQari,
     this.selectedAyah,
+    this.showMeal = true,
     required this.onProgressChanged,
     required this.onAyahSelected,
   });
@@ -34,7 +36,7 @@ class _QuranPageViewState extends State<QuranPageView> {
 
   // Cache — yüklenen sayfalar tekrar API'ya gitmez
   final Map<int, List<QuranAyah>> _pageCache = {};
-  bool _isLoading = false;
+  final Set<int> _loadingPages = {};
 
   @override
   void initState() {
@@ -52,14 +54,14 @@ class _QuranPageViewState extends State<QuranPageView> {
 
   Future<void> _preloadPage(int page) async {
     if (_pageCache.containsKey(page)) return;
-    if (_isLoading) return;
+    if (_loadingPages.contains(page)) return;
 
-    setState(() => _isLoading = true);
+    _loadingPages.add(page);
     final ayahs = await _repo.getAyahsByPage(page);
     if (mounted) {
       setState(() {
         _pageCache[page] = ayahs;
-        _isLoading = false;
+        _loadingPages.remove(page);
       });
       // İlerleme kaydet
       if (ayahs.isNotEmpty) {
@@ -266,21 +268,23 @@ class _QuranPageViewState extends State<QuranPageView> {
               ayah.arabic,
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,
-              style: GoogleFonts.scheherazadeNew(
-                fontSize: 24,
+              style: GoogleFonts.amiri(
+                fontSize: widget.showMeal ? 26 : 32,
                 color: isSelected ? AppColors.gold : arabicColor,
-                height: 2.2,
+                height: 2.0,
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              ayah.turkish,
-              style: GoogleFonts.notoSans(
-                fontSize: 13,
-                color: turkishColor,
-                height: 1.6,
+            if (widget.showMeal) ...[
+              const SizedBox(height: 6),
+              Text(
+                ayah.turkish,
+                style: GoogleFonts.notoSans(
+                  fontSize: 13,
+                  color: turkishColor,
+                  height: 1.6,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

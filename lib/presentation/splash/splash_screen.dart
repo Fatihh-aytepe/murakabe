@@ -7,13 +7,12 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/services/update_service.dart';
-import '../../core/services/role_service.dart';
 import '../../data/local/local_storage.dart';
+import '../../data/remote/firebase_service.dart';
+import '../../data/repositories/user_repository.dart';
 import '../auth/login_screen.dart';
 import '../auth/auth_migration_screen.dart';
 import '../home/home_screen.dart';
-import '../community/owner_panel_screen.dart';
-import '../community/admin_dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -63,44 +62,50 @@ class _SplashScreenState extends State<SplashScreen>
 
     final storage = LocalStorage();
 
-    // ── 1. Hiç kayıt yok → Login ──────────────────────────────────────────
+    // ── 1. Firebase Auth oturumu var mı? ──────────────────────────────────
+    // Android'de uygulama silinince Auth tokeni de silinir → null gelir.
+    // iOS'ta Keychain sayesinde yeniden yükleme sonrası da geçerli kalabilir.
+    // Her iki durumda da storedId ile UID eşleşmiyorsa Firestore'dan geri yükle.
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser != null) {
+      final storedId = storage.userId;
+      if (storedId != authUser.uid) {
+        // Yeni cihaz / yeniden yükleme — verileri Firestore'dan çek
+        await storage.setUserId(authUser.uid);
+        await storage.setUserRegistered(true);
+        await storage.setAuthMigrationDone();
+        try {
+          await UserRepository().restoreFromFirestore(authUser.uid);
+          final prefs = await FirebaseService().getUserPrefs(authUser.uid);
+          if (prefs != null) await storage.restoreFromMap(prefs);
+        } catch (_) {}
+      }
+      if (!mounted) return;
+      _go(const HomeScreen());
+      return;
+    }
+
+    // ── 2. Auth oturumu yok → kayıt kontrolü ──────────────────────────────
     if (!storage.isUserRegistered) {
       _go(const LoginScreen());
       return;
     }
 
-    // ── 2. Kayıt var ama Auth migration yapılmamış ─────────────────────────
-    // Eski kullanıcı: SQLite'da var, Firebase Auth'a geçmemiş
+    // ── 3. Kayıt var ama Auth migration yapılmamış ─────────────────────────
     if (!storage.authMigrationDone) {
-      final authUser = FirebaseAuth.instance.currentUser;
-      if (authUser == null) {
-        // Firebase Auth oturumu yok → migration ekranına gönder
-        final oldUserId = storage.userId ?? '';
-        if (oldUserId.isNotEmpty) {
-          _go(AuthMigrationScreen(oldUserId: oldUserId));
-          return;
-        }
-      } else {
-        // Auth oturumu var ama migration flag yok → tamamlanmış say
-        await storage.setAuthMigrationDone();
+      final oldUserId = storage.userId ?? '';
+      if (oldUserId.isNotEmpty) {
+        _go(AuthMigrationScreen(oldUserId: oldUserId));
+        return;
       }
+      // Migration tamamlanamıyorsa Login'e yönlendir
+      _go(const LoginScreen());
+      return;
     }
 
-    // ── 3. Migration tamamlanmış → Role göre yönlendir ─────────────────────
-    final role = await RoleService().getCurrentRole();
+    // ── 4. Her şey yerli yerinde → HomeScreen ─────────────────────────────
     if (!mounted) return;
-
-    switch (role) {
-      case UserRole.owner:
-        _go(const OwnerPanelScreen());
-        break;
-      case UserRole.admin:
-        _go(const AdminDashboardScreen());
-        break;
-      case UserRole.user:
-        _go(const HomeScreen());
-        break;
-    }
+    _go(const HomeScreen());
   }
 
   void _go(Widget screen) {

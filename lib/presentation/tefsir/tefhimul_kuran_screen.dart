@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -62,8 +62,9 @@ class _TefhimulKuranScreenState extends State<TefhimulKuranScreen> {
   }
 
   void _toggleBookmark() {
+    final wasBookmarked = _bookmarks.contains(_currentPage);
     setState(() {
-      if (_bookmarks.contains(_currentPage)) {
+      if (wasBookmarked) {
         _bookmarks.remove(_currentPage);
       } else {
         _bookmarks.add(_currentPage);
@@ -75,7 +76,7 @@ class _TefhimulKuranScreenState extends State<TefhimulKuranScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          _bookmarks.contains(_currentPage)
+          wasBookmarked
               ? 'Yer imi kaldırıldı'
               : 'Sayfa $_currentPage yer imine eklendi',
         ),
@@ -301,13 +302,14 @@ class _TefhimulKuranScreenState extends State<TefhimulKuranScreen> {
                   onPressed: () async {
                     final content = contentCtrl.text.trim();
                     if (content.isEmpty) return;
+                    final messenger = ScaffoldMessenger.of(context);
                     await _noteRepo.addNote(
                       title: 'Tefhimul Kuran — Sayfa $page',
                       content: content,
                     );
                     if (ctx.mounted) {
                       Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                         const SnackBar(
                           content: Text('Not kaydedildi'),
                           backgroundColor: AppColors.success,
@@ -477,10 +479,10 @@ class _TefhimulKuranScreenState extends State<TefhimulKuranScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: BoxDecoration(
-                          color: AppColors.gold.withOpacity(0.1),
+                          color: AppColors.gold.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: AppColors.gold.withOpacity(0.3)),
+                              color: AppColors.gold.withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           '$_currentPage / $_totalPages',

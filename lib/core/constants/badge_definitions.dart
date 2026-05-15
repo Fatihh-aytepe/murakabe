@@ -42,8 +42,8 @@ class BadgeDef {
 const BadgeDef kBadgeKuranAy1 = BadgeDef(
   id: 'kuran_ay_1',
   emoji: '📖',
-  name: '1 Aylık Kur\'ân Sadığı',
-  description: '30 gün kesintisiz Kur\'ân okudun.',
+  name: 'Kelam Yolcusu',
+  description: 'Maşallah! 30 gün kesintisiz Kur\'ân okudun.',
   primaryColor: Color(0xFF1565C0),
   secondaryColor: Color(0xFF42A5F5),
   tier: 2,
@@ -52,8 +52,8 @@ const BadgeDef kBadgeKuranAy1 = BadgeDef(
 const BadgeDef kBadgeKuranAy3 = BadgeDef(
   id: 'kuran_ay_3',
   emoji: '📖⭐',
-  name: '3 Aylık Kur\'ân Yolcusu',
-  description: '90 gün kesintisiz Kur\'ân okudun.',
+  name: 'Kuran Dostu',
+  description: 'Maşallah! 90 gün kesintisiz Kur\'ân okudun. devam et.',
   primaryColor: Color(0xFF0D47A1),
   secondaryColor: Color(0xFF1E88E5),
   tier: 3,
@@ -62,7 +62,7 @@ const BadgeDef kBadgeKuranAy3 = BadgeDef(
 const BadgeDef kBadgeKuranAy6 = BadgeDef(
   id: 'kuran_ay_6',
   emoji: '📖💎',
-  name: '6 Aylık Kur\'ân Dostu',
+  name: 'Hemdem',
   description: '180 gün kesintisiz Kur\'ân okudun.',
   primaryColor: Color(0xFF006064),
   secondaryColor: Color(0xFF00ACC1),
@@ -72,7 +72,7 @@ const BadgeDef kBadgeKuranAy6 = BadgeDef(
 const BadgeDef kBadgeKuranYil1 = BadgeDef(
   id: 'kuran_yil_1',
   emoji: '📖👑',
-  name: '1 Yıllık Kur\'ân Hâfızı',
+  name: 'Ehl-i Kur’an!!!',
   description: '365 gün kesintisiz Kur\'ân okudun. Sonsuz tebrikler!',
   primaryColor: Color(0xFF4A148C),
   secondaryColor: Color(0xFFAB47BC),
@@ -84,7 +84,7 @@ const BadgeDef kBadgeKuranYil1 = BadgeDef(
 const BadgeDef kBadgeEsmaAy1 = BadgeDef(
   id: 'esma_ay_1',
   emoji: '✨',
-  name: '1 Aylık Esmâ Zâkiri',
+  name: 'Dil Zikri',
   description: '30 gün kesintisiz Esmâ-ül Hüsnâ okudun.',
   primaryColor: Color(0xFF6A1B9A),
   secondaryColor: Color(0xFFCE93D8),
@@ -94,7 +94,7 @@ const BadgeDef kBadgeEsmaAy1 = BadgeDef(
 const BadgeDef kBadgeEsmaAy3 = BadgeDef(
   id: 'esma_ay_3',
   emoji: '✨⭐',
-  name: '3 Aylık Esmâ Sadığı',
+  name: 'Esma Talibi',
   description: '90 gün kesintisiz Esmâ-ül Hüsnâ okudun.',
   primaryColor: Color(0xFF4A148C),
   secondaryColor: Color(0xFF9C27B0),
@@ -104,7 +104,7 @@ const BadgeDef kBadgeEsmaAy3 = BadgeDef(
 const BadgeDef kBadgeEsmaAy6 = BadgeDef(
   id: 'esma_ay_6',
   emoji: '✨💎',
-  name: '6 Aylık Esmâ Dostu',
+  name: 'Zikr-i Daim',
   description: '180 gün kesintisiz Esmâ-ül Hüsnâ okudun.',
   primaryColor: Color(0xFF311B92),
   secondaryColor: Color(0xFF7E57C2),
@@ -114,7 +114,7 @@ const BadgeDef kBadgeEsmaAy6 = BadgeDef(
 const BadgeDef kBadgeEsmaYil1 = BadgeDef(
   id: 'esma_yil_1',
   emoji: '✨👑',
-  name: '1 Yıllık Esmâ Hâfızı',
+  name: 'Esmâ Hâfızı',
   description: '365 gün kesintisiz Esmâ-ül Hüsnâ okudun. Mâşallah!',
   primaryColor: Color(0xFF880E4F),
   secondaryColor: Color(0xFFF48FB1),
@@ -126,7 +126,7 @@ const BadgeDef kBadgeEsmaYil1 = BadgeDef(
 const BadgeDef kBadgeHadisAy1 = BadgeDef(
   id: 'hadis_ay_1',
   emoji: '📜',
-  name: '1 Aylık Sünnet Takipçisi',
+  name: 'Sünnet Talebesi',
   description: '30 gün kesintisiz hadis okudun.',
   primaryColor: Color(0xFF1B5E20),
   secondaryColor: Color(0xFF66BB6A),
@@ -134,7 +134,7 @@ const BadgeDef kBadgeHadisAy1 = BadgeDef(
 );
 
 const BadgeDef kBadgeHadisAy3 = BadgeDef(
-  id: 'hadis_ay_3',
+  id: 'Hadim-i Sünnet',
   emoji: '📜⭐',
   name: '3 Aylık Sünnet Yolcusu',
   description: '90 gün kesintisiz hadis okudun.',
@@ -144,7 +144,7 @@ const BadgeDef kBadgeHadisAy3 = BadgeDef(
 );
 
 const BadgeDef kBadgeHadisAy6 = BadgeDef(
-  id: 'hadis_ay_6',
+  id: 'Sıddık...',
   emoji: '📜💎',
   name: '6 Aylık Hadis Dostu',
   description: '180 gün kesintisiz hadis okudun.',
@@ -156,7 +156,7 @@ const BadgeDef kBadgeHadisAy6 = BadgeDef(
 const BadgeDef kBadgeHadisYil1 = BadgeDef(
   id: 'hadis_yil_1',
   emoji: '📜👑',
-  name: '1 Yıllık Sünnet Ustası',
+  name: 'Peygamber dostu',
   description: '365 gün kesintisiz hadis okudun. Mâşallah!',
   primaryColor: Color(0xFF01579B),
   secondaryColor: Color(0xFF4FC3F7),
@@ -168,7 +168,7 @@ const BadgeDef kBadgeHadisYil1 = BadgeDef(
 const BadgeDef kBadgeKombineAy1 = BadgeDef(
   id: 'kombine_ay_1',
   emoji: '🌟',
-  name: 'Tam Donanımlı Mü\'min',
+  name: 'İstikamet Ehli',
   description: '30 gün Kur\'ân, Esmâ ve Hadis\'i birlikte okudun.',
   primaryColor: Color(0xFFF57F17),
   secondaryColor: Color(0xFFFFD54F),
@@ -178,7 +178,7 @@ const BadgeDef kBadgeKombineAy1 = BadgeDef(
 const BadgeDef kBadgeKombineAy3 = BadgeDef(
   id: 'kombine_ay_3',
   emoji: '🌟⭐',
-  name: 'Ruhânî Yolculuk',
+  name: 'Kalp Murakıbı',
   description: '90 gün Kur\'ân, Esmâ ve Hadis\'i birlikte okudun.',
   primaryColor: Color(0xFFE65100),
   secondaryColor: Color(0xFFFF9800),
@@ -188,7 +188,7 @@ const BadgeDef kBadgeKombineAy3 = BadgeDef(
 const BadgeDef kBadgeKombineAy6 = BadgeDef(
   id: 'kombine_ay_6',
   emoji: '🌟💎',
-  name: 'Mâneviyat Ustası',
+  name: 'Murakabe ehli',
   description: '180 gün Kur\'ân, Esmâ ve Hadis\'i birlikte okudun.',
   primaryColor: Color(0xFFBF360C),
   secondaryColor: Color(0xFFFF7043),
@@ -198,7 +198,7 @@ const BadgeDef kBadgeKombineAy6 = BadgeDef(
 const BadgeDef kBadgeKombineYil1 = BadgeDef(
   id: 'kombine_yil_1',
   emoji: '🌟👑',
-  name: 'Yılın Mü\'min Kahramanı',
+  name: 'MUHLİS',
   description: '365 gün tüm kategorilerde kesintisiz okudun. Olağanüstü!',
   primaryColor: Color(0xFF4A148C),
   secondaryColor: Color(0xFFD4AF37),
@@ -220,7 +220,7 @@ const BadgeDef kBadgeTahajjud3 = BadgeDef(
 const BadgeDef kBadgeTahajjud10 = BadgeDef(
   id: 'tahajjud_10',
   emoji: '🌙🔟',
-  name: 'Gece Sadığı',
+  name: 'Gece yolcusu',
   description: 'Toplam 10 gece teheccüd namazı kıldın.',
   primaryColor: Color(0xFF0D1B2A),
   secondaryColor: Color(0xFF1565C0),
@@ -230,7 +230,7 @@ const BadgeDef kBadgeTahajjud10 = BadgeDef(
 const BadgeDef kBadgeTahajjud30 = BadgeDef(
   id: 'tahajjud_30',
   emoji: '🌙⭐',
-  name: 'Gece Yolcusu',
+  name: 'Vuslat eri',
   description: 'Toplam 30 gece teheccüd namazı kıldın.',
   primaryColor: Color(0xFF1A237E),
   secondaryColor: Color(0xFF3949AB),
@@ -240,7 +240,7 @@ const BadgeDef kBadgeTahajjud30 = BadgeDef(
 const BadgeDef kBadgeTahajjud50 = BadgeDef(
   id: 'tahajjud_50',
   emoji: '🌙💎',
-  name: 'Gece Ustası',
+  name: 'Sırdaş',
   description: 'Toplam 50 gece teheccüd namazı kıldın. Benzersiz bir sadakat.',
   primaryColor: Color(0xFF006064),
   secondaryColor: Color(0xFF00E5FF),
@@ -250,7 +250,7 @@ const BadgeDef kBadgeTahajjud50 = BadgeDef(
 const BadgeDef kBadgeTahajjud99 = BadgeDef(
   id: 'tahajjud_99',
   emoji: '🌙👑',
-  name: 'Teheccüd Kahramanı',
+  name: 'YÂREN',
   description: 'Toplam 99 gece teheccüd namazı kıldın. Subhânallah!',
   primaryColor: Color(0xFF37003C),
   secondaryColor: Color(0xFFD4AF37),
@@ -262,8 +262,9 @@ const BadgeDef kBadgeTahajjud99 = BadgeDef(
 const BadgeDef kBadgeVeteran1Yil = BadgeDef(
   id: 'veteran_1_yil',
   emoji: '🎖️',
-  name: '1 Yıllık Murâkabe Yolcusu',
-  description: 'Murakabe ile tam 1 yıldır birliktesin. Tüm kalbimizle tebrik ederiz!',
+  name: 'REFİK',
+  description:
+      'Murakabe ile tam 1 yıldır birliktesin. Tüm kalbimizle tebrik ederiz!',
   primaryColor: Color(0xFF78002E),
   secondaryColor: Color(0xFFD4AF37),
   tier: 4,

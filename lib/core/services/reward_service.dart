@@ -1,4 +1,5 @@
 import '../../data/local/local_storage.dart';
+import '../../data/remote/firebase_service.dart';
 import '../../data/repositories/reward_repository.dart';
 
 class RewardInfo {
@@ -64,6 +65,7 @@ class RewardService {
           title: info.title,
           message: info.message,
         );
+        _syncPrefs();
         return info;
       }
     }
@@ -80,7 +82,7 @@ class RewardService {
 
     int streak;
     if (lastDate == today) {
-      streak = _storage.esmaStreak; // Bugün zaten sayıldı
+      streak = _storage.esmaStreak;
     } else if (lastDate == _yesterday()) {
       streak = _storage.esmaStreak + 1;
     } else {
@@ -90,12 +92,14 @@ class RewardService {
     await _storage.setLastEsmaDate(today);
     await _storage.incrementEsmaCount();
 
-    return _checkCategoryMilestone(
+    final result = await _checkCategoryMilestone(
       streak: streak,
       lastRewarded: _storage.lastRewardedEsmaStreak,
       setLastRewarded: _storage.setLastRewardedEsmaStreak,
       buildReward: _buildEsmaReward,
     );
+    _syncPrefs();
+    return result;
   }
 
   Future<RewardInfo?> checkEsmaStreakReward() async {
@@ -125,12 +129,14 @@ class RewardService {
     await _storage.setLastHadisDate(today);
     await _storage.incrementHadisCount();
 
-    return _checkCategoryMilestone(
+    final result = await _checkCategoryMilestone(
       streak: streak,
       lastRewarded: _storage.lastRewardedHadisStreak,
       setLastRewarded: _storage.setLastRewardedHadisStreak,
       buildReward: _buildHadisReward,
     );
+    _syncPrefs();
+    return result;
   }
 
   Future<RewardInfo?> checkHadisStreakReward() async {
@@ -172,6 +178,14 @@ class RewardService {
   }
 
   // ── Yardımcılar ──────────────────────────────────────────────────────────
+
+  // Streak ve rozet verilerini arka planda Firestore'a yedekler.
+  // Fire-and-forget: await beklenmez, hata sessizce yutulur.
+  void _syncPrefs() {
+    final uid = _storage.userId;
+    if (uid == null) return;
+    FirebaseService().saveUserPrefs(uid, _storage.toSyncMap());
+  }
 
   Future<RewardInfo?> _checkCategoryMilestone({
     required int streak,

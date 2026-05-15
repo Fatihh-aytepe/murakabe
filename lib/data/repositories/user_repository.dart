@@ -66,6 +66,7 @@ class UserRepository {
   }
 
   /// Uygulama yeniden yüklendiğinde Firestore'dan SQLite'a kullanıcıyı geri yükler.
+  /// Ana kullanıcı dokümanının yanı sıra tüm subcollection'lar da geri yüklenir.
   Future<bool> restoreFromFirestore(String uid) async {
     try {
       final map = await _firebase.getUserForSQLite(uid);
@@ -77,9 +78,86 @@ class UserRepository {
       } else {
         await _db.insert('users', map);
       }
+      await _restoreSubcollections(uid);
       return true;
     } catch (_) {
       return false;
+    }
+  }
+
+  Future<void> _restoreSubcollections(String uid) async {
+    // Notlar
+    final notes = await _firebase.getSubcollection(uid, 'notes');
+    for (final n in notes) {
+      try {
+        await _db.insert('notes', n..remove('_docId'));
+      } catch (_) {}
+    }
+
+    // Kaydedilenler (heybe)
+    final saved = await _firebase.getSubcollection(uid, 'saved');
+    for (final s in saved) {
+      try {
+        await _db.insert('saved_content', s..remove('_docId'));
+      } catch (_) {}
+    }
+
+    // Kişisel görevler
+    final tasks = await _firebase.getSubcollection(uid, 'tasks');
+    for (final t in tasks) {
+      try {
+        await _db.insert('custom_tasks', t..remove('_docId'));
+      } catch (_) {}
+    }
+
+    // Görev tamamlamaları
+    final completions =
+        await _firebase.getSubcollection(uid, 'taskCompletions');
+    for (final c in completions) {
+      try {
+        await _db.insert('custom_task_completions', c..remove('_docId'));
+      } catch (_) {}
+    }
+
+    // Ödüller
+    final rewards = await _firebase.getSubcollection(uid, 'rewards');
+    for (final r in rewards) {
+      try {
+        await _db.insert('rewards', r..remove('_docId'));
+      } catch (_) {}
+    }
+
+    // Kur'ân okuma takibi (Firestore doc ID = tarih string'i)
+    final quranDocs = await _firebase.getSubcollection(uid, 'quranTracking');
+    for (final q in quranDocs) {
+      try {
+        final date = q['_docId'] as String?;
+        if (date == null) continue;
+        await _db.insert('quran_tracking', {
+          'date': date,
+          'isRead': q['isRead'] == true ? 1 : 0,
+          'readAt':
+              q['readAt']?.toString() ?? DateTime.now().toIso8601String(),
+        });
+      } catch (_) {}
+    }
+
+    // Rozetler
+    final badges = await _firebase.getSubcollection(uid, 'badges');
+    for (final b in badges) {
+      try {
+        final row = Map<String, dynamic>.from(b)..remove('_docId');
+        row.putIfAbsent('isDisplayed', () => 0);
+        await _db.insert('badges', row);
+      } catch (_) {}
+    }
+
+    // Hatırlatıcılar
+    final reminders = await _firebase.getSubcollection(uid, 'reminders');
+    for (final r in reminders) {
+      try {
+        await _db.insert('reminders', r..remove('_docId'));
+      } catch (_) {}
     }
   }
 
@@ -130,6 +208,12 @@ class UserRepository {
     try {
       await _firebase.markQuranRead(_storage.userId!, date);
     } catch (_) {}
+
+    // Streak verisini Firestore'a yedekle (yeniden yükleme koruması)
+    final uid = _storage.userId;
+    if (uid != null) {
+      _firebase.saveUserPrefs(uid, _storage.toSyncMap());
+    }
   }
 
   String _yesterday() {

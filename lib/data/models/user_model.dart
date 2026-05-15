@@ -50,7 +50,7 @@ class UserModel {
           DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
       quranReadDays: map['quranReadDays'] ?? 0,
       missedQuranDays: List<String>.from(map['missedQuranDays'] ?? []),
-      tahajjudAlarmEnabled: (map['tahajjudAlarmEnabled'] as int? ?? 0) == 1,
+      tahajjudAlarmEnabled: map['tahajjudAlarmEnabled'] == true || map['tahajjudAlarmEnabled'] == 1,
       tahajjudAlarmTimes: (map['tahajjudAlarmTimes'] as List<dynamic>? ?? [])
           .map((e) => DateTime.parse(e.toString()))
           .toList(),
@@ -61,10 +61,11 @@ class UserModel {
       bio: map['bio'] ?? '',
       gender: map['gender'] ?? '',
       photoUrl: map['photoUrl'] ?? '',
-      isEmailVerified: (map['isEmailVerified'] as int? ?? 0) == 1,
+      isEmailVerified: map['isEmailVerified'] == true || map['isEmailVerified'] == 1,
     );
   }
 
+  // SQLite için (bool → int)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -80,11 +81,33 @@ class UserModel {
       'streakDays': streakDays,
       'mercyDaysUsed': mercyDaysUsed,
       'lastStreakDate': lastStreakDate,
-      // YENİ
       'bio': bio,
       'gender': gender,
       'photoUrl': photoUrl,
       'isEmailVerified': isEmailVerified ? 1 : 0,
+    };
+  }
+
+  // Firestore için (bool → bool, int olmadan)
+  Map<String, dynamic> toFirestoreMap() {
+    return {
+      'id': id,
+      'nameSurname': nameSurname,
+      'phone': phone,
+      'email': email,
+      'createdAt': createdAt.toIso8601String(),
+      'quranReadDays': quranReadDays,
+      'missedQuranDays': missedQuranDays,
+      'tahajjudAlarmEnabled': tahajjudAlarmEnabled,
+      'tahajjudAlarmTimes':
+          tahajjudAlarmTimes.map((e) => e.toIso8601String()).toList(),
+      'streakDays': streakDays,
+      'mercyDaysUsed': mercyDaysUsed,
+      'lastStreakDate': lastStreakDate,
+      'bio': bio,
+      'gender': gender,
+      'photoUrl': photoUrl,
+      'isEmailVerified': isEmailVerified,
     };
   }
 

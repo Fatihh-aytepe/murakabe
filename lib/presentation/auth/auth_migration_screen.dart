@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+﻿import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
@@ -232,8 +232,8 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.gold.withOpacity(0.15),
-                    border: Border.all(color: AppColors.gold.withOpacity(0.4)),
+                    color: AppColors.gold.withValues(alpha: 0.15),
+                    border: Border.all(color: AppColors.gold.withValues(alpha: 0.4)),
                   ),
                   child: const Icon(Icons.security,
                       color: AppColors.gold, size: 48),
@@ -269,10 +269,10 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
                       border:
-                          Border.all(color: AppColors.gold.withOpacity(0.2)),
+                          Border.all(color: AppColors.gold.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       children: [
@@ -337,7 +337,7 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
                   suffixIcon: IconButton(
                     icon: Icon(
                       _passVisible ? Icons.visibility_off : Icons.visibility,
-                      color: AppColors.gold.withOpacity(0.6),
+                      color: AppColors.gold.withValues(alpha: 0.6),
                       size: 20,
                     ),
                     onPressed: () =>
@@ -360,7 +360,7 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
                       _passConfirmVisible
                           ? Icons.visibility_off
                           : Icons.visibility,
-                      color: AppColors.gold.withOpacity(0.6),
+                      color: AppColors.gold.withValues(alpha: 0.6),
                       size: 20,
                     ),
                     onPressed: () => setState(
@@ -373,9 +373,9 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.red.withOpacity(0.4)),
+                      border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
                     ),
                     child: Row(
                       children: [
@@ -459,7 +459,7 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: AppColors.gold.withOpacity(0.8)),
+        labelStyle: TextStyle(color: AppColors.gold.withValues(alpha: 0.8)),
         prefixIcon: Icon(icon, color: AppColors.turquoise, size: 20),
         suffixIcon: suffixIcon,
         errorText: errorText,
@@ -472,7 +472,7 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
           borderSide: BorderSide(
             color: errorText != null
                 ? Colors.red.shade400
-                : AppColors.gold.withOpacity(0.3),
+                : AppColors.gold.withValues(alpha: 0.3),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -490,7 +490,7 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
           borderSide: BorderSide(color: Colors.red.shade400),
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: Colors.white.withValues(alpha: 0.05),
       ),
     );
   }

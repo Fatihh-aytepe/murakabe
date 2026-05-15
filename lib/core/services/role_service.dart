@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import '../../data/local/local_storage.dart';
 
 // ─── Yetki seviyeleri ─────────────────────────────────────────────────────────
@@ -33,6 +35,51 @@ class RoleService {
     return UserRole.user;
   }
 
+  // ── Sahip dokümanı var mı kontrol et ─────────────────────────────────────
+  Future<bool> isOwnerConfigured() async {
+    try {
+      final doc = await _db.collection('roles').doc('owner').get();
+      return doc.exists;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // ── Mevcut kullanıcı sahip mi? (Firebase Auth UID ile karşılaştırır) ──────
+  Future<bool> isCurrentUserOwner() async {
+    try {
+      final authUid = FirebaseAuth.instance.currentUser?.uid;
+      debugPrint('[SahipKontrol] Firebase Auth UID: $authUid');
+      if (authUid == null) return false;
+      final doc = await _db
+          .collection('roles')
+          .doc('owner')
+          .get(const GetOptions(source: Source.server));
+      if (!doc.exists) {
+        debugPrint('[SahipKontrol] roles/owner belgesi YOK');
+        return false;
+      }
+      final ownerUid = doc.data()?['uid'];
+      debugPrint('[SahipKontrol] roles/owner.uid: $ownerUid');
+      debugPrint('[SahipKontrol] Eşleşme: ${ownerUid == authUid}');
+      return ownerUid == authUid;
+    } catch (e) {
+      debugPrint('[SahipKontrol] Hata: $e');
+      return false;
+    }
+  }
+
+  // ── İlk kurulum: mevcut kullanıcıyı sahip yap ────────────────────────────
+  // Firebase Auth UID kullanılır — LocalStorage ile uyuşmazlık olmasın.
+  Future<void> setupOwner() async {
+    final authUid = FirebaseAuth.instance.currentUser?.uid;
+    if (authUid == null) throw Exception('Giriş yapılmamış');
+    await _db.collection('roles').doc('owner').set({
+      'uid': authUid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   // ── Admin başvurusu yap ───────────────────────────────────────────────────
   Future<void> applyForAdmin({
     required String name,
@@ -60,10 +107,14 @@ class RoleService {
     });
 
     try {
+      // Owner'ın UID'sini al ki bildirim ona ulaşsın
+      final ownerDoc = await _db.collection('roles').doc('owner').get();
+      final ownerUid = ownerDoc.data()?['uid'] as String?;
       await _db.collection('notifications').add({
         'type': 'admin_request',
         'fromUid': _uid,
         'fromName': name,
+        if (ownerUid != null) 'targetUid': ownerUid,
         'createdAt': FieldValue.serverTimestamp(),
         'read': false,
       });
@@ -199,6 +250,33 @@ class RoleService {
     });
 
     await batch.commit();
+
+    // Topluluk adminine "yeni üye" bildirimi gönder
+    try {
+      final communityData = communityDoc.data();
+      final adminUid = communityData['adminUid'] as String?;
+      if (adminUid != null && adminUid != _uid) {
+        String joinerName = 'Bir kullanıcı';
+        try {
+          final userDoc =
+              await _db.collection('users').doc(_uid).get();
+          joinerName =
+              (userDoc.data()?['nameSurname'] as String?) ?? joinerName;
+        } catch (_) {}
+
+        await _db.collection('notifications').add({
+          'type': 'community_joined',
+          'targetUid': adminUid,
+          'fromUid': _uid,
+          'fromName': joinerName,
+          'communityId': communityId,
+          'communityName':
+              communityData['name'] as String? ?? 'Topluluk',
+          'createdAt': FieldValue.serverTimestamp(),
+          'read': false,
+        });
+      }
+    } catch (_) {}
   }
 
   // ── Admin: Göreve üye ata ─────────────────────────────────────────────────
@@ -222,7 +300,7 @@ class RoleService {
     });
   }
 
-  // ── Admin: Duyuru gönder ──────────────────────────────────────────────────
+  // ── Admin: Duyuru gönder + tüm üyelere Firestore bildirimi yaz ───────────
   Future<void> sendAnnouncement({
     required String communityId,
     required String message,
@@ -238,6 +316,96 @@ class RoleService {
       'sentBy': _uid,
       'sentAt': FieldValue.serverTimestamp(),
     });
+
+    // Her üyeye bildirim yaz (adminın kendisi hariç)
+    try {
+      final members = await _db
+          .collection('communities')
+          .doc(communityId)
+          .collection('members')
+          .get();
+      final batch = _db.batch();
+      for (final doc in members.docs) {
+        final memberUid = doc.data()['uid'] as String?;
+        if (memberUid == null || memberUid == _uid) continue;
+        final ref = _db.collection('notifications').doc();
+        batch.set(ref, {
+          'type': isWarning ? 'announcement_warning' : 'announcement',
+          'targetUid': memberUid,
+          'message': message,
+          'communityId': communityId,
+          'createdAt': FieldValue.serverTimestamp(),
+          'read': false,
+        });
+      }
+      await batch.commit();
+    } catch (_) {}
+  }
+
+  // ── Admin: Üyeyi topluluktan at ───────────────────────────────────────────
+  Future<void> kickMember(String communityId, String targetUid) async {
+    final batch = _db.batch();
+    batch.delete(
+      _db
+          .collection('communities')
+          .doc(communityId)
+          .collection('members')
+          .doc(targetUid),
+    );
+    batch.update(
+      _db.collection('communities').doc(communityId),
+      {'memberCount': FieldValue.increment(-1)},
+    );
+    await batch.commit();
+  }
+
+  // ── Admin: Belirli bir üyeye kişisel bildirim gönder ─────────────────────
+  Future<void> sendPersonalNotification({
+    required String targetUid,
+    required String message,
+    String? senderName,
+  }) async {
+    await _db.collection('notifications').add({
+      'type': 'personal_message',
+      'targetUid': targetUid,
+      'message': message,
+      if (senderName != null) 'fromName': senderName,
+      'createdAt': FieldValue.serverTimestamp(),
+      'read': false,
+    });
+  }
+
+  // ── Kullanıcının üye olduğu topluluk ID'sini döndür ──────────────────────
+  Future<String?> getUserCommunityId() async {
+    if (_uid == null) return null;
+    try {
+      final snap = await _db
+          .collectionGroup('members')
+          .where('uid', isEqualTo: _uid)
+          .limit(1)
+          .get();
+      if (snap.docs.isEmpty) return null;
+      return snap.docs.first.reference.parent.parent?.id;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ── Kullanıcının üye olduğu tüm topluluk ID'lerini döndür ────────────────
+  Future<List<String>> getUserCommunityIds() async {
+    if (_uid == null) return [];
+    try {
+      final snap = await _db
+          .collectionGroup('members')
+          .where('uid', isEqualTo: _uid)
+          .get();
+      return snap.docs
+          .map((d) => d.reference.parent.parent?.id)
+          .whereType<String>()
+          .toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   // ── Topluluk mesajı gönder ────────────────────────────────────────────────
@@ -279,7 +447,6 @@ class RoleService {
     return _db
         .collection('adminRequests')
         .where('status', isEqualTo: 'pending')
-        .orderBy('appliedAt', descending: true)
         .snapshots();
   }
 

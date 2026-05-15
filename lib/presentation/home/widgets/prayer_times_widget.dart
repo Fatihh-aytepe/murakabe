@@ -25,44 +25,49 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
   @override
   void initState() {
     super.initState();
-    _clockStream =
-        Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
+    _clockStream = Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now())
+        .asBroadcastStream();
     _loadPrayerTimes();
   }
 
   Future<void> _loadPrayerTimes() async {
-    final result = await _getPrayerTimes();
-    if (result != null && mounted) {
-      setState(() {
-        _result = result;
-        _isLoading = false;
-        _buildPrayerList(result.prayerTimes);
-        _updateNextPrayer(result.prayerTimes);
-      });
-    } else {
+    try {
+      final result = await _getPrayerTimes()
+          .timeout(const Duration(seconds: 15), onTimeout: () => null);
+      if (result != null && mounted) {
+        setState(() {
+          _result = result;
+          _isLoading = false;
+          _buildPrayerList(result.prayerTimes);
+          _updateNextPrayer(result.prayerTimes);
+        });
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (_) {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _buildPrayerList(PrayerTimes pt) {
     _prayers = [
-      {'name': 'İmsak',  'time': pt.fajr},
-      {'name': 'Güneş',  'time': pt.sunrise},
-      {'name': 'Öğle',   'time': pt.dhuhr},
+      {'name': 'İmsak', 'time': pt.fajr},
+      {'name': 'Güneş', 'time': pt.sunrise},
+      {'name': 'Öğle', 'time': pt.dhuhr},
       {'name': 'İkindi', 'time': pt.asr},
-      {'name': 'Akşam',  'time': pt.maghrib},
-      {'name': 'Yatsı',  'time': pt.isha},
+      {'name': 'Akşam', 'time': pt.maghrib},
+      {'name': 'Yatsı', 'time': pt.isha},
     ];
   }
 
   void _updateNextPrayer(PrayerTimes pt) {
     final now = DateTime.now();
     final ordered = [
-      {'name': 'İmsak',  'time': pt.fajr},
-      {'name': 'Öğle',   'time': pt.dhuhr},
+      {'name': 'İmsak', 'time': pt.fajr},
+      {'name': 'Öğle', 'time': pt.dhuhr},
       {'name': 'İkindi', 'time': pt.asr},
-      {'name': 'Akşam',  'time': pt.maghrib},
-      {'name': 'Yatsı',  'time': pt.isha},
+      {'name': 'Akşam', 'time': pt.maghrib},
+      {'name': 'Yatsı', 'time': pt.isha},
     ];
     for (final p in ordered) {
       final t = p['time'] as DateTime;
@@ -90,9 +95,19 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
     final now = DateTime.now();
     final h = _toHijri(now.year, now.month, now.day);
     const months = [
-      '', 'Muharrem', 'Safer', 'Rebiülevvel', 'Rebiülahir',
-      'Cemaziyelevvel', 'Cemaziyelahir', 'Recep', 'Şaban',
-      'Ramazan', 'Şevval', 'Zilkade', 'Zilhicce',
+      '',
+      'Muharrem',
+      'Safer',
+      'Rebiülevvel',
+      'Rebiülahir',
+      'Cemaziyelevvel',
+      'Cemaziyelahir',
+      'Recep',
+      'Şaban',
+      'Ramazan',
+      'Şevval',
+      'Zilkade',
+      'Zilhicce',
     ];
     return '${h[2]} ${months[h[1]]} ${h[0]}';
   }
@@ -101,15 +116,22 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
     int a = (14 - gm) ~/ 12;
     int y = gy + 4800 - a;
     int m = gm + 12 * a - 3;
-    int jdn = gd + (153 * m + 2) ~/ 5 + 365 * y +
-        y ~/ 4 - y ~/ 100 + y ~/ 400 - 32045;
+    int jdn = gd +
+        (153 * m + 2) ~/ 5 +
+        365 * y +
+        y ~/ 4 -
+        y ~/ 100 +
+        y ~/ 400 -
+        32045;
     int l = jdn - 1948440 + 10632;
     int n = (l - 1) ~/ 10631;
     l = l - 10631 * n + 354;
     int j = ((10985 - l) ~/ 5316) * ((50 * l) ~/ 17719) +
         (l ~/ 5670) * ((43 * l) ~/ 15238);
-    l = l - ((30 - j) ~/ 15) * ((17719 * j) ~/ 50) -
-        (j ~/ 16) * ((15238 * j) ~/ 43) + 29;
+    l = l -
+        ((30 - j) ~/ 15) * ((17719 * j) ~/ 50) -
+        (j ~/ 16) * ((15238 * j) ~/ 43) +
+        29;
     int hm = (24 * l) ~/ 709;
     int hd = l - (709 * hm) ~/ 24;
     int hy = 30 * n + j - 30;
@@ -145,8 +167,8 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
             const SizedBox(width: 8),
             Expanded(
               child: Text('Namaz vakitleri yüklenemedi',
-                  style:
-                      GoogleFonts.notoSans(color: Colors.white54, fontSize: 12)),
+                  style: GoogleFonts.notoSans(
+                      color: Colors.white54, fontSize: 12)),
             ),
             TextButton(
               onPressed: () {
@@ -157,8 +179,8 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   minimumSize: Size.zero),
               child: Text('Dene',
-                  style:
-                      GoogleFonts.notoSans(color: AppColors.gold, fontSize: 12)),
+                  style: GoogleFonts.notoSans(
+                      color: AppColors.gold, fontSize: 12)),
             ),
           ],
         ),
@@ -200,8 +222,36 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
           // Canlı geri sayım
           StreamBuilder<DateTime>(
             stream: _clockStream,
-            builder: (_, __) {
-              if (_result != null) _updateNextPrayer(pt);
+            builder: (_, snap) {
+              // State mutation yok — her build'de local hesapla
+              String nextName = _nextPrayerName;
+              Duration timeLeft = _timeToNext;
+              if (_result != null) {
+                final now = snap.data ?? DateTime.now();
+                final pt2 = _result!.prayerTimes;
+                final ordered = [
+                  {'name': 'İmsak', 'time': pt2.fajr},
+                  {'name': 'Öğle', 'time': pt2.dhuhr},
+                  {'name': 'İkindi', 'time': pt2.asr},
+                  {'name': 'Akşam', 'time': pt2.maghrib},
+                  {'name': 'Yatsı', 'time': pt2.isha},
+                ];
+                bool found = false;
+                for (final p in ordered) {
+                  final t = p['time'] as DateTime;
+                  if (t.isAfter(now)) {
+                    nextName = p['name'] as String;
+                    timeLeft = t.difference(now);
+                    found = true;
+                    break;
+                  }
+                }
+                if (!found) {
+                  nextName = 'İmsak';
+                  timeLeft =
+                      pt2.fajr.add(const Duration(days: 1)).difference(now);
+                }
+              }
               return Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -216,12 +266,12 @@ class _PrayerTimesWidgetState extends State<PrayerTimesWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '$_nextPrayerName\'a ',
+                      '$nextName\'a ',
                       style: GoogleFonts.notoSans(
                           color: AppColors.turquoiseLight, fontSize: 11),
                     ),
                     Text(
-                      _fmtDuration(_timeToNext),
+                      _fmtDuration(timeLeft),
                       style: GoogleFonts.notoSans(
                           color: Colors.white,
                           fontSize: 11,

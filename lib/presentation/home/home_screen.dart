@@ -26,7 +26,11 @@ import '../hadis/hadis_detail_screen.dart';
 import '../rewards/murakabe_hosgeldin_screen.dart';
 import '../rewards/tahajjud_odul_screen.dart';
 import '../rewards/tebrik_karti_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/services/badge_service.dart';
+import '../../core/services/firestore_notification_service.dart';
+import '../../core/services/role_service.dart';
+import '../../data/local/local_storage.dart';
 import '../quran/quran_screen.dart';
 import '../tefsir/tefhimul_kuran_screen.dart';
 
@@ -55,10 +59,12 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   List<CustomTaskModel> _activeTasks = [];
   bool _notificationsScheduled = false;
+  List<String> _communityIds = [];
 
   @override
   void initState() {
     super.initState();
+    FirestoreNotificationService().start();
     _loadContent().then((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _checkRewards();
@@ -85,8 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (_currentUser != null) {
       // Kur'ân serisi
-      final kuranReward = await rewardService
-          .checkKuranStreakReward(_currentUser!.streakDays);
+      final kuranReward =
+          await rewardService.checkKuranStreakReward(_currentUser!.streakDays);
       if (!mounted) return;
       if (kuranReward != null) {
         await nav.push(MaterialPageRoute(
@@ -181,6 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final quranRead = await _userRepo.isQuranReadToday();
       final user = await _userRepo.getCurrentUser();
       final tasks = await _taskRepo.getActiveTasks();
+      final communityIds = await RoleService().getUserCommunityIds();
 
       if (mounted) {
         setState(() {
@@ -190,10 +197,14 @@ class _HomeScreenState extends State<HomeScreen> {
           _quranReadToday = quranRead;
           _currentUser = user;
           _activeTasks = tasks;
+          _communityIds = communityIds;
           _isLoading = false;
         });
 
-        if (!_notificationsScheduled) {
+        if (!_notificationsScheduled &&
+            esma != null &&
+            hadis != null &&
+            ayet != null) {
           _notificationsScheduled = true;
           _scheduleAllNotifications(esma, hadis, ayet);
         }
@@ -204,10 +215,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _scheduleAllNotifications(
-    EsmaModel esma,
-    HadisModel hadis,
-    AyetModel ayet,
+    EsmaModel? esma,
+    HadisModel? hadis,
+    AyetModel? ayet,
   ) async {
+    if (esma == null || hadis == null || ayet == null) return;
     await NotificationService().scheduleDailyNotifications(
       esmaArabic: esma.arabic,
       esmaMeaning: esma.meaning,
@@ -275,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildHomePage(),
             NotesScreen(key: _notesKey),
-            const CommunityJoinScreen(),
+            CommunityJoinScreen(onBack: () => _onTabChanged(0)),
             ProfileScreen(
               key: _profileKey,
               onTasksChanged: _refreshContent,
@@ -377,7 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Text(
                 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
                 style: GoogleFonts.amiri(
-                  color: AppColors.gold.withValues(alpha:0.4),
+                  color: AppColors.gold.withValues(alpha: 0.4),
                   fontSize: 14,
                 ),
               ),
@@ -397,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
           colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
         ),
         border: Border(
-          bottom: BorderSide(color: AppColors.gold.withValues(alpha:0.2)),
+          bottom: BorderSide(color: AppColors.gold.withValues(alpha: 0.2)),
         ),
       ),
       child: Column(
@@ -508,12 +520,13 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: const EdgeInsets.symmetric(vertical: 2),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color:
-              isActive ? AppColors.gold.withValues(alpha:0.15) : Colors.transparent,
+          color: isActive
+              ? AppColors.gold.withValues(alpha: 0.15)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isActive
-                ? AppColors.gold.withValues(alpha:0.4)
+                ? AppColors.gold.withValues(alpha: 0.4)
                 : Colors.transparent,
           ),
         ),
@@ -534,13 +547,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             if (badge != null)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.turquoise.withValues(alpha:0.2),
+                  color: AppColors.turquoise.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
-                  border:
-                      Border.all(color: AppColors.turquoise.withValues(alpha:0.4)),
+                  border: Border.all(
+                      color: AppColors.turquoise.withValues(alpha: 0.4)),
                 ),
                 child: Text(
                   badge,
@@ -593,8 +605,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (_) => EsmaDetailScreen(esma: _todayEsma!),
                       ),
                     ).then((_) => _profileKey.currentState?.reload()),
-                    onSave: () =>
-                        _contentRepo.saveContent('esma', _todayEsma!.id),
+                    onSave: () => _contentRepo
+                        .saveContent('esma', _todayEsma!.id)
+                        .catchError((_) {}),
                     onRemind: () {},
                   ),
                 const SizedBox(height: 16),
@@ -612,8 +625,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (_) => AyetDetailScreen(ayet: _todayAyet!),
                       ),
                     ).then((_) => _profileKey.currentState?.reload()),
-                    onSave: () =>
-                        _contentRepo.saveContent('ayet', _todayAyet!.id),
+                    onSave: () => _contentRepo
+                        .saveContent('ayet', _todayAyet!.id)
+                        .catchError((_) {}),
                     onRemind: () {},
                   ),
                 const SizedBox(height: 16),
@@ -632,26 +646,28 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (_) => HadisDetailScreen(hadis: _todayHadis!),
                       ),
                     ).then((_) => _profileKey.currentState?.reload()),
-                    onSave: () =>
-                        _contentRepo.saveContent('hadis', _todayHadis!.id),
+                    onSave: () => _contentRepo
+                        .saveContent('hadis', _todayHadis!.id)
+                        .catchError((_) {}),
                     onRemind: () {},
                   ),
                 const SizedBox(height: 16),
                 QuranTrackerCard(
                   isRead: _quranReadToday,
                   onRead: () async {
-                    final today =
-                        DateTime.now().toIso8601String().substring(0, 10);
-                    await _userRepo.markQuranRead(today);
-                    // Kuran okundu → saatlik hatırlatıcıları iptal et
-                    await NotificationService().cancelHourlyQuranReminders();
-                    final updatedUser = await _userRepo.getCurrentUser();
-                    if (mounted) {
-                      setState(() {
-                        _quranReadToday = true;
-                        _currentUser = updatedUser;
-                      });
-                    }
+                    try {
+                      final today =
+                          DateTime.now().toIso8601String().substring(0, 10);
+                      await _userRepo.markQuranRead(today);
+                      await NotificationService().cancelHourlyQuranReminders();
+                      final updatedUser = await _userRepo.getCurrentUser();
+                      if (mounted) {
+                        setState(() {
+                          _quranReadToday = true;
+                          _currentUser = updatedUser;
+                        });
+                      }
+                    } catch (_) {}
                   },
                 ),
                 ..._activeTasks.map((task) => Padding(
@@ -659,12 +675,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: CustomTaskCard(
                         task: task,
                         onCompleted: () async {
-                          await _taskRepo.markTaskCompleted(task.id);
-                          final tasks = await _taskRepo.getActiveTasks();
-                          if (mounted) setState(() => _activeTasks = tasks);
+                          try {
+                            await _taskRepo.markTaskCompleted(task.id);
+                            final tasks = await _taskRepo.getActiveTasks();
+                            if (mounted) setState(() => _activeTasks = tasks);
+                          } catch (_) {}
                         },
                       ),
                     )),
+                if (_communityIds.isNotEmpty) _buildCommunityTasksSection(),
                 const SizedBox(height: 16),
                 if (_currentUser != null) StreakCard(user: _currentUser!),
                 const SizedBox(height: 100),
@@ -676,6 +695,37 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── TOPLULUK GÖREVLERİ ────────────────────────────────────────────────────
+
+  Widget _buildCommunityTasksSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Row(
+            children: [
+              const Icon(Icons.group_outlined,
+                  color: AppColors.turquoise, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                'TOPLULUK GÖREVLERİ',
+                style: GoogleFonts.notoSans(
+                  color: AppColors.turquoise,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ..._communityIds.map((cid) => _CommunityTaskList(communityId: cid)),
+      ],
+    );
+  }
+
   // ── ALT NAV ───────────────────────────────────────────────────────────────
 
   Widget _buildBottomNav(bool isDark) {
@@ -684,7 +734,7 @@ class _HomeScreenState extends State<HomeScreen> {
         color: isDark ? const Color(0xFF1A2035) : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: AppColors.gold.withValues(alpha:0.15),
+            color: AppColors.gold.withValues(alpha: 0.15),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -717,6 +767,139 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Tek bir topluluğun bekleyen görevlerini listeler ─────────────────────────
+
+class _CommunityTaskList extends StatelessWidget {
+  final String communityId;
+  const _CommunityTaskList({required this.communityId});
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = LocalStorage().userId;
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('communities')
+          .doc(communityId)
+          .collection('tasks')
+          .orderBy('deadline')
+          .snapshots(),
+      builder: (_, snap) {
+        final docs = snap.data?.docs ?? [];
+        final pending = docs.where((d) {
+          final completions =
+              Map<String, dynamic>.from(d['completions'] as Map? ?? {});
+          return !completions.containsKey(uid);
+        }).toList();
+
+        if (pending.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          children: pending.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            final taskId = doc.id;
+            final title = data['title'] as String? ?? '';
+            final desc = data['description'] as String? ?? '';
+            final deadline = (data['deadline'] as Timestamp?)?.toDate();
+            final isOverdue =
+                deadline != null && deadline.isBefore(DateTime.now());
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A2035),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isOverdue
+                      ? Colors.red.withValues(alpha: 0.4)
+                      : AppColors.turquoise.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.notoSans(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        if (desc.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(desc,
+                              style: GoogleFonts.notoSans(
+                                  color: Colors.white54, fontSize: 12)),
+                        ],
+                        if (deadline != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(Icons.calendar_today,
+                                  size: 11,
+                                  color:
+                                      isOverdue ? Colors.red : Colors.white38),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Son: ${deadline.day}.${deadline.month}.${deadline.year}',
+                                style: GoogleFonts.notoSans(
+                                  color:
+                                      isOverdue ? Colors.red : Colors.white38,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      if (uid == null) return;
+                      await FirebaseFirestore.instance
+                          .collection('communities')
+                          .doc(communityId)
+                          .collection('tasks')
+                          .doc(taskId)
+                          .update({
+                        'completions.$uid': FieldValue.serverTimestamp(),
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.turquoise.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color:
+                                AppColors.turquoise.withValues(alpha: 0.4)),
+                      ),
+                      child: Text(
+                        'Tamamladım',
+                        style: GoogleFonts.notoSans(
+                          color: AppColors.turquoiseLight,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 }

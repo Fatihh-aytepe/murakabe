@@ -2,6 +2,7 @@ import 'package:uuid/uuid.dart';
 import '../local/database_helper.dart';
 import '../local/local_storage.dart';
 import '../models/badge_model.dart';
+import '../remote/firebase_service.dart';
 
 class BadgeRepository {
   static final BadgeRepository _instance = BadgeRepository._();
@@ -10,6 +11,7 @@ class BadgeRepository {
 
   final _db = DatabaseHelper();
   final _storage = LocalStorage();
+  final _firebase = FirebaseService();
 
   Future<BadgeModel> saveBadge(String badgeId) async {
     final badge = BadgeModel(
@@ -18,6 +20,12 @@ class BadgeRepository {
       earnedAt: DateTime.now(),
     );
     await _db.insert('badges', badge.toMap());
+    final uid = _storage.userId;
+    if (uid != null) {
+      try {
+        await _firebase.saveBadgeRecord(uid, badge.toMap());
+      } catch (_) {}
+    }
     return badge;
   }
 

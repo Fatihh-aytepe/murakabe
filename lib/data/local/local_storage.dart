@@ -191,4 +191,93 @@ class LocalStorage {
   // Altın çerçeve (1 yıllık özel özellik)
   bool get goldenFrameUnlocked => _prefs.getBool('goldenFrame') ?? false;
   Future<void> setGoldenFrameUnlocked() => _prefs.setBool('goldenFrame', true);
+
+  // ── Firestore yedekleme ───────────────────────────────────────────────────
+  // Cihaz yerel verilerinin Firestore'a gönderilecek haritası.
+  // Yeni alan eklendiğinde buraya ve restoreFromMap'e de ekle.
+  Map<String, dynamic> toSyncMap() => {
+        'esmaStreak': esmaStreak,
+        'lastEsmaDate': lastEsmaDate ?? '',
+        'lastRewardedEsmaStreak': lastRewardedEsmaStreak,
+        'hadisStreak': hadisStreak,
+        'lastHadisDate': lastHadisDate ?? '',
+        'lastRewardedHadisStreak': lastRewardedHadisStreak,
+        'lastRewardedStreak': lastRewardedStreak,
+        'lastRewardedKuranBadge': lastRewardedKuranBadge,
+        'lastRewardedEsmaBadge': lastRewardedEsmaBadge,
+        'lastRewardedHadisBadge': lastRewardedHadisBadge,
+        'lastRewardedKombineBadge': lastRewardedKombineBadge,
+        'lastRewardedTahajjudBadge': lastRewardedTahajjudBadge,
+        'veteranBadgeAwarded': veteranBadgeAwarded,
+        'isFirstOpen': isFirstOpen,
+        'goldenFrameUnlocked': goldenFrameUnlocked,
+        'tahajjudEnabled': tahajjudEnabled,
+        'isDarkMode': isDarkMode,
+        'displayedBadgeId': displayedBadgeId ?? '',
+        'lastTahajjudMonthlyCard': lastTahajjudMonthlyCard ?? '',
+        'lastRewardedStreak_v2': lastRewardedStreak,
+      };
+
+  // Firestore'dan gelen Map ile SharedPreferences'ı geri yükler.
+  // Mevcut değerlerin üzerine yalnızca Firestore'daki daha büyük değerler yazılır
+  // (geriye doğru veri kaybını önlemek için).
+  Future<void> restoreFromMap(Map<String, dynamic> data) async {
+    Future<void> bigger(int current, dynamic raw,
+        Future<void> Function(int) setter) async {
+      final v = raw is int ? raw : (raw as num?)?.toInt();
+      if (v != null && v > current) await setter(v);
+    }
+
+    await bigger(esmaStreak, data['esmaStreak'], setEsmaStreak);
+    await bigger(hadisStreak, data['hadisStreak'], setHadisStreak);
+    await bigger(lastRewardedEsmaStreak, data['lastRewardedEsmaStreak'],
+        setLastRewardedEsmaStreak);
+    await bigger(lastRewardedHadisStreak, data['lastRewardedHadisStreak'],
+        setLastRewardedHadisStreak);
+    await bigger(lastRewardedStreak, data['lastRewardedStreak'],
+        setLastRewardedStreak);
+    await bigger(lastRewardedKuranBadge, data['lastRewardedKuranBadge'],
+        setLastRewardedKuranBadge);
+    await bigger(lastRewardedEsmaBadge, data['lastRewardedEsmaBadge'],
+        setLastRewardedEsmaBadge);
+    await bigger(lastRewardedHadisBadge, data['lastRewardedHadisBadge'],
+        setLastRewardedHadisBadge);
+    await bigger(lastRewardedKombineBadge, data['lastRewardedKombineBadge'],
+        setLastRewardedKombineBadge);
+    await bigger(lastRewardedTahajjudBadge, data['lastRewardedTahajjudBadge'],
+        setLastRewardedTahajjudBadge);
+
+    final esmaDate = data['lastEsmaDate'] as String? ?? '';
+    if (esmaDate.isNotEmpty && (lastEsmaDate == null || esmaDate.compareTo(lastEsmaDate!) > 0)) {
+      await setLastEsmaDate(esmaDate);
+    }
+    final hadisDate = data['lastHadisDate'] as String? ?? '';
+    if (hadisDate.isNotEmpty && (lastHadisDate == null || hadisDate.compareTo(lastHadisDate!) > 0)) {
+      await setLastHadisDate(hadisDate);
+    }
+
+    if (data['veteranBadgeAwarded'] == true && !veteranBadgeAwarded) {
+      await setVeteranBadgeAwarded();
+    }
+    if (data['isFirstOpen'] == false && isFirstOpen) {
+      await setFirstOpenDone();
+    }
+    if (data['goldenFrameUnlocked'] == true && !goldenFrameUnlocked) {
+      await setGoldenFrameUnlocked();
+    }
+    if (data['tahajjudEnabled'] is bool) {
+      await setTahajjudEnabled(data['tahajjudEnabled'] as bool);
+    }
+    if (data['isDarkMode'] is bool) {
+      await setDarkMode(data['isDarkMode'] as bool);
+    }
+    final badge = data['displayedBadgeId'] as String? ?? '';
+    if (badge.isNotEmpty && displayedBadgeId == null) {
+      await setDisplayedBadgeId(badge);
+    }
+    final monthly = data['lastTahajjudMonthlyCard'] as String? ?? '';
+    if (monthly.isNotEmpty && lastTahajjudMonthlyCard == null) {
+      await setLastTahajjudMonthlyCard(monthly);
+    }
+  }
 }

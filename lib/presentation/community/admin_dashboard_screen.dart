@@ -1,13 +1,17 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/role_service.dart';
+import '../../../data/local/local_storage.dart';
 import 'community_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
-  const AdminDashboardScreen({super.key});
+  final String? communityId;
+  const AdminDashboardScreen({super.key, this.communityId});
 
   @override
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
@@ -17,6 +21,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     with SingleTickerProviderStateMixin {
   final _roleService = RoleService();
   late TabController _tabController;
+  StreamSubscription<QuerySnapshot>? _communitySub;
   String? _communityId;
   bool _isLoading = true;
 
@@ -29,12 +34,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
   @override
   void dispose() {
+    _communitySub?.cancel();
     _tabController.dispose();
     super.dispose();
   }
 
   Future<void> _loadCommunity() async {
-    _roleService.getAdminCommunities().listen((snap) {
+    if (widget.communityId != null) {
+      if (mounted) {
+        setState(() {
+          _communityId = widget.communityId;
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+    _communitySub = _roleService.getAdminCommunities().listen((snap) {
       if (snap.docs.isNotEmpty && mounted) {
         setState(() {
           _communityId = snap.docs.first.id;
@@ -240,6 +255,101 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
+  Future<void> _shareViaWhatsApp(String code) async {
+    final text = Uri.encodeComponent(
+        'Murakabe uygulamasına katıl! Topluluk davet kodun: $code\n'
+        'Uygulamayı indir ve Topluluk > Topluluğa Katıl bölümüne bu kodu gir.');
+    final uri = Uri.parse('https://wa.me/?text=$text');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _showKickDialog(String targetUid, String name) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2035),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Üyeyi At',
+            style: GoogleFonts.playfairDisplay(
+                color: Colors.red, fontWeight: FontWeight.bold)),
+        content: Text('$name adlı üye topluluktan atılacak. Emin misiniz?',
+            style: GoogleFonts.notoSans(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child:
+                Text('Vazgeç', style: GoogleFonts.notoSans(color: Colors.white38)),
+          ),
+          ElevatedButton(
+            style:
+                ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('At', style: GoogleFonts.notoSans(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || _communityId == null) return;
+    try {
+      await _roleService.kickMember(_communityId!, targetUid);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$name topluluktan atıldı')));
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _showPersonalNotificationDialog(
+      String targetUid, String name) async {
+    final msgCtrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2035),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('$name\'a Mesaj Gönder',
+            style: GoogleFonts.playfairDisplay(
+                color: AppColors.gold, fontWeight: FontWeight.bold)),
+        content: _dialogField(msgCtrl, 'Mesajınızı yazın...', Icons.message,
+            maxLines: 3),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child:
+                Text('İptal', style: GoogleFonts.notoSans(color: Colors.white38)),
+          ),
+          ElevatedButton(
+            style:
+                ElevatedButton.styleFrom(backgroundColor: AppColors.gold),
+            onPressed: () => Navigator.pop(context, true),
+            child:
+                Text('Gönder', style: GoogleFonts.notoSans(color: Colors.black)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || msgCtrl.text.trim().isEmpty) return;
+    try {
+      final senderDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(LocalStorage().userId)
+          .get();
+      final senderName =
+          senderDoc.data()?['nameSurname'] as String? ?? 'Admin';
+      await _roleService.sendPersonalNotification(
+        targetUid: targetUid,
+        message: msgCtrl.text.trim(),
+        senderName: senderName,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Mesaj gönderildi')));
+      }
+    } catch (_) {}
+  }
+
   Widget _dialogField(
     TextEditingController ctrl,
     String hint,
@@ -397,7 +507,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
                     ),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.gold.withOpacity(0.3)),
+                    border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,39 +528,63 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         ],
                       ),
                       const SizedBox(height: 12),
-                      GestureDetector(
-                        onTap: () {
-                          Clipboard.setData(ClipboardData(text: inviteCode));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Davet kodu kopyalandı')),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.07),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.copy,
-                                  color: AppColors.turquoise, size: 14),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Davet Kodu: $inviteCode',
-                                style: GoogleFonts.notoSans(
-                                  color: AppColors.turquoiseLight,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: inviteCode));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('Davet kodu kopyalandı')),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.07),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.copy,
+                                        color: AppColors.turquoise, size: 14),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Davet Kodu: $inviteCode',
+                                      style: GoogleFonts.notoSans(
+                                        color: AppColors.turquoiseLight,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => _shareViaWhatsApp(inviteCode),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF25D366)
+                                    .withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: const Color(0xFF25D366)
+                                        .withValues(alpha: 0.4)),
+                              ),
+                              child: const Icon(Icons.share,
+                                  color: Color(0xFF25D366), size: 18),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -529,6 +663,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 final quranDays = userData['quranReadDays'] as int? ?? 0;
                 final streak = userData['streakDays'] as int? ?? 0;
 
+                final isAdmin = role == 'admin';
                 return Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(14),
@@ -536,87 +671,142 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     color: const Color(0xFF1A2035),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: role == 'admin'
-                          ? AppColors.gold.withOpacity(0.4)
+                      color: isAdmin
+                          ? AppColors.gold.withValues(alpha: 0.4)
                           : Colors.white12,
                     ),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Avatar
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: role == 'admin'
-                                ? [AppColors.gold, const Color(0xFFB8860B)]
-                                : [
-                                    AppColors.turquoise,
-                                    const Color(0xFF207080)
-                                  ],
+                      Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: isAdmin
+                                    ? [AppColors.gold, const Color(0xFFB8860B)]
+                                    : [
+                                        AppColors.turquoise,
+                                        const Color(0xFF207080)
+                                      ],
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                style: GoogleFonts.playfairDisplay(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16),
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            name.isNotEmpty ? name[0].toUpperCase() : '?',
-                            style: GoogleFonts.playfairDisplay(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(name,
-                                    style: GoogleFonts.notoSans(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600)),
-                                if (role == 'admin') ...[
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.gold.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text('Admin',
+                                Row(
+                                  children: [
+                                    Text(name,
                                         style: GoogleFonts.notoSans(
-                                            color: AppColors.gold,
-                                            fontSize: 10)),
-                                  ),
-                                ],
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600)),
+                                    if (isAdmin) ...[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.gold
+                                              .withValues(alpha: 0.2),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                        ),
+                                        child: Text('Admin',
+                                            style: GoogleFonts.notoSans(
+                                                color: AppColors.gold,
+                                                fontSize: 10)),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                Row(
+                                  children: [
+                                    const Text('📖',
+                                        style: TextStyle(fontSize: 11)),
+                                    const SizedBox(width: 3),
+                                    Text('$quranDays gün',
+                                        style: GoogleFonts.notoSans(
+                                            color: Colors.white54,
+                                            fontSize: 11)),
+                                    const SizedBox(width: 10),
+                                    const Text('🔥',
+                                        style: TextStyle(fontSize: 11)),
+                                    const SizedBox(width: 3),
+                                    Text('$streak seri',
+                                        style: GoogleFonts.notoSans(
+                                            color: Colors.white54,
+                                            fontSize: 11)),
+                                  ],
+                                ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Text('📖',
-                                    style: TextStyle(fontSize: 11)),
-                                const SizedBox(width: 3),
-                                Text('$quranDays gün',
+                          ),
+                        ],
+                      ),
+                      if (!isAdmin) ...[
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                icon: const Icon(Icons.notifications_outlined,
+                                    size: 14, color: AppColors.turquoise),
+                                label: Text('Bildirim',
                                     style: GoogleFonts.notoSans(
-                                        color: Colors.white54, fontSize: 11)),
-                                const SizedBox(width: 10),
-                                const Text('🔥',
-                                    style: TextStyle(fontSize: 11)),
-                                const SizedBox(width: 3),
-                                Text('$streak seri',
+                                        color: AppColors.turquoise,
+                                        fontSize: 12)),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                      color: AppColors.turquoise
+                                          .withValues(alpha: 0.5)),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 6),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                ),
+                                onPressed: () =>
+                                    _showPersonalNotificationDialog(uid, name),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                icon: const Icon(Icons.person_remove_outlined,
+                                    size: 14, color: Colors.red),
+                                label: Text('At',
                                     style: GoogleFonts.notoSans(
-                                        color: Colors.white54, fontSize: 11)),
-                              ],
+                                        color: Colors.red, fontSize: 12)),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                      color: Colors.red.withValues(alpha: 0.5)),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 6),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                ),
+                                onPressed: () => _showKickDialog(uid, name),
+                              ),
                             ),
                           ],
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 );
@@ -706,8 +896,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: isOverdue
-                          ? Colors.red.withOpacity(0.3)
-                          : AppColors.gold.withOpacity(0.15),
+                          ? Colors.red.withValues(alpha: 0.3)
+                          : AppColors.gold.withValues(alpha: 0.15),
                     ),
                   ),
                   child: Column(
@@ -830,11 +1020,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                       horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF2E7D32)
-                                        .withOpacity(0.2),
+                                        .withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                         color: const Color(0xFF4CAF50)
-                                            .withOpacity(0.4)),
+                                            .withValues(alpha: 0.4)),
                                   ),
                                   child: Text(
                                     '✓ $name',
@@ -873,14 +1063,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         decoration: BoxDecoration(
           color: const Color(0xFF1A2035),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 22),
@@ -901,7 +1091,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: color.withOpacity(0.6)),
+            Icon(Icons.chevron_right, color: color.withValues(alpha: 0.6)),
           ],
         ),
       ),

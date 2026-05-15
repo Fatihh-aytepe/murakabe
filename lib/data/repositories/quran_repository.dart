@@ -101,12 +101,6 @@ class Qari {
 
 const List<Qari> kQariler = [
   Qari(
-    id: 'abdulbasit',
-    name: 'Abdulbasit Abdussamed',
-    identifier: 'Abdul_Basit_Murattal_64kbps',
-    islamicNetId: 'ar.abdulbasitmurattal',
-  ),
-  Qari(
     id: 'alafasy',
     name: 'Mishary Raşid Alafasi',
     identifier: 'Mishary_Rashid_Al-Afasy_128kbps',
@@ -117,12 +111,6 @@ const List<Qari> kQariler = [
     name: 'Abdurrahman Al-Sudais',
     identifier: 'Abdurrahmaan_As-Sudais_192kbps',
     islamicNetId: 'ar.sudais',
-  ),
-  Qari(
-    id: 'muaiqly',
-    name: 'Mahir al Muaiqly',
-    identifier: 'Maher_Al_Muaiqly_64kbps',
-    islamicNetId: 'ar.mahermuaiqly128',
   ),
   Qari(
     id: 'husary',

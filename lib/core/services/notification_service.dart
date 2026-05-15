@@ -102,6 +102,14 @@ class NotificationService {
         importance: Importance.high,
       ),
     );
+    await androidPlugin?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'community_channel',
+        'Topluluk Bildirimleri',
+        description: 'Topluluk katılım ve admin başvuru bildirimleri',
+        importance: Importance.high,
+      ),
+    );
   }
 
   void _onNotificationTapped(NotificationResponse response) {}

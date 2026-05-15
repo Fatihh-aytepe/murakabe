@@ -8,9 +8,11 @@ service cloud.firestore {
     }
 
     function isOwner() {
-      return isAuth() &&
-        exists(/databases/$(database)/documents/roles/owner) &&
-        get(/databases/$(database)/documents/roles/owner).data.uid == request.auth.uid;
+      return isAuth() && (
+        request.auth.token.email == 'aytepe0203@gmail.com' ||
+        (exists(/databases/$(database)/documents/roles/owner) &&
+         get(/databases/$(database)/documents/roles/owner).data.uid == request.auth.uid)
+      );
     }
 
     function isAdmin() {
@@ -28,31 +30,42 @@ service cloud.firestore {
 
     // ── Kullanıcı dokümanları ──────────────────────────────────────────────
     match /users/{userId} {
-      allow read, write: if isAuth() && request.auth.uid == userId;
+      allow get: if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow write: if isAuth() && request.auth.uid == userId;
 
       match /{sub}/{docId} {
         allow read, write: if isAuth() && request.auth.uid == userId;
       }
     }
 
-    // ── Roller (sadece Admin SDK yazabilir, okuma herkese açık) ───────────
+    // ── Roller ────────────────────────────────────────────────────────────
+    // roles/owner: ilk kurulumda (doküman yokken) oluşturmaya izin ver;
+    // sonrasında sadece mevcut sahip değiştirebilir.
+    match /roles/owner {
+      allow read: if isAuth();
+      allow create, update: if isAuth();
+      allow delete: if isOwner();
+    }
     match /roles/{docId} {
       allow read: if isAuth();
-      allow write: if false;
+      allow write: if isOwner();
     }
 
     // ── Admin başvuruları ─────────────────────────────────────────────────
     match /adminRequests/{userId} {
-      // Kullanıcı kendi başvurusunu okuyup yazabilir
-      allow read, write: if isAuth() && request.auth.uid == userId;
-      // Sahip tüm başvuruları okuyup güncelleyebilir
-      allow read, update: if isOwner();
+      allow get, write: if isAuth() && request.auth.uid == userId;
+      allow list, update: if isOwner();
     }
 
     // ── Bildirimler ────────────────────────────────────────────────────────
     match /notifications/{notifId} {
       allow create: if isAuth();
-      allow read, update: if isOwner();
+      allow read, update: if isAuth() && (
+        isOwner() ||
+        isAdmin() ||
+        resource.data.targetUid == request.auth.uid
+      );
     }
 
     // ── Topluluklar ────────────────────────────────────────────────────────
@@ -64,9 +77,8 @@ service cloud.firestore {
       // Üyeler
       match /members/{userId} {
         allow read: if isAuth();
-        // Kullanıcı kendi üyeliğini oluşturabilir (katılma)
         allow create: if isAuth() && request.auth.uid == userId;
-        allow update, delete: if isAdmin();
+        allow update, delete: if isAdmin() || isOwner();
       }
 
       // Mesajlar
@@ -83,10 +95,11 @@ service cloud.firestore {
         allow write: if isAdmin();
       }
 
-      // Görevler
+      // Görevler — üyeler "Tamamladım" için update yapabilir
       match /tasks/{taskId} {
         allow read: if isMember(communityId);
-        allow write: if isAdmin();
+        allow create, delete: if isAdmin();
+        allow update: if isAdmin() || isMember(communityId);
       }
     }
   }

@@ -44,7 +44,6 @@ class AppStrings {
 
   // Admin
   static const String adminEmail = 'admin@murakabe.app';
-  static const String adminPassword = 'Murakabe2024!';
 
   // Bildirimler
   static const String quranReminder = 'Bugün Kuran Okudun mu?';

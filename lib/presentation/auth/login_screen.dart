@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -262,15 +263,38 @@ class _LoginScreenState extends State<LoginScreen>
   // ── Giriş ─────────────────────────────────────────────────────────────────
 
   Future<void> _handleLogin() async {
-    if (_showAdminFields &&
-        _adminEmailController.text == AppStrings.adminEmail &&
-        _adminPassController.text == AppStrings.adminPassword) {
-      await LocalStorage().setAdmin(true);
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AdminPanelScreen()),
-      );
+    if (_showAdminFields) {
+      setState(() => _isLoading = true);
+      try {
+        await FirebaseService().signInWithEmail(
+          email: _adminEmailController.text.trim(),
+          password: _adminPassController.text,
+        );
+        final user = FirebaseService().currentAuthUser;
+        if (user?.email == AppStrings.adminEmail) {
+          await LocalStorage().setAdmin(true);
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminPanelScreen()),
+          );
+        } else {
+          await FirebaseService().signOut();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Admin yetkisi yok.')),
+            );
+          }
+        }
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Admin girişi başarısız.')),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
       return;
     }
 
@@ -300,6 +324,21 @@ class _LoginScreenState extends State<LoginScreen>
         return;
       }
 
+      // Hesap Firestore'da silinmiş mi? (ağ hatası durumunda geçilir)
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(authUser.uid)
+            .get();
+        if (!doc.exists) {
+          await FirebaseService().signOut();
+          throw Exception('Bu hesap silinmiştir');
+        }
+      } on Exception catch (e) {
+        if (e.toString().contains('silinmiştir')) rethrow;
+        // Ağ hatası gibi diğer durumlarda giriş engellemiyoruz
+      }
+
       // Her girişte userId ve kayıtlı hesap listesini güncelle
       await LocalStorage().setUserId(authUser.uid);
       await LocalStorage().setUserRegistered(true);
@@ -322,6 +361,11 @@ class _LoginScreenState extends State<LoginScreen>
       final restored =
           await UserRepository().restoreFromFirestore(authUser.uid);
       if (restored) {
+        // Streak, rozet ve tercih verilerini de Firestore'dan geri yükle
+        try {
+          final prefs = await FirebaseService().getUserPrefs(authUser.uid);
+          if (prefs != null) await LocalStorage().restoreFromMap(prefs);
+        } catch (_) {}
         if (!mounted) return;
         navigator.pushReplacement(
             MaterialPageRoute(builder: (_) => const HomeScreen()));
