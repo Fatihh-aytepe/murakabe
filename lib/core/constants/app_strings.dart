@@ -43,7 +43,7 @@ class AppStrings {
   static const String tahajjud = 'Teheccüd Namazlarım';
 
   // Admin
-  static const String adminEmail = 'admin@murakabe.app';
+  static const String adminEmail = 'yavuzbera02@gmail.com';
 
   // Bildirimler
   static const String quranReminder = 'Bugün Kuran Okudun mu?';
