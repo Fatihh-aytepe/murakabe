@@ -8,7 +8,7 @@ import '../../../data/local/database_helper.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/remote/firebase_service.dart';
 import '../home/home_screen.dart';
-import '../community/owner_panel_screen.dart';
+import '../community/owner_panel_screen.dart' show CommunityOwnerPanelScreen;
 import '../community/admin_dashboard_screen.dart';
 
 /// Güncelleme sonrası eski kullanıcıları Firebase Auth'a bağlayan ekran.
@@ -169,7 +169,7 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
       Widget target;
       switch (role) {
         case UserRole.owner:
-          target = const OwnerPanelScreen();
+          target = const CommunityOwnerPanelScreen();
           break;
         case UserRole.admin:
           target = const AdminDashboardScreen();

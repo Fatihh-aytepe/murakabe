@@ -23,6 +23,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   late TabController _tabController;
   StreamSubscription<QuerySnapshot>? _communitySub;
   String? _communityId;
+  List<String> _adminCommunityIds = [];
   bool _isLoading = true;
 
   @override
@@ -44,6 +45,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       if (mounted) {
         setState(() {
           _communityId = widget.communityId;
+          _adminCommunityIds = [widget.communityId!];
           _isLoading = false;
         });
       }
@@ -51,14 +53,116 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     }
     _communitySub = _roleService.getAdminCommunities().listen((snap) {
       if (snap.docs.isNotEmpty && mounted) {
+        final ids = snap.docs.map((d) => d.id).toList();
         setState(() {
-          _communityId = snap.docs.first.id;
+          _adminCommunityIds = ids;
+          _communityId ??= ids.first;
           _isLoading = false;
         });
       } else if (mounted) {
         setState(() => _isLoading = false);
       }
     });
+  }
+
+  // ── Topluluk seçici ───────────────────────────────────────────────────────
+
+  Future<void> _showCommunitySwitcher() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1A2035),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Topluluk Seç',
+              style: GoogleFonts.playfairDisplay(
+                color: AppColors.gold,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ..._adminCommunityIds.map((id) {
+              final isSelected = id == _communityId;
+              return StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('communities')
+                    .doc(id)
+                    .snapshots(),
+                builder: (_, snap) {
+                  final name = (snap.data?.data()
+                          as Map<String, dynamic>?)?['name'] as String? ??
+                      'Topluluk';
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _communityId = id);
+                      Navigator.pop(ctx);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.gold.withValues(alpha: 0.15)
+                            : Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.gold.withValues(alpha: 0.5)
+                              : Colors.white12,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.group_outlined,
+                              color: AppColors.turquoise, size: 18),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: GoogleFonts.notoSans(
+                                color: isSelected
+                                    ? AppColors.gold
+                                    : Colors.white,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                          if (isSelected)
+                            const Icon(Icons.check_circle,
+                                color: AppColors.gold, size: 18),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            }),
+          ],
+        ),
+      ),
+    );
   }
 
   // ── Dialoglar ─────────────────────────────────────────────────────────────
@@ -420,6 +524,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       ],
                     ),
                   ),
+                  // Topluluk değiştir (birden fazla varsa)
+                  if (_adminCommunityIds.length > 1)
+                    IconButton(
+                      icon: const Icon(Icons.swap_horiz,
+                          color: AppColors.gold),
+                      tooltip: 'Topluluk Değiştir',
+                      onPressed: _showCommunitySwitcher,
+                    ),
                   // Kanala git butonu
                   if (_communityId != null)
                     IconButton(

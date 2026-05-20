@@ -1,27 +1,43 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/role_service.dart';
 import '../../data/local/local_storage.dart';
+import '../../data/remote/firebase_service.dart';
 import '../auth/login_screen.dart';
+import 'user_detail_screen.dart';
 
-class AdminPanelScreen extends StatefulWidget {
-  const AdminPanelScreen({super.key});
+class OwnerPanelScreen extends StatefulWidget {
+  const OwnerPanelScreen({super.key});
 
   @override
-  State<AdminPanelScreen> createState() => _AdminPanelScreenState();
+  State<OwnerPanelScreen> createState() => _OwnerPanelScreenState();
 }
 
-class _AdminPanelScreenState extends State<AdminPanelScreen>
+class _OwnerPanelScreenState extends State<OwnerPanelScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _searchQuery = '';
+
+  Stream<QuerySnapshot>? _usersStream;
+  Stream<QuerySnapshot>? _requestsStream;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _initStreams();
+  }
+
+  Future<void> _initStreams() async {
+    await FirebaseAuth.instance.currentUser?.getIdToken(true);
+    if (!mounted) return;
+    setState(() {
+      _usersStream = FirebaseFirestore.instance.collection('users').snapshots();
+      _requestsStream = RoleService().getPendingAdminRequests();
+    });
   }
 
   @override
@@ -52,7 +68,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 tabs: [
                   const Tab(text: 'Kullanıcılar'),
                   StreamBuilder<QuerySnapshot>(
-                    stream: RoleService().getPendingAdminRequests(),
+                    stream: _requestsStream,
                     builder: (_, snap) {
                       final count = snap.data?.docs.length ?? 0;
                       return Tab(
@@ -136,13 +152,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Admin Paneli',
+                'Sahip Paneli',
                 style: GoogleFonts.playfairDisplay(
                     color: AppColors.gold,
                     fontSize: 20,
                     fontWeight: FontWeight.bold),
               ),
-              Text('Murakabe Yönetim',
+              Text('Tüm Kullanıcılar ve Başvurular',
                   style: GoogleFonts.notoSans(
                       color: Colors.white38, fontSize: 12)),
             ],
@@ -151,6 +167,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white54),
             onPressed: () async {
+              await FirebaseService().signOut();
               await LocalStorage().setAdmin(false);
               if (!mounted) return;
               Navigator.pushReplacement(context,
@@ -197,7 +214,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       color: const Color(0xFF0F1624),
       child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('users').snapshots(),
+        stream: _usersStream,
         builder: (_, snap) {
           final count = snap.data?.docs.length ?? 0;
           return Row(
@@ -225,12 +242,26 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   }
 
   Widget _buildAdminRequests() {
+    if (_requestsStream == null) {
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.gold));
+    }
     return StreamBuilder<QuerySnapshot>(
-      stream: RoleService().getPendingAdminRequests(),
+      stream: _requestsStream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
           return const Center(
               child: CircularProgressIndicator(color: AppColors.gold));
+        }
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Yüklenemedi:\n${snapshot.error}',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.notoSans(color: Colors.red, fontSize: 13),
+            ),
+          );
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(
@@ -475,9 +506,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('İşlem başarısız'),
-              backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(
+                'Hata: ${e.toString().replaceAll("Exception: ", "")}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -485,11 +518,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
   Widget _buildUserList() {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .snapshots(),
+      stream: _usersStream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
           return const Center(
               child: CircularProgressIndicator(color: AppColors.gold));
         }
@@ -517,14 +549,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           itemCount: docs.length,
           itemBuilder: (_, i) {
             final data = docs[i].data() as Map<String, dynamic>;
-            return _buildUserCard(data);
+            return _buildUserCard(docs[i].id, data);
           },
         );
       },
     );
   }
 
-  Widget _buildUserCard(Map<String, dynamic> data) {
+  Widget _buildUserCard(String uid, Map<String, dynamic> data) {
     final name = data['nameSurname'] ?? 'İsimsiz';
     final email = data['email'] ?? '';
     final phone = data['phone'] ?? '';
@@ -535,7 +567,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         : DateTime.now();
 
     return GestureDetector(
-      onTap: () => _showUserDetail(data),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => UserDetailScreen(
+            uid: uid,
+            name: name.toString(),
+          ),
+        ),
+      ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -628,152 +668,4 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     );
   }
 
-  void _showUserDetail(Map<String, dynamic> data) {
-    final missedRaw = data['missedQuranDays'];
-    final missed = missedRaw is List ? List<String>.from(missedRaw) : <String>[];
-    final tahajjudEnabled = data['tahajjudAlarmEnabled'] ?? false;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.75,
-        maxChildSize: 0.95,
-        builder: (_, controller) => Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF1A2035),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: ListView(
-            controller: controller,
-            padding: const EdgeInsets.all(24),
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                          colors: [AppColors.gold, AppColors.turquoise]),
-                    ),
-                    child: Center(
-                      child: Text(
-                        () {
-                          final n = (data['nameSurname'] ?? '').toString();
-                          return n.isNotEmpty ? n[0].toUpperCase() : '?';
-                        }(),
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(data['nameSurname'] ?? 'İsimsiz',
-                          style: GoogleFonts.playfairDisplay(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold)),
-                      Text(data['email'] ?? '',
-                          style: const TextStyle(
-                              color: Colors.white54, fontSize: 13)),
-                      Text(data['phone'] ?? '',
-                          style: const TextStyle(
-                              color: Colors.white38, fontSize: 12)),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 16),
-              _detailRow('Kuran Okuma Günü',
-                  '${data['quranReadDays'] ?? 0} gün', AppColors.turquoise),
-              _detailRow(
-                  'Teheccüd Alarmı',
-                  tahajjudEnabled ? 'Aktif ✓' : 'Kapalı',
-                  tahajjudEnabled ? Colors.green : Colors.white38),
-              const SizedBox(height: 16),
-              if (missed.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 18),
-                      SizedBox(width: 8),
-                      Text('Tüm günler tamamlandı',
-                          style: TextStyle(color: Colors.green, fontSize: 13)),
-                    ],
-                  ),
-                )
-              else ...[
-                Text('Eksik Günler (${missed.length})',
-                    style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14)),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: missed
-                      .map((d) => Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(d,
-                                style: const TextStyle(
-                                    color: Colors.red, fontSize: 12)),
-                          ))
-                      .toList(),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _detailRow(String label, String value, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label,
-              style: const TextStyle(color: Colors.white54, fontSize: 13)),
-          Text(value,
-              style: TextStyle(
-                  color: color, fontSize: 13, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
 }

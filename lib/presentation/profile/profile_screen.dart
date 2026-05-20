@@ -30,6 +30,8 @@ import '../home/home_screen.dart';
 import '../auth/login_screen.dart';
 import '../badges/badges_screen.dart';
 import '../../core/constants/badge_definitions.dart';
+import '../../core/services/role_service.dart';
+import '../home/widgets/community_task_list.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onTasksChanged;
@@ -60,6 +62,7 @@ class ProfileScreenState extends State<ProfileScreen>
   bool _tahajjudEnabled = false;
   final List<TimeOfDay> _tahajjudTimes = [const TimeOfDay(hour: 2, minute: 0)];
   String? _profilePhotoPath;
+  Map<String, String> _communityIdNameMap = {};
 
   @override
   void initState() {
@@ -81,6 +84,7 @@ class ProfileScreenState extends State<ProfileScreen>
     final ayets = await _contentRepo.getSavedAyets();
     final rewards = await _rewardRepo.getAllRewards();
     final tasks = await _taskRepo.getAllTasks();
+    final communityIdNameMap = await RoleService().getUserCommunityIdNameMap();
     if (mounted) {
       setState(() {
         _user = user;
@@ -89,6 +93,7 @@ class ProfileScreenState extends State<ProfileScreen>
         _savedAyets = ayets;
         _rewards = rewards;
         _customTasks = tasks;
+        _communityIdNameMap = communityIdNameMap;
         _tahajjudEnabled = user?.tahajjudAlarmEnabled ?? false;
         _profilePhotoPath = LocalStorage().profilePhotoPath;
       });
@@ -611,10 +616,11 @@ class ProfileScreenState extends State<ProfileScreen>
 
   Widget _buildCustomTasksSection() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Column(
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
           child: Row(
             children: [
               Text(
@@ -655,16 +661,45 @@ class ProfileScreenState extends State<ProfileScreen>
             ],
           ),
         ),
-        Expanded(
-          child: _customTasks.isEmpty
-              ? _buildEmptyState(
-                  'Henüz görev yok\n"Görev Ekle" ile yeni bir günlük görev ekle')
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _customTasks.length,
-                  itemBuilder: (_, i) => _buildTaskTile(_customTasks[i]),
+        if (_customTasks.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Center(
+              child: Text(
+                'Henüz görev yok\n"Görev Ekle" ile yeni bir günlük görev ekle',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.notoSans(
+                    color: AppColors.textLight, fontSize: 14),
+              ),
+            ),
+          )
+        else
+          ..._customTasks.map(_buildTaskTile),
+        if (_communityIdNameMap.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Row(
+              children: [
+                const Icon(Icons.group_outlined,
+                    color: AppColors.turquoise, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  'TOPLULUK GÖREVLERİ',
+                  style: GoogleFonts.notoSans(
+                    color: AppColors.turquoise,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
                 ),
-        ),
+              ],
+            ),
+          ),
+          ..._communityIdNameMap.entries.map((e) =>
+              CommunityTaskList(communityId: e.key, communityName: e.value)),
+        ],
+        const SizedBox(height: 24),
       ],
     );
   }

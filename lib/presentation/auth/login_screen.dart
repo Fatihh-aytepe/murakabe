@@ -5,11 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/services/role_service.dart';
 import '../../data/local/local_storage.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/remote/firebase_service.dart';
 import '../home/home_screen.dart';
-import '../admin/admin_panel_screen.dart';
+import '../admin/admin_panel_screen.dart' show OwnerPanelScreen;
+import '../community/admin_dashboard_screen.dart';
 import '../profile/profile_setup_screen.dart';
 import '../../core/utils/permission_helper.dart';
 
@@ -47,9 +49,9 @@ class _LoginScreenState extends State<LoginScreen>
   String? _loginPassError;
 
   int _tapCount = 0;
-  bool _showAdminFields = false;
-  final _adminEmailController = TextEditingController();
-  final _adminPassController = TextEditingController();
+  bool _showOwnerFields = false;
+  final _ownerEmailController = TextEditingController();
+  final _ownerPassController = TextEditingController();
 
   @override
   void initState() {
@@ -68,8 +70,8 @@ class _LoginScreenState extends State<LoginScreen>
     _registerPassConfirmController.dispose();
     _loginEmailController.dispose();
     _loginPassController.dispose();
-    _adminEmailController.dispose();
-    _adminPassController.dispose();
+    _ownerEmailController.dispose();
+    _ownerPassController.dispose();
     super.dispose();
   }
 
@@ -263,33 +265,44 @@ class _LoginScreenState extends State<LoginScreen>
   // ── Giriş ─────────────────────────────────────────────────────────────────
 
   Future<void> _handleLogin() async {
-    if (_showAdminFields) {
+    if (_showOwnerFields) {
       setState(() => _isLoading = true);
       try {
         await FirebaseService().signInWithEmail(
-          email: _adminEmailController.text.trim(),
-          password: _adminPassController.text,
+          email: _ownerEmailController.text.trim(),
+          password: _ownerPassController.text,
         );
-        final user = FirebaseService().currentAuthUser;
-        if (user?.email == AppStrings.adminEmail) {
-          await LocalStorage().setAdmin(true);
-          if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const AdminPanelScreen()),
-          );
-        } else {
-          await FirebaseService().signOut();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Admin yetkisi yok.')),
+        final role = await RoleService().getCurrentRole();
+        if (!mounted) return;
+        switch (role) {
+          case UserRole.owner:
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const OwnerPanelScreen()),
             );
-          }
+            break;
+          case UserRole.admin:
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+            );
+            break;
+          case UserRole.user:
+            await FirebaseService().signOut();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Sahip veya admin kaydı bulunamadı.')),
+              );
+            }
+            break;
         }
-      } catch (_) {
+      } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Admin girişi başarısız.')),
+            SnackBar(
+              content: Text(
+                  'Giriş başarısız: ${e.toString().replaceAll("Exception: ", "")}'),
+            ),
           );
         }
       } finally {
@@ -339,6 +352,17 @@ class _LoginScreenState extends State<LoginScreen>
         // Ağ hatası gibi diğer durumlarda giriş engellemiyoruz
       }
 
+      // Sahip hesabı normal girişi kullanamaz
+      if (authUser.email == AppStrings.adminEmail) {
+        await FirebaseService().signOut();
+        if (!mounted) return;
+        _showErrorDialog(
+          'Bu hesap yetkili hesabıdır. Lütfen yetkili girişini kullanın.',
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
       // Her girişte userId ve kayıtlı hesap listesini güncelle
       await LocalStorage().setUserId(authUser.uid);
       await LocalStorage().setUserRegistered(true);
@@ -352,8 +376,13 @@ class _LoginScreenState extends State<LoginScreen>
       final existing = await UserRepository().getCurrentUser();
       if (existing != null) {
         if (!mounted) return;
-        navigator.pushReplacement(
-            MaterialPageRoute(builder: (_) => const HomeScreen()));
+        final role = await RoleService().getCurrentRole();
+        if (!mounted) return;
+        navigator.pushReplacement(MaterialPageRoute(
+          builder: (_) => role == UserRole.owner
+              ? const OwnerPanelScreen()
+              : const HomeScreen(),
+        ));
         return;
       }
 
@@ -367,8 +396,13 @@ class _LoginScreenState extends State<LoginScreen>
           if (prefs != null) await LocalStorage().restoreFromMap(prefs);
         } catch (_) {}
         if (!mounted) return;
-        navigator.pushReplacement(
-            MaterialPageRoute(builder: (_) => const HomeScreen()));
+        final role = await RoleService().getCurrentRole();
+        if (!mounted) return;
+        navigator.pushReplacement(MaterialPageRoute(
+          builder: (_) => role == UserRole.owner
+              ? const OwnerPanelScreen()
+              : const HomeScreen(),
+        ));
         return;
       }
 
@@ -428,7 +462,7 @@ class _LoginScreenState extends State<LoginScreen>
                       onTap: () {
                         _tapCount++;
                         if (_tapCount >= 7) {
-                          setState(() => _showAdminFields = true);
+                          setState(() => _showOwnerFields = true);
                         }
                       },
                       child: Container(
@@ -655,22 +689,22 @@ class _LoginScreenState extends State<LoginScreen>
             errorText: _loginPassError,
             onChanged: (_) => setState(() => _loginPassError = null),
           ),
-          if (_showAdminFields) ...[
+          if (_showOwnerFields) ...[
             const SizedBox(height: 16),
             const Divider(color: Colors.orange),
             const SizedBox(height: 8),
-            Text('Admin Girişi',
+            Text('Sahip Girişi',
                 style: GoogleFonts.notoSans(
                     color: Colors.orange, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             _buildField(
-              controller: _adminEmailController,
+              controller: _ownerEmailController,
               label: 'Admin E-posta',
               icon: Icons.admin_panel_settings,
             ),
             const SizedBox(height: 12),
             _buildField(
-              controller: _adminPassController,
+              controller: _ownerPassController,
               label: 'Admin Şifre',
               icon: Icons.lock_outline,
               obscure: true,

@@ -7,7 +7,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/services/role_service.dart';
 import 'community_screen.dart';
 import 'admin_dashboard_screen.dart';
-import 'owner_panel_screen.dart';
+import 'owner_panel_screen.dart' show CommunityOwnerPanelScreen;
 
 class CommunityJoinScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -228,7 +228,7 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                         onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const OwnerPanelScreen()),
+                              builder: (_) => const CommunityOwnerPanelScreen()),
                         ),
                       ),
                   ],

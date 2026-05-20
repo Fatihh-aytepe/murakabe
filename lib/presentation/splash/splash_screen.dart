@@ -6,10 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/services/role_service.dart';
 import '../../core/services/update_service.dart';
 import '../../data/local/local_storage.dart';
 import '../../data/remote/firebase_service.dart';
 import '../../data/repositories/user_repository.dart';
+import '../admin/admin_panel_screen.dart' show OwnerPanelScreen;
 import '../auth/login_screen.dart';
 import '../auth/auth_migration_screen.dart';
 import '../home/home_screen.dart';
@@ -55,9 +57,14 @@ class _SplashScreenState extends State<SplashScreen>
     // Güncelleme kontrolü
     final updateInfo = await UpdateService().checkForUpdate();
     if (!mounted) return;
-    if (updateInfo.hasUpdate && updateInfo.apkUrl.isNotEmpty) {
+    final skipped = LocalStorage().skippedVersion;
+    if (updateInfo.hasUpdate &&
+        updateInfo.apkUrl.isNotEmpty &&
+        skipped != updateInfo.latestVersion) {
       await _showUpdateDialog(updateInfo);
       if (!mounted) return;
+      // forceUpdate ise APK kurulana kadar uygulamayı ilerletme
+      if (updateInfo.forceUpdate) return;
     }
 
     final storage = LocalStorage();
@@ -81,7 +88,11 @@ class _SplashScreenState extends State<SplashScreen>
         } catch (_) {}
       }
       if (!mounted) return;
-      _go(const HomeScreen());
+      final role = await RoleService().getCurrentRole();
+      if (!mounted) return;
+      _go(role == UserRole.owner
+          ? const OwnerPanelScreen()
+          : const HomeScreen());
       return;
     }
 
@@ -139,7 +150,10 @@ class _SplashScreenState extends State<SplashScreen>
           actions: [
             if (!info.forceUpdate)
               TextButton(
-                onPressed: () => Navigator.pop(ctx),
+                onPressed: () async {
+                  await LocalStorage().setSkippedVersion(info.latestVersion);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
                 child: const Text('Sonra',
                     style: TextStyle(color: AppColors.turquoiseLight)),
               ),

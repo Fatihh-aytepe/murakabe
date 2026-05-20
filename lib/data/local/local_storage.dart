@@ -40,6 +40,11 @@ class LocalStorage {
   Future<void> setLastUpdateDate(String d) =>
       _prefs.setString('lastUpdateDate', d);
 
+  // Ertelenen güncelleme versiyonu ("Sonra" denilen sürümü tekrar sorma)
+  String? get skippedVersion => _prefs.getString('skippedVersion');
+  Future<void> setSkippedVersion(String v) =>
+      _prefs.setString('skippedVersion', v);
+
   // Teheccüd alarm
   bool get tahajjudEnabled => _prefs.getBool('tahajjudEnabled') ?? false;
   Future<void> setTahajjudEnabled(bool v) =>

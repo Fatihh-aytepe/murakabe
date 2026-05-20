@@ -105,6 +105,7 @@ class _QuranPageViewState extends State<QuranPageView> {
         Expanded(
           child: PageView.builder(
             controller: _pageController,
+            reverse: true,
             onPageChanged: _onPageChanged,
             itemCount: _totalPages,
             itemBuilder: (_, index) {
@@ -136,9 +137,10 @@ class _QuranPageViewState extends State<QuranPageView> {
         children: [
           IconButton(
             icon: const Icon(Icons.chevron_left),
-            color: _currentPage > 1 ? AppColors.gold : Colors.grey,
-            onPressed:
-                _currentPage > 1 ? () => _goToPage(_currentPage - 1) : null,
+            color: _currentPage < _totalPages ? AppColors.gold : Colors.grey,
+            onPressed: _currentPage < _totalPages
+                ? () => _goToPage(_currentPage + 1)
+                : null,
           ),
           Expanded(
             child: GestureDetector(
@@ -171,10 +173,9 @@ class _QuranPageViewState extends State<QuranPageView> {
           ),
           IconButton(
             icon: const Icon(Icons.chevron_right),
-            color: _currentPage < _totalPages ? AppColors.gold : Colors.grey,
-            onPressed: _currentPage < _totalPages
-                ? () => _goToPage(_currentPage + 1)
-                : null,
+            color: _currentPage > 1 ? AppColors.gold : Colors.grey,
+            onPressed:
+                _currentPage > 1 ? () => _goToPage(_currentPage - 1) : null,
           ),
         ],
       ),

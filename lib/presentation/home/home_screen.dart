@@ -19,6 +19,7 @@ import '../community/community_join_screen.dart';
 import 'widgets/content_card.dart';
 import 'widgets/islamic_header.dart';
 import 'widgets/quran_tracker_card.dart';
+import 'widgets/community_task_list.dart';
 import 'widgets/custom_task_card.dart';
 import 'widgets/streak_card.dart';
 import '../ayet/ayet_detail_screen.dart';
@@ -26,11 +27,9 @@ import '../hadis/hadis_detail_screen.dart';
 import '../rewards/murakabe_hosgeldin_screen.dart';
 import '../rewards/tahajjud_odul_screen.dart';
 import '../rewards/tebrik_karti_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/services/badge_service.dart';
 import '../../core/services/firestore_notification_service.dart';
 import '../../core/services/role_service.dart';
-import '../../data/local/local_storage.dart';
 import '../quran/quran_screen.dart';
 import '../tefsir/tefhimul_kuran_screen.dart';
 
@@ -59,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   List<CustomTaskModel> _activeTasks = [];
   bool _notificationsScheduled = false;
-  List<String> _communityIds = [];
+  Map<String, String> _communityIdNameMap = {};
 
   @override
   void initState() {
@@ -187,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final quranRead = await _userRepo.isQuranReadToday();
       final user = await _userRepo.getCurrentUser();
       final tasks = await _taskRepo.getActiveTasks();
-      final communityIds = await RoleService().getUserCommunityIds();
+      final communityIdNameMap = await RoleService().getUserCommunityIdNameMap();
 
       if (mounted) {
         setState(() {
@@ -197,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _quranReadToday = quranRead;
           _currentUser = user;
           _activeTasks = tasks;
-          _communityIds = communityIds;
+          _communityIdNameMap = communityIdNameMap;
           _isLoading = false;
         });
 
@@ -683,7 +682,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                     )),
-                if (_communityIds.isNotEmpty) _buildCommunityTasksSection(),
+                if (_communityIdNameMap.isNotEmpty) _buildCommunityTasksSection(),
                 const SizedBox(height: 16),
                 if (_currentUser != null) StreakCard(user: _currentUser!),
                 const SizedBox(height: 100),
@@ -721,7 +720,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        ..._communityIds.map((cid) => _CommunityTaskList(communityId: cid)),
+        ..._communityIdNameMap.entries.map((e) =>
+            CommunityTaskList(communityId: e.key, communityName: e.value)),
       ],
     );
   }
@@ -771,135 +771,3 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ── Tek bir topluluğun bekleyen görevlerini listeler ─────────────────────────
-
-class _CommunityTaskList extends StatelessWidget {
-  final String communityId;
-  const _CommunityTaskList({required this.communityId});
-
-  @override
-  Widget build(BuildContext context) {
-    final uid = LocalStorage().userId;
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('communities')
-          .doc(communityId)
-          .collection('tasks')
-          .orderBy('deadline')
-          .snapshots(),
-      builder: (_, snap) {
-        final docs = snap.data?.docs ?? [];
-        final pending = docs.where((d) {
-          final completions =
-              Map<String, dynamic>.from(d['completions'] as Map? ?? {});
-          return !completions.containsKey(uid);
-        }).toList();
-
-        if (pending.isEmpty) return const SizedBox.shrink();
-
-        return Column(
-          children: pending.map((doc) {
-            final data = doc.data() as Map<String, dynamic>;
-            final taskId = doc.id;
-            final title = data['title'] as String? ?? '';
-            final desc = data['description'] as String? ?? '';
-            final deadline = (data['deadline'] as Timestamp?)?.toDate();
-            final isOverdue =
-                deadline != null && deadline.isBefore(DateTime.now());
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A2035),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isOverdue
-                      ? Colors.red.withValues(alpha: 0.4)
-                      : AppColors.turquoise.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.notoSans(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        if (desc.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(desc,
-                              style: GoogleFonts.notoSans(
-                                  color: Colors.white54, fontSize: 12)),
-                        ],
-                        if (deadline != null) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.calendar_today,
-                                  size: 11,
-                                  color:
-                                      isOverdue ? Colors.red : Colors.white38),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Son: ${deadline.day}.${deadline.month}.${deadline.year}',
-                                style: GoogleFonts.notoSans(
-                                  color:
-                                      isOverdue ? Colors.red : Colors.white38,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () async {
-                      if (uid == null) return;
-                      await FirebaseFirestore.instance
-                          .collection('communities')
-                          .doc(communityId)
-                          .collection('tasks')
-                          .doc(taskId)
-                          .update({
-                        'completions.$uid': FieldValue.serverTimestamp(),
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.turquoise.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                            color:
-                                AppColors.turquoise.withValues(alpha: 0.4)),
-                      ),
-                      child: Text(
-                        'Tamamladım',
-                        style: GoogleFonts.notoSans(
-                          color: AppColors.turquoiseLight,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-}

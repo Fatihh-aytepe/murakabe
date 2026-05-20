@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import '../../data/local/local_storage.dart';
-
 // ─── Yetki seviyeleri ─────────────────────────────────────────────────────────
 enum UserRole { owner, admin, user }
 
@@ -12,9 +10,9 @@ class RoleService {
   RoleService._();
 
   final _db = FirebaseFirestore.instance;
-  final _storage = LocalStorage();
 
-  String? get _uid => _storage.userId;
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
+  String? get currentUid => FirebaseAuth.instance.currentUser?.uid;
 
   // ── Mevcut kullanıcının rolünü Firestore'dan sorgula ──────────────────────
   Future<UserRole> getCurrentRole() async {
@@ -405,6 +403,33 @@ class RoleService {
           .toList();
     } catch (_) {
       return [];
+    }
+  }
+
+  // ── Kullanıcının üye olduğu topluluk ID→İsim haritasını döndür ───────────
+  Future<Map<String, String>> getUserCommunityIdNameMap() async {
+    if (_uid == null) return {};
+    try {
+      final snap = await _db
+          .collectionGroup('members')
+          .where('uid', isEqualTo: _uid)
+          .get();
+      final ids = snap.docs
+          .map((d) => d.reference.parent.parent?.id)
+          .whereType<String>()
+          .toList();
+      final map = <String, String>{};
+      for (final id in ids) {
+        try {
+          final doc = await _db.collection('communities').doc(id).get();
+          map[id] = doc.data()?['name'] as String? ?? 'Topluluk';
+        } catch (_) {
+          map[id] = 'Topluluk';
+        }
+      }
+      return map;
+    } catch (_) {
+      return {};
     }
   }
 

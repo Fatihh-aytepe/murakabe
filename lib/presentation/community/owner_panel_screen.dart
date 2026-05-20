@@ -4,17 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/role_service.dart';
+import '../admin/user_detail_screen.dart';
 
-class OwnerPanelScreen extends StatefulWidget {
-  const OwnerPanelScreen({super.key});
+class CommunityOwnerPanelScreen extends StatefulWidget {
+  const CommunityOwnerPanelScreen({super.key});
 
   @override
-  State<OwnerPanelScreen> createState() => _OwnerPanelScreenState();
+  State<CommunityOwnerPanelScreen> createState() => _CommunityOwnerPanelScreenState();
 }
 
 enum _OwnerState { checking, isOwner, notOwner, notConfigured }
 
-class _OwnerPanelScreenState extends State<OwnerPanelScreen> {
+class _CommunityOwnerPanelScreenState extends State<CommunityOwnerPanelScreen> {
   final _roleService = RoleService();
   _OwnerState _state = _OwnerState.checking;
   bool _setting = false;
@@ -552,169 +553,6 @@ class _AllUsersTabState extends State<_AllUsersTab> {
         _stream = FirebaseFirestore.instance.collection('users').snapshots());
   }
 
-  void _showUserDetail(BuildContext context, Map<String, dynamic> data) {
-    final name = data['nameSurname'] as String? ?? 'İsimsiz';
-    final email = data['email'] as String? ?? '';
-    final phone = data['phone'] as String? ?? '';
-    final quranDays = data['quranReadDays'] as int? ?? 0;
-    final streak = data['streakDays'] as int? ?? 0;
-    final tahajjudRaw = data['tahajjudAlarmEnabled'];
-    final tahajjud = tahajjudRaw == true || tahajjudRaw == 1;
-    final missedRaw = data['missedQuranDays'];
-    final missed = missedRaw is List ? List<String>.from(missedRaw) : <String>[];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.75,
-        maxChildSize: 0.95,
-        builder: (_, ctrl) => Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF1A2035),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: ListView(
-            controller: ctrl,
-            padding: const EdgeInsets.all(24),
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                          colors: [AppColors.gold, AppColors.turquoise]),
-                    ),
-                    child: Center(
-                      child: Text(
-                        name.isNotEmpty ? name[0].toUpperCase() : '?',
-                        style: GoogleFonts.playfairDisplay(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(name,
-                            style: GoogleFonts.playfairDisplay(
-                                color: Colors.white,
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold)),
-                        if (email.isNotEmpty)
-                          Text(email,
-                              style: GoogleFonts.notoSans(
-                                  color: Colors.white54, fontSize: 12)),
-                        if (phone.isNotEmpty)
-                          Text(phone,
-                              style: GoogleFonts.notoSans(
-                                  color: Colors.white38, fontSize: 11)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 12),
-              _detailRow('Kuran Okuma Günü', '$quranDays gün',
-                  AppColors.turquoise),
-              _detailRow('Seri', '$streak gün', AppColors.gold),
-              _detailRow(
-                'Teheccüd Alarmı',
-                tahajjud ? 'Aktif ✓' : 'Kapalı',
-                tahajjud ? Colors.green : Colors.white38,
-              ),
-              const SizedBox(height: 16),
-              if (missed.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border:
-                        Border.all(color: Colors.green.withValues(alpha: 0.3)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 18),
-                      SizedBox(width: 8),
-                      Text('Tüm günler tamamlandı',
-                          style:
-                              TextStyle(color: Colors.green, fontSize: 13)),
-                    ],
-                  ),
-                )
-              else ...[
-                Text('Eksik Günler (${missed.length})',
-                    style: GoogleFonts.notoSans(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14)),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: missed
-                      .map((d) => Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(d,
-                                style: GoogleFonts.notoSans(
-                                    color: Colors.red, fontSize: 12)),
-                          ))
-                      .toList(),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _detailRow(String label, String value, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label,
-              style: GoogleFonts.notoSans(
-                  color: Colors.white54, fontSize: 13)),
-          Text(value,
-              style: GoogleFonts.notoSans(
-                  color: color,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_stream == null) {
@@ -773,7 +611,15 @@ class _AllUsersTabState extends State<_AllUsersTab> {
             final quranDays = data['quranReadDays'] as int? ?? 0;
 
             return GestureDetector(
-              onTap: () => _showUserDetail(context, data),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => UserDetailScreen(
+                    uid: docs[i].id,
+                    name: name,
+                  ),
+                ),
+              ),
               child: Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding:
