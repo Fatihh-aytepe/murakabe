@@ -17,7 +17,7 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'murakabe.db');
     return openDatabase(
       path,
-      version: 4, // 3 → 4: rozetler tablosu eklendi
+      version: 5, // 4 → 5: custom_tasks.userId kolonu eklendi
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -136,6 +136,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS custom_tasks (
         id TEXT PRIMARY KEY,
+        userId TEXT DEFAULT '',
         title TEXT,
         description TEXT DEFAULT '',
         emoji TEXT DEFAULT '📝',
@@ -173,6 +174,11 @@ class DatabaseHelper {
     }
     if (oldVersion < 4) {
       await _createBadgesTable(db);
+    }
+    if (oldVersion < 5) {
+      try {
+        await db.execute('ALTER TABLE custom_tasks ADD COLUMN userId TEXT DEFAULT ""');
+      } catch (_) {}
     }
   }
 
@@ -217,5 +223,10 @@ class DatabaseHelper {
   }) async {
     final db = await database;
     return db.delete(table, where: where, whereArgs: whereArgs);
+  }
+
+  Future<int> rawUpdate(String sql, List<Object?> args) async {
+    final db = await database;
+    return db.rawUpdate(sql, args);
   }
 }

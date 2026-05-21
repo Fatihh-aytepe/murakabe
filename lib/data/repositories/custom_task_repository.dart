@@ -19,8 +19,22 @@ class CustomTaskRepository {
   // ── Okuma ────────────────────────────────────────────────────────────────
 
   Future<List<CustomTaskModel>> getAllTasks() async {
-    final rows =
-        await _db.query('custom_tasks', where: null, orderBy: 'createdAt ASC');
+    final uid = _uid ?? '';
+
+    // userId boş olan görevleri bu kullanıcıya ata (migration)
+    if (uid.isNotEmpty) {
+      await _db.rawUpdate(
+        'UPDATE custom_tasks SET userId = ? WHERE userId = "" OR userId IS NULL',
+        [uid],
+      );
+    }
+
+    final rows = await _db.query(
+      'custom_tasks',
+      where: 'userId = ?',
+      whereArgs: [uid],
+      orderBy: 'createdAt ASC',
+    );
     final today = DateTime.now().toIso8601String().substring(0, 10);
     final completions = await _db.query(
       'custom_task_completions',
@@ -44,10 +58,20 @@ class CustomTaskRepository {
   // ── Ekleme ───────────────────────────────────────────────────────────────
 
   Future<void> addTask(CustomTaskModel task) async {
-    await _db.insert('custom_tasks', task.toMap());
+    final taskWithUser = CustomTaskModel(
+      id: task.id,
+      userId: _uid ?? '',
+      title: task.title,
+      description: task.description,
+      emoji: task.emoji,
+      isActive: task.isActive,
+      notificationTime: task.notificationTime,
+      createdAt: task.createdAt,
+    );
+    await _db.insert('custom_tasks', taskWithUser.toMap());
     if (_uid != null) {
       try {
-        await _firebase.saveTask(_uid!, task.toMap());
+        await _firebase.saveTask(_uid!, taskWithUser.toMap());
       } catch (_) {}
     }
     if (task.notificationTime.isNotEmpty) {

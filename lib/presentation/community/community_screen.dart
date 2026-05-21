@@ -23,6 +23,8 @@ class _CommunityScreenState extends State<CommunityScreen>
   final _roleService = RoleService();
   final _storage = LocalStorage();
   bool _isSending = false;
+  bool _isFirstLoad = true;
+  int _prevDocCount = 0;
 
   String? get _uid => _storage.userId;
 
@@ -322,9 +324,33 @@ class _CommunityScreenState extends State<CommunityScreen>
                 .doc(widget.communityId)
                 .collection('messages')
                 .orderBy('sentAt')
+                .limitToLast(100)
                 .snapshots(),
             builder: (_, snap) {
               final docs = snap.data?.docs ?? [];
+
+              // Scroll mantığı: ilk yüklemede en alta git, sonra yalnızca yeni mesaj gelince git
+              final currentCount = docs.length;
+              if (_isFirstLoad && currentCount > 0) {
+                _isFirstLoad = false;
+                _prevDocCount = currentCount;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (_scrollCtrl.hasClients) {
+                    _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
+                  }
+                });
+              } else if (currentCount > _prevDocCount) {
+                _prevDocCount = currentCount;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (_scrollCtrl.hasClients) {
+                    _scrollCtrl.animateTo(
+                      _scrollCtrl.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  }
+                });
+              }
 
               if (docs.isEmpty) {
                 return _buildEmptyState(
@@ -333,13 +359,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                   sub: 'Topluluğunuzla ilk mesajı siz başlatın.',
                 );
               }
-
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (_scrollCtrl.hasClients) {
-                  _scrollCtrl.jumpTo(
-                      _scrollCtrl.position.maxScrollExtent);
-                }
-              });
 
               return ListView.builder(
                 controller: _scrollCtrl,

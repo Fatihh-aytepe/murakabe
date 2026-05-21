@@ -634,9 +634,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold)),
                           const Spacer(),
-                          Text('$memberCount üye',
-                              style: GoogleFonts.notoSans(
-                                  color: Colors.white54, fontSize: 12)),
+                          StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('communities')
+                                .doc(_communityId)
+                                .collection('members')
+                                .snapshots(),
+                            builder: (_, memberSnap) {
+                              final realCount =
+                                  memberSnap.data?.docs.length ?? memberCount;
+                              return Text(
+                                '$realCount üye',
+                                style: GoogleFonts.notoSans(
+                                    color: Colors.white54, fontSize: 12),
+                              );
+                            },
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -478,11 +479,7 @@ class RoleService {
   // ── Yardımcı: Davet kodu üret ─────────────────────────────────────────────
   String _generateCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    final buffer = StringBuffer();
-    final now = DateTime.now().millisecondsSinceEpoch;
-    for (int i = 0; i < 8; i++) {
-      buffer.write(chars[(now + i * 7) % chars.length]);
-    }
-    return buffer.toString();
+    final random = Random.secure();
+    return List.generate(8, (_) => chars[random.nextInt(chars.length)]).join();
   }
 }

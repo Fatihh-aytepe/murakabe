@@ -2,7 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Yardımcı fonksiyonlar ──────────────────────────────────────────────
     function isAuth() {
       return request.auth != null;
     }
@@ -23,6 +22,12 @@ service cloud.firestore {
       );
     }
 
+    function isCommunityAdmin(communityId) {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/communities/$(communityId)) &&
+        get(/databases/$(database)/documents/communities/$(communityId)).data.adminUid == request.auth.uid;
+    }
+
     function isMember(communityId) {
       return isAuth() &&
         exists(/databases/$(database)/documents/communities/$(communityId)/members/$(request.auth.uid));
@@ -40,13 +45,16 @@ service cloud.firestore {
     }
 
     // ── Roller ────────────────────────────────────────────────────────────
-    // roles/owner: ilk kurulumda (doküman yokken) oluşturmaya izin ver;
-    // sonrasında sadece mevcut sahip değiştirebilir.
     match /roles/owner {
       allow read: if isAuth();
-      allow create, update: if isAuth();
+      // Sadece belge yokken oluşturulabilir (ilk kurulum)
+      // Varsa sadece mevcut sahip güncelleyebilir
+      allow create: if isAuth() &&
+        !exists(/databases/$(database)/documents/roles/owner);
+      allow update: if isOwner();
       allow delete: if isOwner();
     }
+
     match /roles/{docId} {
       allow read: if isAuth();
       allow write: if isOwner();
@@ -60,7 +68,9 @@ service cloud.firestore {
 
     // ── Bildirimler ────────────────────────────────────────────────────────
     match /notifications/{notifId} {
-      allow create: if isAuth();
+      // Sadece admin veya owner bildirim oluşturabilir,
+      // ya da kullanıcı kendi başvurusu için (adminRequests write tetikler bunu)
+      allow create: if isAdmin();
       allow read, update: if isAuth() && (
         isOwner() ||
         isAdmin() ||
@@ -72,13 +82,14 @@ service cloud.firestore {
     match /communities/{communityId} {
       allow read: if isAuth();
       allow create: if isAdmin();
-      allow update: if isAdmin();
+      // Sadece o topluluğun admini veya owner güncelleyebilir
+      allow update: if isOwner() || isCommunityAdmin(communityId);
 
       // Üyeler
       match /members/{userId} {
         allow read: if isAuth();
         allow create: if isAuth() && request.auth.uid == userId;
-        allow update, delete: if isAdmin() || isOwner();
+        allow update, delete: if isOwner() || isCommunityAdmin(communityId);
       }
 
       // Mesajlar
@@ -86,20 +97,20 @@ service cloud.firestore {
         allow read: if isMember(communityId);
         allow create: if isMember(communityId) &&
                          request.resource.data.senderUid == request.auth.uid;
-        allow update, delete: if isAdmin();
+        allow update, delete: if isOwner() || isCommunityAdmin(communityId);
       }
 
       // Duyurular
       match /announcements/{announcementId} {
         allow read: if isMember(communityId);
-        allow write: if isAdmin();
+        allow write: if isOwner() || isCommunityAdmin(communityId);
       }
 
-      // Görevler — üyeler "Tamamladım" için update yapabilir
+      // Görevler
       match /tasks/{taskId} {
         allow read: if isMember(communityId);
-        allow create, delete: if isAdmin();
-        allow update: if isAdmin() || isMember(communityId);
+        allow create, delete: if isOwner() || isCommunityAdmin(communityId);
+        allow update: if isOwner() || isCommunityAdmin(communityId) || isMember(communityId);
       }
     }
   }

@@ -1,5 +1,6 @@
 class CustomTaskModel {
   final String id;
+  final String userId;
   final String title;
   final String description;
   final String emoji;
@@ -10,6 +11,7 @@ class CustomTaskModel {
 
   CustomTaskModel({
     required this.id,
+    this.userId = '',
     required this.title,
     this.description = '',
     this.emoji = '📝',
@@ -22,6 +24,7 @@ class CustomTaskModel {
   factory CustomTaskModel.fromMap(Map<String, dynamic> map) {
     return CustomTaskModel(
       id: map['id'] ?? '',
+      userId: map['userId'] as String? ?? '',
       title: map['title'] ?? '',
       description: map['description'] ?? '',
       emoji: map['emoji'] ?? '📝',
@@ -35,6 +38,7 @@ class CustomTaskModel {
 
   Map<String, dynamic> toMap() => {
         'id': id,
+        'userId': userId,
         'title': title,
         'description': description,
         'emoji': emoji,
@@ -53,6 +57,7 @@ class CustomTaskModel {
   }) {
     return CustomTaskModel(
       id: id,
+      userId: userId,
       title: title ?? this.title,
       description: description ?? this.description,
       emoji: emoji ?? this.emoji,

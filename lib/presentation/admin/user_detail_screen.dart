@@ -3,6 +3,7 @@
 // Sahip panelinden açılır. Seçilen kullanıcıya ait tüm Firestore verilerini
 // (ana doküman + tüm subcollection'lar) çekip sekmeli olarak gösterir.
 
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,6 +28,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   late TabController _tabController;
 
   Map<String, dynamic> _userData = {};
+  StreamSubscription<DocumentSnapshot>? _userSub;
 
   List<Map<String, dynamic>> _notes = [];
   List<Map<String, dynamic>> _reminders = [];
@@ -44,25 +46,32 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
-    _loadAll();
+    _listenUser();
+    _loadSubcollections();
   }
 
   @override
   void dispose() {
+    _userSub?.cancel();
     _tabController.dispose();
     super.dispose();
   }
 
   // ── Veri yükleme ─────────────────────────────────────────────────────────
 
-  Future<void> _loadAll() async {
+  void _listenUser() {
+    _userSub = FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.uid)
+        .snapshots()
+        .listen((doc) {
+      if (mounted) setState(() => _userData = doc.data() ?? {});
+    });
+  }
+
+  Future<void> _loadSubcollections() async {
     try {
-      final db = FirebaseFirestore.instance;
       final uid = widget.uid;
-
-      final userDoc = await db.collection('users').doc(uid).get();
-      final userData = userDoc.data() ?? {};
-
       final results = await Future.wait([
         _getSub(uid, 'notes'),
         _getSub(uid, 'reminders'),
@@ -76,7 +85,6 @@ class _UserDetailScreenState extends State<UserDetailScreen>
 
       if (mounted) {
         setState(() {
-          _userData = userData;
           _notes = results[0];
           _reminders = results[1];
           _tasks = results[2];
@@ -89,12 +97,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e.toString();
-          _loading = false;
-        });
-      }
+      if (mounted) setState(() { _error = e.toString(); _loading = false; });
     }
   }
 
@@ -260,6 +263,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
               ],
             ),
           ),
+          _refreshButton(),
         ],
       ),
     );
@@ -770,6 +774,17 @@ class _UserDetailScreenState extends State<UserDetailScreen>
           if (trailing != null) trailing,
         ],
       ),
+    );
+  }
+
+  Widget _refreshButton() {
+    return IconButton(
+      icon: const Icon(Icons.refresh, color: Colors.white54, size: 20),
+      tooltip: 'Yenile',
+      onPressed: () {
+        setState(() => _loading = true);
+        _loadSubcollections();
+      },
     );
   }
 

@@ -41,6 +41,12 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkRole();
+  }
+
+  @override
   void dispose() {
     _roleSub?.cancel();
     _codeCtrl.dispose();
@@ -53,6 +59,7 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
 
   // Rol değişikliklerini gerçek zamanlı dinle (admin onaylandığında otomatik güncelle)
   void _listenRoleChanges() {
+    if (_roleSub != null) return; // zaten dinleniyor
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
     _roleSub = FirebaseFirestore.instance
@@ -91,6 +98,138 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
 
     setState(() => _isLoading = true);
     try {
+      // Önce topluluğu bul, katılma
+      final query = await FirebaseFirestore.instance
+          .collection('communities')
+          .where('inviteCode', isEqualTo: code)
+          .limit(1)
+          .get();
+
+      if (query.docs.isEmpty) {
+        throw Exception('Geçersiz davet kodu');
+      }
+
+      final communityData = query.docs.first.data();
+      final communityName = communityData['name'] as String? ?? 'Topluluk';
+      final communityDesc = communityData['description'] as String? ?? '';
+      final memberCount = communityData['memberCount'] as int? ?? 0;
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      // Önizleme modalı göster
+      final confirmed = await showModalBottomSheet<bool>(
+        context: context,
+        backgroundColor: const Color(0xFF1A2035),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (ctx) => Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text('Topluluğa Katıl',
+                  style: GoogleFonts.playfairDisplay(
+                      color: AppColors.gold,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: AppColors.gold.withValues(alpha: 0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(communityName,
+                        style: GoogleFonts.playfairDisplay(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
+                    if (communityDesc.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(communityDesc,
+                          style: GoogleFonts.notoSans(
+                              color: Colors.white54, fontSize: 13)),
+                    ],
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(Icons.group_outlined,
+                            color: AppColors.turquoise, size: 16),
+                        const SizedBox(width: 6),
+                        Text('$memberCount üye',
+                            style: GoogleFonts.notoSans(
+                                color: AppColors.turquoise, fontSize: 13)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text('Bu topluluğa katılmak istiyor musunuz?',
+                  style:
+                      GoogleFonts.notoSans(color: Colors.white70, fontSize: 14)),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white24),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: Text('Vazgeç',
+                          style:
+                              GoogleFonts.notoSans(color: Colors.white54)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.turquoise,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: Text('Katıl',
+                          style: GoogleFonts.notoSans(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (confirmed != true) return;
+
+      setState(() => _isLoading = true);
       await _roleService.joinCommunity(code);
       if (!mounted) return;
       _codeCtrl.clear();

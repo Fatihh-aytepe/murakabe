@@ -13,7 +13,6 @@ import '../../data/remote/firebase_service.dart';
 import '../../data/repositories/user_repository.dart';
 import '../admin/admin_panel_screen.dart' show OwnerPanelScreen;
 import '../auth/login_screen.dart';
-import '../auth/auth_migration_screen.dart';
 import '../home/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -82,10 +81,13 @@ class _SplashScreenState extends State<SplashScreen>
         await storage.setUserRegistered(true);
         await storage.setAuthMigrationDone();
         try {
-          await UserRepository().restoreFromFirestore(authUser.uid);
+          final restored = await UserRepository().restoreFromFirestore(authUser.uid);
+          debugPrint('[Splash] Firestore restore sonucu: $restored');
           final prefs = await FirebaseService().getUserPrefs(authUser.uid);
           if (prefs != null) await storage.restoreFromMap(prefs);
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[Splash] Restore hatası: $e');
+        }
       }
       if (!mounted) return;
       final role = await RoleService().getCurrentRole();
@@ -102,14 +104,8 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    // ── 3. Kayıt var ama Auth migration yapılmamış ─────────────────────────
     if (!storage.authMigrationDone) {
-      final oldUserId = storage.userId ?? '';
-      if (oldUserId.isNotEmpty) {
-        _go(AuthMigrationScreen(oldUserId: oldUserId));
-        return;
-      }
-      // Migration tamamlanamıyorsa Login'e yönlendir
+      await storage.setAuthMigrationDone();
       _go(const LoginScreen());
       return;
     }
@@ -134,7 +130,8 @@ class _SplashScreenState extends State<SplashScreen>
         canPop: !info.forceUpdate,
         child: AlertDialog(
           backgroundColor: const Color(0xFF1B2A3B),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(
             'Güncelleme Mevcut',
             style: GoogleFonts.playfairDisplay(

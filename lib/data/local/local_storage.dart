@@ -119,7 +119,7 @@ class LocalStorage {
     required String name,
   }) async {
     final accounts = getSavedAccounts();
-    accounts.removeWhere((a) => a['uid'] == uid);
+    accounts.removeWhere((a) => a['uid'] == uid || a['email'] == email);
     accounts.insert(0, {
       'uid': uid,
       'email': email,

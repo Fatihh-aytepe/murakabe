@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import '../local/database_helper.dart';
 import '../local/local_storage.dart';
 import '../models/user_model.dart';
@@ -70,7 +71,10 @@ class UserRepository {
   Future<bool> restoreFromFirestore(String uid) async {
     try {
       final map = await _firebase.getUserForSQLite(uid);
-      if (map == null) return false;
+      if (map == null) {
+        debugPrint('[UserRepo] Firestore kullanıcı dokümanı bulunamadı: $uid');
+        return false;
+      }
       final existing =
           await _db.query('users', where: 'id = ?', whereArgs: [uid]);
       if (existing.isNotEmpty) {
@@ -78,9 +82,15 @@ class UserRepository {
       } else {
         await _db.insert('users', map);
       }
-      await _restoreSubcollections(uid);
+      try {
+        await _restoreSubcollections(uid);
+      } catch (e) {
+        debugPrint('[UserRepo] Subcollection restore hatası: $e');
+      }
+      debugPrint('[UserRepo] Firestore restore başarılı: $uid');
       return true;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[UserRepo] restoreFromFirestore hatası: $e');
       return false;
     }
   }
@@ -106,7 +116,9 @@ class UserRepository {
     final tasks = await _firebase.getSubcollection(uid, 'tasks');
     for (final t in tasks) {
       try {
-        await _db.insert('custom_tasks', t..remove('_docId'));
+        final taskMap = Map<String, dynamic>.from(t)..remove('_docId');
+        taskMap['userId'] = uid;
+        await _db.insert('custom_tasks', taskMap);
       } catch (_) {}
     }
 
@@ -171,7 +183,9 @@ class UserRepository {
 
     try {
       await _firebase.saveUser(user);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[UserRepo] Firestore saveUser hatası: $e');
+    }
   }
 
   /// E-posta doğrulama durumunu Firebase'den sorgulayıp SQLite'ı günceller.

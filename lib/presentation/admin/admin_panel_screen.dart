@@ -255,6 +255,7 @@ class _OwnerPanelScreenState extends State<OwnerPanelScreen>
               child: CircularProgressIndicator(color: AppColors.gold));
         }
         if (snapshot.hasError) {
+          debugPrint('[AdminRequests] Hata: ${snapshot.error}');
           return Center(
             child: Text(
               'Yüklenemedi:\n${snapshot.error}',

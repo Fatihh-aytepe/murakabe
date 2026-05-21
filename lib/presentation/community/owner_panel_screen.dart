@@ -349,6 +349,7 @@ class _AdminRequestsTabState extends State<_AdminRequestsTab> {
         }
 
         if (snapshot.hasError) {
+          debugPrint('[AdminRequests] Hata: ${snapshot.error}');
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
