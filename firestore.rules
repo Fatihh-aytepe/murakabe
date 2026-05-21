@@ -47,8 +47,6 @@ service cloud.firestore {
     // ── Roller ────────────────────────────────────────────────────────────
     match /roles/owner {
       allow read: if isAuth();
-      // Sadece belge yokken oluşturulabilir (ilk kurulum)
-      // Varsa sadece mevcut sahip güncelleyebilir
       allow create: if isAuth() &&
         !exists(/databases/$(database)/documents/roles/owner);
       allow update: if isOwner();
@@ -62,14 +60,12 @@ service cloud.firestore {
 
     // ── Admin başvuruları ─────────────────────────────────────────────────
     match /adminRequests/{userId} {
-      allow get, write: if isAuth() && request.auth.uid == userId;
-      allow list, update: if isOwner();
+      allow read, write: if isAuth() && request.auth.uid == userId;
+      allow read, update: if isOwner();
     }
 
     // ── Bildirimler ────────────────────────────────────────────────────────
     match /notifications/{notifId} {
-      // Sadece admin veya owner bildirim oluşturabilir,
-      // ya da kullanıcı kendi başvurusu için (adminRequests write tetikler bunu)
       allow create: if isAdmin();
       allow read, update: if isAuth() && (
         isOwner() ||
@@ -82,7 +78,6 @@ service cloud.firestore {
     match /communities/{communityId} {
       allow read: if isAuth();
       allow create: if isAdmin();
-      // Sadece o topluluğun admini veya owner güncelleyebilir
       allow update: if isOwner() || isCommunityAdmin(communityId);
 
       // Üyeler
