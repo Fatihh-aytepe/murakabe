@@ -41,14 +41,13 @@ service cloud.firestore {
 
       match /{sub}/{docId} {
         allow read, write: if isAuth() && request.auth.uid == userId;
+        allow read: if isOwner();
       }
     }
 
     // ── Roller ────────────────────────────────────────────────────────────
     match /roles/owner {
       allow read: if isAuth();
-      // Sadece belge yokken oluşturulabilir (ilk kurulum)
-      // Varsa sadece mevcut sahip güncelleyebilir
       allow create: if isAuth() &&
         !exists(/databases/$(database)/documents/roles/owner);
       allow update: if isOwner();
@@ -62,14 +61,12 @@ service cloud.firestore {
 
     // ── Admin başvuruları ─────────────────────────────────────────────────
     match /adminRequests/{userId} {
-      allow get, write: if isAuth() && request.auth.uid == userId;
-      allow list, update: if isOwner();
+      allow read, write: if isAuth() && request.auth.uid == userId;
+      allow read, update: if isOwner();
     }
 
     // ── Bildirimler ────────────────────────────────────────────────────────
     match /notifications/{notifId} {
-      // Sadece admin veya owner bildirim oluşturabilir,
-      // ya da kullanıcı kendi başvurusu için (adminRequests write tetikler bunu)
       allow create: if isAdmin();
       allow read, update: if isAuth() && (
         isOwner() ||
@@ -82,17 +79,14 @@ service cloud.firestore {
     match /communities/{communityId} {
       allow read: if isAuth();
       allow create: if isAdmin();
-      // Sadece o topluluğun admini veya owner güncelleyebilir
       allow update: if isOwner() || isCommunityAdmin(communityId);
 
-      // Üyeler
       match /members/{userId} {
         allow read: if isAuth();
         allow create: if isAuth() && request.auth.uid == userId;
         allow update, delete: if isOwner() || isCommunityAdmin(communityId);
       }
 
-      // Mesajlar
       match /messages/{messageId} {
         allow read: if isMember(communityId);
         allow create: if isMember(communityId) &&
@@ -100,13 +94,11 @@ service cloud.firestore {
         allow update, delete: if isOwner() || isCommunityAdmin(communityId);
       }
 
-      // Duyurular
       match /announcements/{announcementId} {
         allow read: if isMember(communityId);
         allow write: if isOwner() || isCommunityAdmin(communityId);
       }
 
-      // Görevler
       match /tasks/{taskId} {
         allow read: if isMember(communityId);
         allow create, delete: if isOwner() || isCommunityAdmin(communityId);

@@ -343,7 +343,7 @@ class _AdminRequestsTabState extends State<_AdminRequestsTab> {
     return StreamBuilder<QuerySnapshot>(
       stream: _stream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
           return const Center(
               child: CircularProgressIndicator(color: AppColors.gold));
         }
@@ -563,7 +563,7 @@ class _AllUsersTabState extends State<_AllUsersTab> {
     return StreamBuilder<QuerySnapshot>(
       stream: _stream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
           return const Center(
               child: CircularProgressIndicator(color: AppColors.gold));
         }
