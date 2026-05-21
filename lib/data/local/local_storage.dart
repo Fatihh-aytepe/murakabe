@@ -119,14 +119,26 @@ class LocalStorage {
     required String name,
   }) async {
     final accounts = getSavedAccounts();
-    accounts.removeWhere((a) => a['uid'] == uid || a['email'] == email);
+    // Sadece UID'e göre duplicate kontrolü — email değişse bile aynı hesap
+    accounts.removeWhere((a) => a['uid'] == uid);
     accounts.insert(0, {
       'uid': uid,
       'email': email,
       'name': name,
       'lastUsed': DateTime.now().toIso8601String(),
+      'isLoggedIn': true,
     });
     await _prefs.setString('savedAccounts', jsonEncode(accounts));
+  }
+
+  /// Çıkış yapıldığında hesabı listeden silmez, sadece oturum kapalı işaretler.
+  Future<void> markAccountLoggedOut(String uid) async {
+    final accounts = getSavedAccounts();
+    final idx = accounts.indexWhere((a) => a['uid'] == uid);
+    if (idx >= 0) {
+      accounts[idx] = {...accounts[idx], 'isLoggedIn': false};
+      await _prefs.setString('savedAccounts', jsonEncode(accounts));
+    }
   }
 
   Future<void> removeAccount(String uid) async {

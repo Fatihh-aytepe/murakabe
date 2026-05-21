@@ -40,6 +40,8 @@ class _LoginScreenState extends State<LoginScreen>
   bool _registerPassConfirmVisible = false;
   bool _loginPassVisible = false;
 
+  List<Map<String, dynamic>> _savedAccounts = [];
+
   String? _nameError;
   String? _phoneError;
   String? _registerEmailError;
@@ -57,6 +59,13 @@ class _LoginScreenState extends State<LoginScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _savedAccounts = LocalStorage().getSavedAccounts();
+    // Kayıtlı hesap varsa direkt Giriş Yap tab'ına geç
+    if (_savedAccounts.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _tabController.animateTo(1);
+      });
+    }
     PermissionHelper.requestAllPermissions();
   }
 
@@ -291,7 +300,8 @@ class _LoginScreenState extends State<LoginScreen>
             await FirebaseService().signOut();
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Sahip veya admin kaydı bulunamadı.')),
+                const SnackBar(
+                    content: Text('Sahip veya admin kaydı bulunamadı.')),
               );
             }
             break;
@@ -337,19 +347,25 @@ class _LoginScreenState extends State<LoginScreen>
         return;
       }
 
-      // Hesap Firestore'da silinmiş mi? (ağ hatası durumunda geçilir)
+      // Firestore dokümanı var mı? Yoksa yerel veriden kurtarmayı dene.
       try {
         final doc = await FirebaseFirestore.instance
             .collection('users')
             .doc(authUser.uid)
             .get();
         if (!doc.exists) {
-          await FirebaseService().signOut();
-          throw Exception('Bu hesap silinmiştir');
+          // Doküman yok: kayıt sırasında Firestore yazımı başarısız olmuş olabilir.
+          // SQLite'da veri varsa Firestore'a yeniden senkronize et.
+          final localUser = await UserRepository().getCurrentUser();
+          if (localUser != null) {
+            try {
+              await FirebaseService().saveUser(localUser);
+            } catch (_) {}
+          }
+          // Devam et — aşağıdaki restore/setup mantığı durumu halleder.
         }
-      } on Exception catch (e) {
-        if (e.toString().contains('silinmiştir')) rethrow;
-        // Ağ hatası gibi diğer durumlarda giriş engellemiyoruz
+      } catch (_) {
+        // Ağ hatası gibi durumlarda giriş engellemiyoruz
       }
 
       // Sahip hesabı normal girişi kullanamaz
@@ -363,18 +379,21 @@ class _LoginScreenState extends State<LoginScreen>
         return;
       }
 
-      // Her girişte userId ve kayıtlı hesap listesini güncelle
+      // Her girişte userId kaydet
       await LocalStorage().setUserId(authUser.uid);
       await LocalStorage().setUserRegistered(true);
-      await LocalStorage().saveAccount(
-        uid: authUser.uid,
-        email: email,
-        name: authUser.displayName ?? email,
-      );
 
       // 1. Yerel SQLite'da kullanıcı var mı? (normal açılış)
       final existing = await UserRepository().getCurrentUser();
       if (existing != null) {
+        // İsmi SQLite'dan al — displayName null olsa bile doğru isim görünür
+        await LocalStorage().saveAccount(
+          uid: authUser.uid,
+          email: email,
+          name: existing.nameSurname.isNotEmpty
+              ? existing.nameSurname
+              : (authUser.displayName ?? email),
+        );
         if (!mounted) return;
         final role = await RoleService().getCurrentRole();
         if (!mounted) return;
@@ -395,6 +414,15 @@ class _LoginScreenState extends State<LoginScreen>
           final prefs = await FirebaseService().getUserPrefs(authUser.uid);
           if (prefs != null) await LocalStorage().restoreFromMap(prefs);
         } catch (_) {}
+        // Restore sonrası ismi SQLite'dan al
+        final restoredUser = await UserRepository().getCurrentUser();
+        await LocalStorage().saveAccount(
+          uid: authUser.uid,
+          email: email,
+          name: restoredUser?.nameSurname.isNotEmpty == true
+              ? restoredUser!.nameSurname
+              : (authUser.displayName ?? email),
+        );
         if (!mounted) return;
         final role = await RoleService().getCurrentRole();
         if (!mounted) return;
@@ -407,6 +435,11 @@ class _LoginScreenState extends State<LoginScreen>
       }
 
       // 3. Gerçekten yeni kullanıcı → profil kurulum
+      await LocalStorage().saveAccount(
+        uid: authUser.uid,
+        email: email,
+        name: authUser.displayName ?? email,
+      );
       if (!mounted) return;
       navigator.pushReplacement(
           MaterialPageRoute(builder: (_) => const ProfileSetupScreen()));
@@ -617,8 +650,7 @@ class _LoginScreenState extends State<LoginScreen>
                   _registerPassConfirmVisible = !_registerPassConfirmVisible),
             ),
             errorText: _registerPassConfirmError,
-            onChanged: (_) =>
-                setState(() => _registerPassConfirmError = null),
+            onChanged: (_) => setState(() => _registerPassConfirmError = null),
           ),
           const SizedBox(height: 28),
           SizedBox(
@@ -663,6 +695,24 @@ class _LoginScreenState extends State<LoginScreen>
       child: Column(
         children: [
           const SizedBox(height: 8),
+          // ── Kaydedilmiş hesaplar (Instagram tarzı) ─────────────────────────
+          if (_savedAccounts.isNotEmpty) ...[
+            ..._savedAccounts.map((acc) => _buildSavedAccountCard(acc)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Expanded(child: Divider(color: Colors.white12)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('veya e-posta ile giriş',
+                      style: GoogleFonts.notoSans(
+                          color: Colors.white38, fontSize: 11)),
+                ),
+                const Expanded(child: Divider(color: Colors.white12)),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
           _buildField(
             controller: _loginEmailController,
             label: 'E-posta',
@@ -699,13 +749,13 @@ class _LoginScreenState extends State<LoginScreen>
             const SizedBox(height: 8),
             _buildField(
               controller: _ownerEmailController,
-              label: 'Admin E-posta',
+              label: 'Sahip E-posta',
               icon: Icons.admin_panel_settings,
             ),
             const SizedBox(height: 12),
             _buildField(
               controller: _ownerPassController,
-              label: 'Admin Şifre',
+              label: 'Sahip Şifre',
               icon: Icons.lock_outline,
               obscure: true,
             ),
@@ -765,6 +815,213 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // ── Kaydedilmiş hesap kartı ───────────────────────────────────────────────
+
+  Widget _buildSavedAccountCard(Map<String, dynamic> acc) {
+    final name = acc['name'] as String? ?? '';
+    final email = acc['email'] as String? ?? '';
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.gold.withValues(alpha: 0.18),
+            ),
+            child: Center(
+              child: Text(
+                initial,
+                style: const TextStyle(
+                    color: AppColors.gold,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name.isNotEmpty ? name : email,
+                    style: GoogleFonts.notoSans(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13)),
+                if (name.isNotEmpty)
+                  Text(email,
+                      style: GoogleFonts.notoSans(
+                          color: Colors.white38, fontSize: 11)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: _isLoading ? null : () => _quickLogin(acc),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.gold,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text('Giriş Yap',
+                style: GoogleFonts.notoSans(
+                    fontWeight: FontWeight.bold, fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _quickLogin(Map<String, dynamic> acc) async {
+    final email = acc['email'] as String? ?? '';
+    final passCtrl = TextEditingController();
+    bool isSaving = false;
+    String? errorMsg;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: const Color(0xFF1A2035),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Hoş geldin',
+                    style: GoogleFonts.playfairDisplay(
+                        color: AppColors.gold,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(
+                  acc['name'] as String? ?? email,
+                  style: GoogleFonts.notoSans(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600),
+                ),
+                Text(email,
+                    style: GoogleFonts.notoSans(
+                        color: Colors.white38, fontSize: 11)),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: passCtrl,
+                  obscureText: true,
+                  autofocus: true,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Şifre',
+                    labelStyle: const TextStyle(color: Colors.white38),
+                    prefixIcon: const Icon(Icons.lock_outline,
+                        color: AppColors.gold, size: 18),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: AppColors.gold),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onSubmitted: (_) async {
+                    if (passCtrl.text.isEmpty) return;
+                    setDlg(() { isSaving = true; errorMsg = null; });
+                    _loginEmailController.text = email;
+                    _loginPassController.text = passCtrl.text;
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                ),
+                if (errorMsg != null) ...[
+                  const SizedBox(height: 8),
+                  Text(errorMsg!,
+                      style:
+                          const TextStyle(color: Colors.red, fontSize: 12)),
+                ],
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text('İptal',
+                            style: GoogleFonts.notoSans(
+                                color: Colors.white38)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: isSaving
+                            ? null
+                            : () {
+                                if (passCtrl.text.isEmpty) {
+                                  setDlg(() => errorMsg = 'Şifre gerekli.');
+                                  return;
+                                }
+                                _loginEmailController.text = email;
+                                _loginPassController.text = passCtrl.text;
+                                Navigator.pop(ctx);
+                              },
+                        child: isSaving
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2))
+                            : Text('Giriş Yap',
+                                style: GoogleFonts.notoSans(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Dialog kapandıktan sonra şifre doluysa otomatik giriş yap
+    if (_loginPassController.text.isNotEmpty &&
+        _loginEmailController.text == email &&
+        mounted) {
+      await _handleLogin();
+    }
+
+    passCtrl.dispose();
+  }
+
   // ── Ortak field ───────────────────────────────────────────────────────────
 
   Widget _buildField({
@@ -788,16 +1045,14 @@ class _LoginScreenState extends State<LoginScreen>
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle:
-            TextStyle(color: AppColors.gold.withValues(alpha: 0.8)),
+        labelStyle: TextStyle(color: AppColors.gold.withValues(alpha: 0.8)),
         prefixIcon: Icon(icon, color: AppColors.turquoise, size: 20),
         suffixIcon: suffixIcon,
         errorText: errorText,
         errorStyle:
             GoogleFonts.notoSans(fontSize: 11, color: Colors.red.shade300),
         helperText: helperText,
-        helperStyle:
-            GoogleFonts.notoSans(fontSize: 10, color: Colors.white38),
+        helperStyle: GoogleFonts.notoSans(fontSize: 10, color: Colors.white38),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
@@ -911,8 +1166,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         ),
         content: Text(
           message,
-          style:
-              GoogleFonts.notoSans(color: Colors.white70, fontSize: 14, height: 1.5),
+          style: GoogleFonts.notoSans(
+              color: Colors.white70, fontSize: 14, height: 1.5),
         ),
         actions: [
           TextButton(

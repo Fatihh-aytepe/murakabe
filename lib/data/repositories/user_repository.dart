@@ -38,6 +38,11 @@ class UserRepository {
       password: password,
     );
 
+    // Auth displayName'i set et — sonraki girişlerde isim doğru görünsün
+    try {
+      await _firebase.updateDisplayName(nameSurname);
+    } catch (_) {}
+
     // Auth UID'sini kullan — UUID yerine
     final user = UserModel(
       id: authUser.uid,
@@ -58,10 +63,8 @@ class UserRepository {
     await _storage.setUserId(user.id);
     await _storage.setUserRegistered(true);
 
-    // 3. Firestore'a yaz (hata olursa sessizce geç — offline senaryosu)
-    try {
-      await _firebase.saveUser(user);
-    } catch (_) {}
+    // 3. Firestore'a yaz — başarısız olursa kayıt tamamlanmış sayılmaz
+    await _firebase.saveUser(user);
 
     return user;
   }

@@ -2509,7 +2509,10 @@ class ProfileScreenState extends State<ProfileScreen>
       ),
     );
     if (confirmed != true) return;
+    final uid = LocalStorage().userId ?? '';
     await FirebaseService().signOut();
+    // Hesabı listeden silme — Instagram gibi hatırla, sadece oturum kapalı işaretle
+    if (uid.isNotEmpty) await LocalStorage().markAccountLoggedOut(uid);
     await LocalStorage().setUserRegistered(false);
     await LocalStorage().setUserId('');
     if (mounted) {
