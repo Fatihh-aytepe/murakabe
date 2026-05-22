@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class UserModel {
@@ -46,8 +47,9 @@ class UserModel {
       nameSurname: map['nameSurname'] ?? '',
       phone: map['phone'] ?? '',
       email: map['email'] ?? '',
-      createdAt:
-          DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: map['createdAt'] is Timestamp
+          ? (map['createdAt'] as Timestamp).toDate()
+          : DateTime.tryParse(map['createdAt']?.toString() ?? '') ?? DateTime.now(),
       quranReadDays: map['quranReadDays'] ?? 0,
       missedQuranDays: List<String>.from(map['missedQuranDays'] ?? []),
       tahajjudAlarmEnabled: map['tahajjudAlarmEnabled'] == true || map['tahajjudAlarmEnabled'] == 1,

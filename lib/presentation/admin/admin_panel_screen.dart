@@ -526,6 +526,18 @@ class _OwnerPanelScreenState extends State<OwnerPanelScreen>
           return const Center(
               child: CircularProgressIndicator(color: AppColors.gold));
         }
+        if (snapshot.hasError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Stream/Future Execution Error: ${snapshot.error.toString()}',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.notoSans(color: Colors.red, fontSize: 13),
+              ),
+            ),
+          );
+        }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(
               child: Text('Henüz kullanıcı yok',
@@ -563,9 +575,10 @@ class _OwnerPanelScreenState extends State<OwnerPanelScreen>
     final phone = data['phone'] ?? '';
     final quranDays = data['quranReadDays'] ?? 0;
     final missed = (data['missedQuranDays'] as List?)?.length ?? 0;
-    final createdAt = data['createdAt'] != null
-        ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
-        : DateTime.now();
+    final createdAtRaw = data['createdAt'];
+    final createdAt = createdAtRaw is Timestamp
+        ? createdAtRaw.toDate()
+        : DateTime.tryParse(createdAtRaw?.toString() ?? '') ?? DateTime.now();
 
     return GestureDetector(
       onTap: () => Navigator.push(

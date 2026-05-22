@@ -48,8 +48,7 @@ service cloud.firestore {
     // ── Roller ────────────────────────────────────────────────────────────
     match /roles/owner {
       allow read: if isAuth();
-      allow create: if isAuth() &&
-        !exists(/databases/$(database)/documents/roles/owner);
+      allow create: if isAuth() && !exists(/databases/$(database)/documents/roles/owner);
       allow update: if isOwner();
       allow delete: if isOwner();
     }
@@ -59,16 +58,18 @@ service cloud.firestore {
       allow write: if isOwner();
     }
 
-    // ── Admin başvuruları ─────────────────────────────────────────────────
-    match /adminRequests/{userId} {
-      allow read, write: if isAuth() && request.auth.uid == userId;
-      allow read, update: if isOwner();
+    // ── Admin/Sahip Başvuruları (Geliştirilmiş & Esnek Yapı) ─────────────────
+    match /adminRequests/{requestId} {
+      // Herkes başvuru oluşturabilir
+      allow create: if isAuth();
+      // Kullanıcı sadece kendi başvurusunu okuyabilir, Sahip (Owner) hepsini görebilir ve listeleyebilir
+      allow read, list, update, delete: if isAuth() && (isOwner() || resource.data.userId == request.auth.uid);
     }
 
-    // ── Bildirimler ────────────────────────────────────────────────────────
+    // ── Bildirimler (Toplu listeleme izni eklendi) ───────────────────────────
     match /notifications/{notifId} {
       allow create: if isAdmin();
-      allow read, update: if isAuth() && (
+      allow read, list, update: if isAuth() && (
         isOwner() ||
         isAdmin() ||
         resource.data.targetUid == request.auth.uid
@@ -89,8 +90,7 @@ service cloud.firestore {
 
       match /messages/{messageId} {
         allow read: if isMember(communityId);
-        allow create: if isMember(communityId) &&
-                         request.resource.data.senderUid == request.auth.uid;
+        allow create: if isMember(communityId) && request.resource.data.senderUid == request.auth.uid;
         allow update, delete: if isOwner() || isCommunityAdmin(communityId);
       }
 

@@ -302,7 +302,10 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   // 1. GENEL
   Widget _buildGenel() {
     final phone = _userData['phone'] as String? ?? '-';
-    final createdAt = _fmtDate(_userData['createdAt']?.toString());
+    final createdAtRaw = _userData['createdAt'];
+    final createdAt = createdAtRaw is Timestamp
+        ? _fmtDate(createdAtRaw.toDate().toIso8601String())
+        : _fmtDate(createdAtRaw?.toString());
     final streak = _userData['streakDays'] as int? ?? 0;
     final quranDays = _userData['quranReadDays'] as int? ?? 0;
     final missedRaw = _userData['missedQuranDays'];

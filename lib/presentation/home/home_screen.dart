@@ -200,10 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _isLoading = false;
         });
 
-        if (!_notificationsScheduled &&
-            esma != null &&
-            hadis != null &&
-            ayet != null) {
+        if (!_notificationsScheduled) {
           _notificationsScheduled = true;
           _scheduleAllNotifications(esma, hadis, ayet);
         }
