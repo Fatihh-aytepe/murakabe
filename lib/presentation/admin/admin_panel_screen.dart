@@ -32,7 +32,11 @@ class _OwnerPanelScreenState extends State<OwnerPanelScreen>
   }
 
   Future<void> _initStreams() async {
-    await FirebaseAuth.instance.currentUser?.getIdToken(true);
+    try {
+      await FirebaseAuth.instance.currentUser
+          ?.getIdToken(true)
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {}
     if (!mounted) return;
     setState(() {
       _usersStream = FirebaseFirestore.instance.collection('users').snapshots();

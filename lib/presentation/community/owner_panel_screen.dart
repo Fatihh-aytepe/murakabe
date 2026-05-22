@@ -329,7 +329,11 @@ class _AdminRequestsTabState extends State<_AdminRequestsTab> {
   }
 
   Future<void> _initStream() async {
-    await FirebaseAuth.instance.currentUser?.getIdToken(true);
+    try {
+      await FirebaseAuth.instance.currentUser
+          ?.getIdToken(true)
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {}
     if (!mounted) return;
     setState(() => _stream = _roleService.getPendingAdminRequests());
   }
@@ -548,7 +552,11 @@ class _AllUsersTabState extends State<_AllUsersTab> {
   }
 
   Future<void> _initStream() async {
-    await FirebaseAuth.instance.currentUser?.getIdToken(true);
+    try {
+      await FirebaseAuth.instance.currentUser
+          ?.getIdToken(true)
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {}
     if (!mounted) return;
     setState(() =>
         _stream = FirebaseFirestore.instance.collection('users').snapshots());

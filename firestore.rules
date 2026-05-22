@@ -9,8 +9,7 @@ service cloud.firestore {
     function isOwner() {
       return isAuth() && (
         request.auth.token.email == 'yavuzbera02@gmail.com' ||
-        (exists(/databases/$(database)/documents/roles/owner) &&
-         get(/databases/$(database)/documents/roles/owner).data.uid == request.auth.uid)
+        get(/databases/$(database)/documents/roles/owner).data.get('uid', '') == request.auth.uid
       );
     }
 
@@ -62,8 +61,12 @@ service cloud.firestore {
     match /adminRequests/{requestId} {
       // Herkes başvuru oluşturabilir
       allow create: if isAuth();
-      // Kullanıcı sadece kendi başvurusunu okuyabilir, Sahip (Owner) hepsini görebilir ve listeleyebilir
-      allow read, list, update, delete: if isAuth() && (isOwner() || resource.data.userId == request.auth.uid);
+      // Tek belge okuma: sahip veya belgenin sahibi (uid alanı)
+      allow get: if isAuth() && (isOwner() || resource.data.uid == request.auth.uid);
+      // Koleksiyon sorgusu: yalnızca sahip listeleyebilir (resource.data olmadan)
+      allow list: if isOwner();
+      // Güncelleme ve silme: yalnızca sahip
+      allow update, delete: if isOwner();
     }
 
     // ── Bildirimler (Toplu listeleme izni eklendi) ───────────────────────────
