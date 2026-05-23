@@ -31,6 +31,7 @@ class _CommunityOwnerPanelScreenState extends State<CommunityOwnerPanelScreen> {
     if (!mounted) return;
     if (isOwner) {
       setState(() => _state = _OwnerState.isOwner);
+      _runMigration();
       return;
     }
     final configured = await _roleService.isOwnerConfigured();
@@ -38,6 +39,20 @@ class _CommunityOwnerPanelScreenState extends State<CommunityOwnerPanelScreen> {
       setState(() => _state =
           configured ? _OwnerState.notOwner : _OwnerState.notConfigured);
     }
+  }
+
+  Future<void> _runMigration() async {
+    final result = await _roleService.migrateInviteCodes();
+    if (!mounted) return;
+    if (result.migrated == 0 && result.errors.isEmpty) return;
+    final msg = result.errors.isEmpty
+        ? '${result.migrated} topluluk migrate edildi'
+        : '${result.migrated} migrate, ${result.errors.length} hata (konsolda detay)';
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg),
+      backgroundColor:
+          result.errors.isEmpty ? const Color(0xFF2E7D32) : Colors.orange,
+    ));
   }
 
   Future<void> _setupOwner() async {
@@ -328,14 +343,12 @@ class _AdminRequestsTabState extends State<_AdminRequestsTab> {
     _initStream();
   }
 
-  Future<void> _initStream() async {
-    try {
-      await FirebaseAuth.instance.currentUser
-          ?.getIdToken(true)
-          .timeout(const Duration(seconds: 5));
-    } catch (_) {}
-    if (!mounted) return;
+  void _initStream() {
     setState(() => _stream = _roleService.getPendingAdminRequests());
+    FirebaseAuth.instance.currentUser
+        ?.getIdToken(true)
+        .timeout(const Duration(seconds: 5))
+        .catchError((_) => null);
   }
 
   @override
@@ -367,15 +380,7 @@ class _AdminRequestsTabState extends State<_AdminRequestsTab> {
           );
         }
 
-        final docs = List.of(snapshot.data?.docs ?? [])
-          ..sort((a, b) {
-            final aTs = (a.data() as Map<String, dynamic>)['appliedAt'];
-            final bTs = (b.data() as Map<String, dynamic>)['appliedAt'];
-            if (aTs == null && bTs == null) return 0;
-            if (aTs == null) return 1;
-            if (bTs == null) return -1;
-            return (bTs as Timestamp).compareTo(aTs as Timestamp);
-          });
+        final docs = snapshot.data?.docs ?? [];
 
         if (docs.isEmpty) {
           return Center(
@@ -551,15 +556,13 @@ class _AllUsersTabState extends State<_AllUsersTab> {
     _initStream();
   }
 
-  Future<void> _initStream() async {
-    try {
-      await FirebaseAuth.instance.currentUser
-          ?.getIdToken(true)
-          .timeout(const Duration(seconds: 5));
-    } catch (_) {}
-    if (!mounted) return;
-    setState(() =>
-        _stream = FirebaseFirestore.instance.collection('users').snapshots());
+  void _initStream() {
+    setState(
+        () => _stream = FirebaseFirestore.instance.collection('users').snapshots());
+    FirebaseAuth.instance.currentUser
+        ?.getIdToken(true)
+        .timeout(const Duration(seconds: 5))
+        .catchError((_) => null);
   }
 
   @override

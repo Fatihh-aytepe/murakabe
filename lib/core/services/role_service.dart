@@ -178,28 +178,51 @@ class RoleService {
       throw Exception('Bu işlem için admin yetkisi gerekli');
     }
 
+    final code = _generateCode();
+
+    // inviteCode artık community belgesinde değil; private/config ve inviteLookup'ta tutuluyor
     final ref = await _db.collection('communities').add({
       'name': name,
       'description': description,
       'adminUid': _uid,
       'memberCount': 1,
       'createdAt': FieldValue.serverTimestamp(),
-      'inviteCode': _generateCode(),
+    });
+
+    final batch = _db.batch();
+
+    // Davet kodunu kısıtlı alt-koleksiyona kaydet
+    batch.set(ref.collection('private').doc('config'), {
+      'inviteCode': code,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    // Arama tablosuna ekle (katılım doğrulaması için)
+    batch.set(_db.collection('inviteLookup').doc(code), {
+      'communityId': ref.id,
+      'createdAt': FieldValue.serverTimestamp(),
     });
 
     // Admini üye olarak ekle
-    await ref.collection('members').doc(_uid).set({
+    batch.set(ref.collection('members').doc(_uid), {
       'uid': _uid,
       'role': 'admin',
       'joinedAt': FieldValue.serverTimestamp(),
     });
+
+    await batch.commit();
 
     return ref.id;
   }
 
   // ── Admin: Üye davet linki oluştur ───────────────────────────────────────
   Future<String> getInviteCode(String communityId) async {
-    final doc = await _db.collection('communities').doc(communityId).get();
+    final doc = await _db
+        .collection('communities')
+        .doc(communityId)
+        .collection('private')
+        .doc('config')
+        .get();
     return doc.data()?['inviteCode'] ?? '';
   }
 
@@ -207,16 +230,12 @@ class RoleService {
   Future<void> joinCommunity(String inviteCode) async {
     if (_uid == null) return;
 
-    final query = await _db
-        .collection('communities')
-        .where('inviteCode', isEqualTo: inviteCode)
-        .limit(1)
-        .get();
+    // inviteLookup'tan communityId'yi çek (community koleksiyonunda where sorgusu yok artık)
+    final lookupDoc = await _db.collection('inviteLookup').doc(inviteCode).get();
+    if (!lookupDoc.exists) throw Exception('Geçersiz davet kodu');
 
-    if (query.docs.isEmpty) throw Exception('Geçersiz davet kodu');
-
-    final communityDoc = query.docs.first;
-    final communityId = communityDoc.id;
+    final communityId = lookupDoc.data()?['communityId'] as String?;
+    if (communityId == null) throw Exception('Geçersiz davet kodu');
 
     // Zaten üye mi?
     final memberDoc = await _db
@@ -227,9 +246,12 @@ class RoleService {
         .get();
     if (memberDoc.exists) throw Exception('Zaten bu topluluğun üyesiniz');
 
+    // Bildirim için topluluk belgesini ayrıca çek
+    final communityDoc = await _db.collection('communities').doc(communityId).get();
+
     final batch = _db.batch();
 
-    // Üye olarak ekle
+    // inviteCode kuralda inviteLookup üzerinden doğrulanıyor; üye belgesinde saklanıyor
     batch.set(
       _db
           .collection('communities')
@@ -240,6 +262,7 @@ class RoleService {
         'uid': _uid,
         'role': 'member',
         'joinedAt': FieldValue.serverTimestamp(),
+        'inviteCode': inviteCode,
       },
     );
 
@@ -253,7 +276,7 @@ class RoleService {
     // Topluluk adminine "yeni üye" bildirimi gönder
     try {
       final communityData = communityDoc.data();
-      final adminUid = communityData['adminUid'] as String?;
+      final adminUid = communityData?['adminUid'] as String?;
       if (adminUid != null && adminUid != _uid) {
         String joinerName = 'Bir kullanıcı';
         try {
@@ -270,7 +293,7 @@ class RoleService {
           'fromName': joinerName,
           'communityId': communityId,
           'communityName':
-              communityData['name'] as String? ?? 'Topluluk',
+              communityData?['name'] as String? ?? 'Topluluk',
           'createdAt': FieldValue.serverTimestamp(),
           'read': false,
         });
@@ -473,7 +496,56 @@ class RoleService {
     return _db
         .collection('adminRequests')
         .where('status', isEqualTo: 'pending')
+        .orderBy('appliedAt', descending: true)
         .snapshots();
+  }
+
+  // ── Tek seferlik migration: eski inviteCode yapısını yeni yapıya taşı ──────
+  // Owner yetkisi gerekir. İdempotent — zaten migrate edilmiş toplulukları atlar.
+  // Dönen kayıt: (migrated, skipped, errors)
+  Future<({int migrated, int skipped, List<String> errors})>
+      migrateInviteCodes() async {
+    int migrated = 0;
+    int skipped = 0;
+    final errors = <String>[];
+
+    final communities = await _db.collection('communities').get();
+
+    for (final doc in communities.docs) {
+      final oldCode = doc.data()['inviteCode'] as String?;
+      if (oldCode == null) {
+        skipped++;
+        continue;
+      }
+
+      try {
+        final batch = _db.batch();
+
+        batch.set(
+          doc.reference.collection('private').doc('config'),
+          {'inviteCode': oldCode, 'migratedAt': FieldValue.serverTimestamp()},
+        );
+
+        batch.set(
+          _db.collection('inviteLookup').doc(oldCode),
+          {'communityId': doc.id, 'migratedAt': FieldValue.serverTimestamp()},
+        );
+
+        // Eski alanı topluluk belgesinden sil
+        batch.update(doc.reference, {'inviteCode': FieldValue.delete()});
+
+        await batch.commit();
+        debugPrint('[Migration] OK: ${doc.id} → $oldCode');
+        migrated++;
+      } catch (e) {
+        debugPrint('[Migration] HATA: ${doc.id} → $e');
+        errors.add(doc.id);
+      }
+    }
+
+    debugPrint(
+        '[Migration] Bitti — migrate: $migrated, atlandı: $skipped, hata: ${errors.length}');
+    return (migrated: migrated, skipped: skipped, errors: errors);
   }
 
   // ── Yardımcı: Davet kodu üret ─────────────────────────────────────────────

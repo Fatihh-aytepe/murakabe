@@ -7,10 +7,8 @@ service cloud.firestore {
     }
 
     function isOwner() {
-      return isAuth() && (
-        request.auth.token.email == 'yavuzbera02@gmail.com' ||
-        get(/databases/$(database)/documents/roles/owner).data.get('uid', '') == request.auth.uid
-      );
+      return isAuth() &&
+        get(/databases/$(database)/documents/roles/owner).data.get('uid', '') == request.auth.uid;
     }
 
     function isAdmin() {
@@ -47,47 +45,94 @@ service cloud.firestore {
     // ── Roller ────────────────────────────────────────────────────────────
     match /roles/owner {
       allow read: if isAuth();
-      allow create: if isAuth() && !exists(/databases/$(database)/documents/roles/owner);
+      // Sadece yetkili e-posta ilk kez oluşturabilir; sonrasında yalnızca mevcut owner güncelleyebilir
+      allow create: if isAuth()
+        && !exists(/databases/$(database)/documents/roles/owner)
+        && request.auth.token.email == 'yavuzbera02@gmail.com';
       allow update: if isOwner();
       allow delete: if isOwner();
     }
 
     match /roles/{docId} {
       allow read: if isAuth();
-      allow write: if isOwner();
+      // owner belgesi buradaki genel write kuralı kapsamı dışında; sadece /roles/owner kuralları geçerli
+      allow write: if isOwner() && docId != 'owner';
     }
 
-    // ── Admin/Sahip Başvuruları (Geliştirilmiş & Esnek Yapı) ─────────────────
+    // ── Admin/Sahip Başvuruları ──────────────────────────────────────────────
     match /adminRequests/{requestId} {
-      // Herkes başvuru oluşturabilir
-      allow create: if isAuth();
-      // Tek belge okuma: sahip veya belgenin sahibi (uid alanı)
-      allow get: if isAuth() && (isOwner() || resource.data.uid == request.auth.uid);
-      // Koleksiyon sorgusu: yalnızca sahip listeleyebilir (resource.data olmadan)
-      allow list: if isOwner();
-      // Güncelleme ve silme: yalnızca sahip
+      allow create: if isAuth()
+        && requestId == request.auth.uid
+        && request.resource.data.uid == request.auth.uid;
+      allow get: if isAuth() && (isOwner() || request.auth.uid == requestId);
+      allow list: if isAdmin();
       allow update, delete: if isOwner();
     }
 
-    // ── Bildirimler (Toplu listeleme izni eklendi) ───────────────────────────
+    // ── Bildirimler ───────────────────────────────────────────────────────────
     match /notifications/{notifId} {
       allow create: if isAdmin();
-      allow read, list, update: if isAuth() && (
+      allow read, list: if isAuth() && (
         isOwner() ||
         isAdmin() ||
         resource.data.targetUid == request.auth.uid
       );
+      // Hedef kullanıcı yalnızca okundu bilgisini (read) güncelleyebilir
+      allow update: if isAuth() && (
+        isOwner() ||
+        isAdmin() ||
+        (resource.data.targetUid == request.auth.uid &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']))
+      );
+      allow delete: if isOwner() || isAdmin() || resource.data.targetUid == request.auth.uid;
+    }
+
+    // ── Davet kodu arama tablosu ─────────────────────────────────────────────
+    // inviteCode → communityId eşleşmesi; kodu bilen get yapabilir, list sadece admin.
+    // inviteCode artık topluluk belgesinde değil, burada tutulur.
+    match /inviteLookup/{code} {
+      allow get: if isAuth();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin();
+      allow delete: if isOwner();
     }
 
     // ── Topluluklar ────────────────────────────────────────────────────────
     match /communities/{communityId} {
-      allow read: if isAuth();
+      // get: topluluk önizlemesi için açık (inviteCode artık burada yok)
+      // list: yalnızca admin tüm toplulukları listeleyebilir
+      allow get: if isAuth();
+      allow list: if isAdmin();
       allow create: if isAdmin();
-      allow update: if isOwner() || isCommunityAdmin(communityId);
+      allow update: if isOwner() || isCommunityAdmin(communityId) ||
+        // Katılım batch'i: herhangi bir auth kullanıcı yalnızca memberCount'u tam 1 artırabilir
+        (isAuth() &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']) &&
+         request.resource.data.memberCount == resource.data.memberCount + 1);
+
+      // Özel topluluk ayarları (inviteCode vb.) — owner ve topluluk yöneticisi erişebilir
+      match /private/{docId} {
+        allow read: if isOwner() || isCommunityAdmin(communityId);
+        allow create, update: if isOwner() || isCommunityAdmin(communityId);
+        allow delete: if isOwner();
+      }
 
       match /members/{userId} {
-        allow read: if isAuth();
-        allow create: if isAuth() && request.auth.uid == userId;
+        // Üye listesi: yalnızca üyeler, adminler veya kullanıcının kendisi görebilir
+        allow read: if isAdmin() || isMember(communityId) || request.auth.uid == userId;
+        allow create: if isAuth() && request.auth.uid == userId && request.resource.data.uid == request.auth.uid && (
+          // Topluluk kurucusu (adminUid) kendi 'admin' rolündeki kaydını açar
+          (isAdmin()
+           && get(/databases/$(database)/documents/communities/$(communityId)).data.adminUid == request.auth.uid
+           && request.resource.data.role == 'admin'
+           && request.resource.data.keys().hasOnly(['uid', 'role', 'joinedAt']))
+          ||
+          // Davet koduyla katılım: inviteLookup'ta kodu ve topluluk eşleşmesini doğrula
+          (request.resource.data.role == 'member'
+           && request.resource.data.keys().hasOnly(['uid', 'role', 'joinedAt', 'inviteCode'])
+           && exists(/databases/$(database)/documents/inviteLookup/$(request.resource.data.inviteCode))
+           && get(/databases/$(database)/documents/inviteLookup/$(request.resource.data.inviteCode)).data.communityId == communityId)
+        );
         allow update, delete: if isOwner() || isCommunityAdmin(communityId);
       }
 
@@ -105,7 +150,11 @@ service cloud.firestore {
       match /tasks/{taskId} {
         allow read: if isMember(communityId);
         allow create, delete: if isOwner() || isCommunityAdmin(communityId);
-        allow update: if isOwner() || isCommunityAdmin(communityId) || isMember(communityId);
+        // Owner/admin her şeyi güncelleyebilir; üye sadece completions.{kendi_uid} alanını yazabilir
+        allow update: if isOwner() || isCommunityAdmin(communityId) ||
+          (isMember(communityId) &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completions']) &&
+           request.resource.data.completions.diff(resource.data.completions).affectedKeys().hasOnly([request.auth.uid]));
       }
     }
   }
