@@ -94,7 +94,11 @@ service cloud.firestore {
       allow get: if isAuth();
       allow list: if isAdmin();
       allow create, update: if isAdmin();
-      allow delete: if isOwner();
+      // Topluluk yöneticisi kendi topluluğunun kodunu yenileyebilir (eski kodu siler)
+      allow delete: if isOwner() ||
+        (isAuth() &&
+         resource.data.communityId is string &&
+         get(/databases/$(database)/documents/communities/$(resource.data.communityId)).data.adminUid == request.auth.uid);
     }
 
     // ── Topluluklar ────────────────────────────────────────────────────────
@@ -104,6 +108,7 @@ service cloud.firestore {
       allow get: if isAuth();
       allow list: if isAdmin();
       allow create: if isAdmin();
+      allow delete: if isOwner() || isCommunityAdmin(communityId);
       allow update: if isOwner() || isCommunityAdmin(communityId) ||
         // Katılım batch'i: herhangi bir auth kullanıcı yalnızca memberCount'u tam 1 artırabilir
         (isAuth() &&
@@ -114,12 +119,13 @@ service cloud.firestore {
       match /private/{docId} {
         allow read: if isOwner() || isCommunityAdmin(communityId);
         allow create, update: if isOwner() || isCommunityAdmin(communityId);
-        allow delete: if isOwner();
+        allow delete: if isOwner() || isCommunityAdmin(communityId);
       }
 
       match /members/{userId} {
         // Üye listesi: yalnızca üyeler, adminler veya kullanıcının kendisi görebilir
-        allow read: if isAdmin() || isMember(communityId) || request.auth.uid == userId;
+        // resource.data.uid eklendi: collectionGroup sorgularında uid field'ı query-provable
+        allow read: if isAdmin() || isMember(communityId) || request.auth.uid == userId || resource.data.uid == request.auth.uid;
         allow create: if isAuth() && request.auth.uid == userId && request.resource.data.uid == request.auth.uid && (
           // Topluluk kurucusu (adminUid) kendi 'admin' rolündeki kaydını açar
           (isAdmin()

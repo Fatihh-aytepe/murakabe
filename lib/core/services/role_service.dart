@@ -320,6 +320,30 @@ class RoleService {
       'createdAt': FieldValue.serverTimestamp(),
       'completions': {},
     });
+
+    // Her üyeye bildirim yaz (yöneticinin kendisi hariç)
+    try {
+      final members = await _db
+          .collection('communities')
+          .doc(communityId)
+          .collection('members')
+          .get();
+      final batch = _db.batch();
+      for (final doc in members.docs) {
+        final memberUid = doc.data()['uid'] as String?;
+        if (memberUid == null || memberUid == _uid) continue;
+        final ref = _db.collection('notifications').doc();
+        batch.set(ref, {
+          'type': 'task_assigned',
+          'targetUid': memberUid,
+          'title': title,
+          'communityId': communityId,
+          'createdAt': FieldValue.serverTimestamp(),
+          'read': false,
+        });
+      }
+      await batch.commit();
+    } catch (_) {}
   }
 
   // ── Admin: Duyuru gönder + tüm üyelere Firestore bildirimi yaz ───────────
@@ -476,11 +500,13 @@ class RoleService {
   }
 
   // ── Kullanıcının topluluklarını getir ─────────────────────────────────────
+  // collectionGroup index Firebase Console'da oluşturulmamışsa PERMISSION_DENIED verir.
   Stream<QuerySnapshot> getUserCommunities() {
     return _db
         .collectionGroup('members')
         .where('uid', isEqualTo: _uid)
-        .snapshots();
+        .snapshots()
+        .handleError((_) {});
   }
 
   // ── Admin'in yönettiği topluluğu getir ───────────────────────────────────
@@ -498,6 +524,41 @@ class RoleService {
         .where('status', isEqualTo: 'pending')
         .orderBy('appliedAt', descending: true)
         .snapshots();
+  }
+
+  // ── Admin: Davet kodunu yenile ───────────────────────────────────────────────
+  // Eski kodu inviteLookup'tan siler, yeni kod üretir, private/config ve inviteLookup günceller.
+  Future<String> regenerateInviteCode(String communityId) async {
+    if (_uid == null) throw Exception('Giriş yapılmamış');
+
+    final configRef = _db
+        .collection('communities')
+        .doc(communityId)
+        .collection('private')
+        .doc('config');
+
+    final configDoc = await configRef.get();
+    final oldCode = configDoc.data()?['inviteCode'] as String?;
+
+    final newCode = _generateCode();
+    final batch = _db.batch();
+
+    if (oldCode != null && oldCode.isNotEmpty) {
+      batch.delete(_db.collection('inviteLookup').doc(oldCode));
+    }
+
+    batch.set(configRef, {
+      'inviteCode': newCode,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    batch.set(_db.collection('inviteLookup').doc(newCode), {
+      'communityId': communityId,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
+    return newCode;
   }
 
   // ── Tek seferlik migration: eski inviteCode yapısını yeni yapıya taşı ──────
@@ -546,6 +607,52 @@ class RoleService {
     debugPrint(
         '[Migration] Bitti — migrate: $migrated, atlandı: $skipped, hata: ${errors.length}');
     return (migrated: migrated, skipped: skipped, errors: errors);
+  }
+
+  // ── Admin: Topluluğu tamamen sil ─────────────────────────────────────────
+  Future<void> deleteCommunity(String communityId) async {
+    if (_uid == null) return;
+
+    final communityDoc =
+        await _db.collection('communities').doc(communityId).get();
+    final adminUid = communityDoc.data()?['adminUid'] as String?;
+    if (adminUid != _uid) throw Exception('Bu topluluğu silme yetkiniz yok');
+
+    // inviteLookup kaydını sil
+    try {
+      final configDoc = await _db
+          .collection('communities')
+          .doc(communityId)
+          .collection('private')
+          .doc('config')
+          .get();
+      final inviteCode = configDoc.data()?['inviteCode'] as String?;
+      if (inviteCode != null) {
+        await _db.collection('inviteLookup').doc(inviteCode).delete();
+      }
+    } catch (_) {}
+
+    // Alt koleksiyonları toplu sil
+    for (final sub in ['tasks', 'members', 'messages', 'announcements', 'private']) {
+      final snap = await _db
+          .collection('communities')
+          .doc(communityId)
+          .collection(sub)
+          .get();
+      const batchLimit = 490;
+      for (var i = 0; i < snap.docs.length; i += batchLimit) {
+        final batch = _db.batch();
+        final end =
+            (i + batchLimit < snap.docs.length) ? i + batchLimit : snap.docs.length;
+        for (final doc in snap.docs.sublist(i, end)) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+      }
+    }
+
+    // Topluluk belgesini sil
+    await _db.collection('communities').doc(communityId).delete();
   }
 
   // ── Yardımcı: Davet kodu üret ─────────────────────────────────────────────

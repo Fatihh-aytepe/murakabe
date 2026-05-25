@@ -73,11 +73,23 @@ class UserRepository {
   /// Ana kullanıcı dokümanının yanı sıra tüm subcollection'lar da geri yüklenir.
   Future<bool> restoreFromFirestore(String uid) async {
     try {
-      final map = await _firebase.getUserForSQLite(uid);
-      if (map == null) {
+      final raw = await _firebase.getUserForSQLite(uid);
+      if (raw == null) {
         debugPrint('[UserRepo] Firestore kullanıcı dokümanı bulunamadı: $uid');
         return false;
       }
+      // Sadece UserModel alanlarını SQLite'a yaz; bilinmeyen Firestore alanları
+      // (lastRewardedEsmaBadge, isDarkMode vb.) kolon yoksa insert'i patlatır.
+      final user = UserModel.fromMap(raw);
+      final map = user.toMap();
+      map['missedQuranDays'] = raw['missedQuranDays'] is String
+          ? raw['missedQuranDays']
+          : jsonEncode(user.missedQuranDays);
+      map['tahajjudAlarmTimes'] = raw['tahajjudAlarmTimes'] is String
+          ? raw['tahajjudAlarmTimes']
+          : jsonEncode(
+              user.tahajjudAlarmTimes.map((e) => e.toIso8601String()).toList());
+
       final existing =
           await _db.query('users', where: 'id = ?', whereArgs: [uid]);
       if (existing.isNotEmpty) {

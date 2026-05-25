@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 
+bool _asBool(dynamic v, {bool fallback = false}) =>
+    v is bool ? v : (v is int ? v != 0 : fallback);
+
 class UserDetailScreen extends StatefulWidget {
   final String uid;
   final String name;
@@ -573,7 +576,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
         final title = r['title'] as String? ?? 'Başlıksız';
         final content = r['content'] as String? ?? '';
         final time = _fmtDate(r['reminderTime'] as String?);
-        final isActive = r['isActive'] as bool? ?? false;
+        final isActive = _asBool(r['isActive']);
         return _listTile(
           icon: Icons.alarm_outlined,
           color: isActive ? Colors.blueAccent : Colors.white38,
@@ -619,7 +622,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
         final t = sorted[i];
         final title = t['title'] as String? ?? 'Görev';
         final desc = t['description'] as String? ?? '';
-        final isActive = t['isActive'] as bool? ?? true;
+        final isActive = _asBool(t['isActive'], fallback: true);
         final notifTime = t['notificationTime'] as String?;
         final sub = [
           if (desc.isNotEmpty) desc,

@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import '../constants/app_strings.dart';
+import '../../data/local/local_storage.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -122,11 +123,30 @@ class NotificationService {
     required String ayetTurkish,
     required String surahName,
   }) async {
-    await _scheduleEsmaNotification(esmaArabic, esmaMeaning);
-    await _scheduleHadisNotification(hadisText, hadisSource);
-    await _scheduleAyetNotification(ayetTurkish, surahName);
-    await _scheduleQuranNotification();
+    final storage = LocalStorage();
+    if (storage.esmaNotifEnabled)  await _scheduleEsmaNotification(esmaArabic, esmaMeaning);
+    if (storage.hadisNotifEnabled) await _scheduleHadisNotification(hadisText, hadisSource);
+    if (storage.ayetNotifEnabled)  await _scheduleAyetNotification(ayetTurkish, surahName);
+    if (storage.kuranNotifEnabled) await _scheduleQuranNotification();
   }
+
+  // ── Per-type cancel helpers ───────────────────────────────────────────────
+  Future<void> cancelEsmaNotification()  => cancelNotification(esmaNotifId);
+  Future<void> cancelHadisNotification() => cancelNotification(hadisNotifId);
+  Future<void> cancelAyetNotification()  => cancelNotification(ayetNotifId);
+  Future<void> cancelKuranNotification() async {
+    await cancelNotification(quranNotifId);
+    await cancelHourlyQuranReminders();
+  }
+
+  // ── Generic reschedule (settings toggle-on; home screen replaces on next load) ──
+  Future<void> rescheduleEsmaNotification() =>
+      _scheduleEsmaNotification('Esmaül Hüsna', 'Bugünün ismini okumak için dokunun');
+  Future<void> rescheduleHadisNotification() =>
+      _scheduleHadisNotification('Günün Hadisi', 'Bugünün hadisini okumak için dokunun');
+  Future<void> rescheduleAyetNotification() =>
+      _scheduleAyetNotification('Günün Ayeti', 'Bugünün ayetini okumak için dokunun');
+  Future<void> rescheduleKuranNotification() => _scheduleQuranNotification();
 
   Future<void> _scheduleEsmaNotification(String arabic, String meaning) async {
     final scheduled = _nextTime(8, 0);
@@ -516,6 +536,28 @@ class NotificationService {
   Future<void> cancelHourlyQuranReminders() async {
     for (int i = 0; i < 5; i++) {
       await _plugin.cancel(quranNotifId + 20 + i);
+    }
+  }
+
+  // Tamamlanmamış görev hatırlatmaları — 09:00, 12:00, 15:00, 18:00, 21:00 (ID 200–204)
+  Future<void> schedulePendingTaskReminders() async {
+    final times = [
+      [9, 0], [12, 0], [15, 0], [18, 0], [21, 0]
+    ];
+    for (var i = 0; i < times.length; i++) {
+      await scheduleTaskNotification(
+        200 + i,
+        'Topluluk Görevleri',
+        'Tamamlanmamış görevleriniz var. Kontrol etmeyi unutmayın.',
+        times[i][0],
+        times[i][1],
+      );
+    }
+  }
+
+  Future<void> cancelPendingTaskReminders() async {
+    for (var i = 0; i < 5; i++) {
+      await _plugin.cancel(200 + i);
     }
   }
 

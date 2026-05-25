@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -51,11 +52,9 @@ class UserModel {
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.tryParse(map['createdAt']?.toString() ?? '') ?? DateTime.now(),
       quranReadDays: map['quranReadDays'] ?? 0,
-      missedQuranDays: List<String>.from(map['missedQuranDays'] ?? []),
+      missedQuranDays: _decodeStringList(map['missedQuranDays']),
       tahajjudAlarmEnabled: map['tahajjudAlarmEnabled'] == true || map['tahajjudAlarmEnabled'] == 1,
-      tahajjudAlarmTimes: (map['tahajjudAlarmTimes'] as List<dynamic>? ?? [])
-          .map((e) => DateTime.parse(e.toString()))
-          .toList(),
+      tahajjudAlarmTimes: _decodeDateTimeList(map['tahajjudAlarmTimes']),
       streakDays: map['streakDays'] ?? 0,
       mercyDaysUsed: map['mercyDaysUsed'] ?? 0,
       lastStreakDate: map['lastStreakDate'] ?? '',
@@ -63,7 +62,8 @@ class UserModel {
       bio: map['bio'] ?? '',
       gender: map['gender'] ?? '',
       photoUrl: map['photoUrl'] ?? '',
-      isEmailVerified: map['isEmailVerified'] == true || map['isEmailVerified'] == 1,
+      isEmailVerified: (map['isEmailVerified'] ?? map['IsEmailVerified']) == true ||
+          (map['isEmailVerified'] ?? map['IsEmailVerified']) == 1,
     );
   }
 
@@ -176,4 +176,39 @@ class UserModel {
     if (streak >= 7) return '🔥 Ateş';
     return '🌱 Başlangıç';
   }
+}
+
+List<String> _decodeStringList(dynamic v) {
+  if (v is List) return List<String>.from(v);
+  if (v is String && v.isNotEmpty) {
+    try {
+      return List<String>.from(jsonDecode(v) as List);
+    } catch (_) {}
+  }
+  return [];
+}
+
+List<DateTime> _decodeDateTimeList(dynamic v) {
+  List<dynamic> raw;
+  if (v is List) {
+    raw = v;
+  } else if (v is String && v.isNotEmpty) {
+    try {
+      raw = jsonDecode(v) as List;
+    } catch (_) {
+      return [];
+    }
+  } else {
+    return [];
+  }
+  return raw
+      .map((e) {
+        try {
+          return DateTime.parse(e.toString());
+        } catch (_) {
+          return null;
+        }
+      })
+      .whereType<DateTime>()
+      .toList();
 }

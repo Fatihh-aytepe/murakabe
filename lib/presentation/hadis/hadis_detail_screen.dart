@@ -369,7 +369,7 @@ class _HadisDetailScreenState extends State<HadisDetailScreen> {
   }
 
   void _openNoteEditor() {
-    final prefill = 'Hadis: ${_currentHadis.source}';
+    final prefill = _currentHadis.text;
     final titleCtrl = TextEditingController(text: prefill);
     final contentCtrl = TextEditingController();
 

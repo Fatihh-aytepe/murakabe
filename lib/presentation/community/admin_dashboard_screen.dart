@@ -25,6 +25,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   String? _communityId;
   List<String> _adminCommunityIds = [];
   bool _isLoading = true;
+  bool _regenLoading = false;
 
   @override
   void initState() {
@@ -359,6 +360,63 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
+  Future<void> _regenerateCode() async {
+    final communityId = _communityId;
+    if (communityId == null) return;
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2035),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text('Kodu Yenile',
+            style: GoogleFonts.playfairDisplay(color: Colors.white)),
+        content: Text(
+          'Mevcut davet kodu geçersiz hale gelecek. Eski kodla katılmak isteyen üyeler yeni kodu kullanmak zorunda kalacak.',
+          style: GoogleFonts.notoSans(color: Colors.white70, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('İptal',
+                  style: GoogleFonts.notoSans(color: Colors.white54))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.gold,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10))),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Yenile',
+                style: GoogleFonts.notoSans(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    setState(() => _regenLoading = true);
+    try {
+      final newCode = await _roleService.regenerateInviteCode(communityId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Yeni kod: $newCode'),
+        backgroundColor: const Color(0xFF2E7D32),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Hata: $e'),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ));
+    } finally {
+      if (mounted) setState(() => _regenLoading = false);
+    }
+  }
+
   Future<void> _shareViaWhatsApp(String code) async {
     final text = Uri.encodeComponent(
         'Murakabe uygulamasına katıl! Topluluk davet kodun: $code\n'
@@ -610,7 +668,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 final data = snap.data?.data() as Map<String, dynamic>? ?? {};
                 final name = data['name'] as String? ?? 'Topluluk';
                 final memberCount = data['memberCount'] as int? ?? 0;
-                final inviteCode = data['inviteCode'] as String? ?? '';
                 return Container(
                   padding: const EdgeInsets.all(16),
                   margin: const EdgeInsets.only(bottom: 16),
@@ -653,63 +710,124 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: inviteCode));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Davet kodu kopyalandı')),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.07),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.copy,
-                                        color: AppColors.turquoise, size: 14),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Davet Kodu: $inviteCode',
-                                      style: GoogleFonts.notoSans(
-                                        color: AppColors.turquoiseLight,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1,
+                      // Davet kodu private/config'den okunur
+                      StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('communities')
+                            .doc(_communityId)
+                            .collection('private')
+                            .doc('config')
+                            .snapshots(),
+                        builder: (_, cfgSnap) {
+                          final inviteCode =
+                              (cfgSnap.data?.data() as Map<String, dynamic>?)?[
+                                      'inviteCode'] as String? ??
+                                  '';
+                          final codeReady = inviteCode.isNotEmpty;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: codeReady
+                                          ? () {
+                                              Clipboard.setData(ClipboardData(
+                                                  text: inviteCode));
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(const SnackBar(
+                                                content:
+                                                    Text('Davet kodu kopyalandı'),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
+                                              ));
+                                            }
+                                          : null,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              Colors.white.withValues(alpha: 0.07),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.copy,
+                                                color: AppColors.turquoise,
+                                                size: 14),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              codeReady
+                                                  ? 'Davet Kodu: $inviteCode'
+                                                  : 'Kod yükleniyor...',
+                                              style: GoogleFonts.notoSans(
+                                                color: codeReady
+                                                    ? AppColors.turquoiseLight
+                                                    : Colors.white38,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 1,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // WhatsApp paylaş
+                                  GestureDetector(
+                                    onTap: codeReady
+                                        ? () => _shareViaWhatsApp(inviteCode)
+                                        : null,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF25D366)
+                                            .withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                            color: const Color(0xFF25D366)
+                                                .withValues(alpha: 0.4)),
+                                      ),
+                                      child: const Icon(Icons.share,
+                                          color: Color(0xFF25D366), size: 18),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Kodu yenile
+                                  GestureDetector(
+                                    onTap:
+                                        _regenLoading ? null : _regenerateCode,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.gold
+                                            .withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                            color: AppColors.gold
+                                                .withValues(alpha: 0.35)),
+                                      ),
+                                      child: _regenLoading
+                                          ? const SizedBox(
+                                              width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(
+                                                  color: AppColors.gold,
+                                                  strokeWidth: 2))
+                                          : const Icon(Icons.refresh_rounded,
+                                              color: AppColors.gold, size: 18),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () => _shareViaWhatsApp(inviteCode),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF25D366)
-                                    .withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                    color: const Color(0xFF25D366)
-                                        .withValues(alpha: 0.4)),
-                              ),
-                              child: const Icon(Icons.share,
-                                  color: Color(0xFF25D366), size: 18),
-                            ),
-                          ),
-                        ],
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -739,10 +857,89 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               color: Colors.orange,
               onTap: () => _showAnnouncementDialog(isWarning: true),
             ),
+            const SizedBox(height: 24),
+            _buildActionCard(
+              icon: Icons.delete_forever,
+              title: 'Topluluğu Sil',
+              subtitle: 'Topluluğu ve tüm verilerini kalıcı olarak sil',
+              color: Colors.red,
+              onTap: _showDeleteCommunityDialog,
+            ),
           ],
         ],
       ),
     );
+  }
+
+  Future<void> _showDeleteCommunityDialog() async {
+    final communityId = _communityId;
+    if (communityId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2035),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_rounded, color: Colors.red, size: 22),
+            const SizedBox(width: 8),
+            Text(
+              'Topluluğu Sil',
+              style: GoogleFonts.notoSans(
+                  color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Text(
+          'Bu topluluğu silmek istediğinizden emin misiniz?\n\n'
+          'Tüm üyeler, görevler, mesajlar ve duyurular kalıcı olarak silinecek. Bu işlem geri alınamaz.',
+          style: GoogleFonts.notoSans(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('İptal',
+                style: GoogleFonts.notoSans(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Sil', style: GoogleFonts.notoSans()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _roleService.deleteCommunity(communityId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Topluluk silindi'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hata: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   // ── Üyeler sekmesi ────────────────────────────────────────────────────────

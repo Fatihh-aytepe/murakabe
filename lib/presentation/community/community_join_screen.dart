@@ -84,7 +84,7 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
           );
         }
       }
-    });
+    }, onError: (_) {});
   }
 
   Future<void> _checkRole() async {
@@ -98,18 +98,27 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
 
     setState(() => _isLoading = true);
     try {
-      // Önce topluluğu bul, katılma
-      final query = await FirebaseFirestore.instance
-          .collection('communities')
-          .where('inviteCode', isEqualTo: code)
-          .limit(1)
+      // inviteLookup'tan communityId bul (inviteCode artık communities belgesinde değil)
+      final lookupDoc = await FirebaseFirestore.instance
+          .collection('inviteLookup')
+          .doc(code)
           .get();
 
-      if (query.docs.isEmpty) {
+      if (!lookupDoc.exists) {
         throw Exception('Geçersiz davet kodu');
       }
 
-      final communityData = query.docs.first.data();
+      final communityId = lookupDoc.data()?['communityId'] as String?;
+      if (communityId == null) throw Exception('Geçersiz davet kodu');
+
+      final communityDoc = await FirebaseFirestore.instance
+          .collection('communities')
+          .doc(communityId)
+          .get();
+
+      if (!communityDoc.exists) throw Exception('Topluluk bulunamadı');
+
+      final communityData = communityDoc.data()!;
       final communityName = communityData['name'] as String? ?? 'Topluluk';
       final communityDesc = communityData['description'] as String? ?? '';
       final memberCount = communityData['memberCount'] as int? ?? 0;
@@ -383,6 +392,7 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                   StreamBuilder<QuerySnapshot>(
                     stream: _roleService.getUserCommunities(),
                     builder: (_, snap) {
+                      if (snap.hasError) return _buildEmptyState();
                       final docs = snap.data?.docs ?? [];
                       if (docs.isEmpty) {
                         return _buildEmptyState();
@@ -425,8 +435,8 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
 
                   const SizedBox(height: 20),
 
-                  // ── Admin: Topluluk Oluştur ───────────────────────────
-                  if (_userRole == UserRole.admin || _userRole == UserRole.owner)
+                  // ── Admin/Owner: Topluluk Oluştur ──────────────────────
+                  if (_userRole == UserRole.admin || _userRole == UserRole.owner) ...[
                     _buildCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -500,102 +510,103 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 12),
+                  ],
 
-                  // ── Kullanıcı: Yeni topluluğa katıl (davet kodu) ─────
-                  if (_userRole == UserRole.user) ...[
-                    _buildCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: () => setState(
-                                () => _showJoinForm = !_showJoinForm),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.add_circle_outline,
-                                    color: AppColors.turquoise, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Topluluğa Katıl',
-                                  style: GoogleFonts.playfairDisplay(
-                                    color: AppColors.gold,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                  // ── Herkes: Topluluğa Katıl (davet kodu) ───────────────
+                  _buildCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () => setState(
+                              () => _showJoinForm = !_showJoinForm),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.add_circle_outline,
+                                  color: AppColors.turquoise, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Topluluğa Katıl',
+                                style: GoogleFonts.playfairDisplay(
+                                  color: AppColors.gold,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                const Spacer(),
-                                Icon(
-                                  _showJoinForm
-                                      ? Icons.expand_less
-                                      : Icons.expand_more,
-                                  color: Colors.white38,
-                                ),
-                              ],
+                              ),
+                              const Spacer(),
+                              Icon(
+                                _showJoinForm
+                                    ? Icons.expand_less
+                                    : Icons.expand_more,
+                                color: Colors.white38,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_showJoinForm) ...[
+                          const SizedBox(height: 14),
+                          TextField(
+                            controller: _codeCtrl,
+                            textCapitalization: TextCapitalization.characters,
+                            style: GoogleFonts.notoSans(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 3,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Davet Kodu (8 hane)',
+                              hintStyle: const TextStyle(
+                                  color: Colors.white38, letterSpacing: 1),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: Colors.white24),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide:
+                                    const BorderSide(color: AppColors.gold),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
-                          if (_showJoinForm) ...[
-                            const SizedBox(height: 14),
-                            TextField(
-                              controller: _codeCtrl,
-                              textCapitalization: TextCapitalization.characters,
-                              style: GoogleFonts.notoSans(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 3,
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _joinCommunity,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.turquoise,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
                               ),
-                              decoration: InputDecoration(
-                                hintText: 'Davet Kodu (8 hane)',
-                                hintStyle: const TextStyle(
-                                    color: Colors.white38, letterSpacing: 1),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                      color: Colors.white24),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide:
-                                      const BorderSide(color: AppColors.gold),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2),
+                                    )
+                                  : Text(
+                                      'Katıl',
+                                      style: GoogleFonts.notoSans(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                             ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: _isLoading ? null : _joinCommunity,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.turquoise,
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 2),
-                                      )
-                                    : Text(
-                                        'Katıl',
-                                        style: GoogleFonts.notoSans(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ],
-                      ),
+                      ],
                     ),
+                  ),
 
+                  // ── Sadece normal kullanıcılar: Admin Başvurusu ─────────
+                  if (_userRole == UserRole.user) ...[
                     const SizedBox(height: 12),
-
-                    // ── Admin başvurusu ───────────────────────────────────
                     _buildCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

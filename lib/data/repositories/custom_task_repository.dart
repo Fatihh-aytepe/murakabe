@@ -166,8 +166,11 @@ class CustomTaskRepository {
     final activeTasks = await getActiveTasks();
     final activeIds = activeTasks.map((t) => t.id).toSet();
 
-    // Önce 3000–3999 aralığındaki tüm eski bildirimleri iptal et
+    // 3000–3999 (mevcut) ve 5000–14999 (eski UI aralığı) bildirimleri temizle
     for (int i = 3000; i < 4000; i++) {
+      await NotificationService().cancelNotification(i);
+    }
+    for (int i = 5000; i < 15000; i++) {
       await NotificationService().cancelNotification(i);
     }
 

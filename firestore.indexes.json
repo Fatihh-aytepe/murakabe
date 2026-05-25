@@ -17,7 +17,6 @@
           "order": "DESCENDING"
         }
       ],
-      "density": "SPARSE_ALL"
     },
     {
       "collectionGroup": "members",

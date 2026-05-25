@@ -1,15 +1,12 @@
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/alarm_service.dart';
 import '../../core/services/notification_service.dart';
-import '../../core/services/theme_service.dart';
 import '../../data/local/local_storage.dart';
 import '../../data/models/esma_model.dart';
 import '../../data/models/hadis_model.dart';
@@ -32,6 +29,7 @@ import '../badges/badges_screen.dart';
 import '../../core/constants/badge_definitions.dart';
 import '../../core/services/role_service.dart';
 import '../home/widgets/community_task_list.dart';
+import '../settings/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onTasksChanged;
@@ -255,26 +253,6 @@ class ProfileScreenState extends State<ProfileScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               OutlinedButton.icon(
-                onPressed: _user != null ? _showEditProfileSheet : null,
-                icon: const Icon(Icons.edit_outlined,
-                    size: 14, color: AppColors.gold),
-                label: Text(
-                  'Profili Düzenle',
-                  style:
-                      GoogleFonts.notoSans(color: AppColors.gold, fontSize: 12),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.gold, width: 1),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-              const SizedBox(width: 10),
-              OutlinedButton.icon(
                 onPressed: _showAccountsSheet,
                 icon: const Icon(Icons.people_outline,
                     size: 14, color: AppColors.turquoise),
@@ -294,27 +272,30 @@ class ProfileScreenState extends State<ProfileScreen>
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Tema toggle
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.light_mode, color: Colors.white38, size: 16),
-              const SizedBox(width: 8),
-              Consumer<ThemeService>(
-                builder: (_, theme, __) => Switch(
-                  value: theme.isDark,
-                  onChanged: (_) => theme.toggleTheme(),
-                  activeThumbColor: AppColors.gold,
-                  activeTrackColor: AppColors.gold.withValues(alpha: 0.3),
-                  inactiveThumbColor: Colors.white,
-                  inactiveTrackColor: Colors.white24,
+              const SizedBox(width: 10),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const SettingsScreen()),
+                ).then((_) => _loadData()),
+                icon: const Icon(Icons.settings_outlined,
+                    size: 14, color: AppColors.gold),
+                label: Text(
+                  'Ayarlar',
+                  style:
+                      GoogleFonts.notoSans(color: AppColors.gold, fontSize: 12),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.gold, width: 1),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ),
-              const SizedBox(width: 8),
-              const Icon(Icons.dark_mode, color: Colors.white38, size: 16),
             ],
           ),
           const SizedBox(height: 12),
@@ -767,6 +748,14 @@ class ProfileScreenState extends State<ProfileScreen>
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           IconButton(
+            icon: Icon(Icons.edit_outlined,
+                color: AppColors.turquoise.withValues(alpha: 0.8), size: 20),
+            onPressed: () => _showAddTaskDialog(existing: task),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
             onPressed: () => _confirmDeleteTask(task),
             padding: EdgeInsets.zero,
@@ -1014,29 +1003,8 @@ class ProfileScreenState extends State<ProfileScreen>
                               ),
                             );
                           }
-                          // Bildirim zamanlaması
-                          final notifId =
-                              (taskId.hashCode.abs() % 10000) + 5000;
-                          if (notifTime.isNotEmpty) {
-                            final parts = notifTime.split(':');
-                            if (parts.length == 2) {
-                              final h = int.tryParse(parts[0]) ?? 9;
-                              final m = int.tryParse(parts[1]) ?? 0;
-                              await NotificationService()
-                                  .scheduleTaskNotification(
-                                notifId,
-                                '$emoji $t',
-                                descCtrl.text.trim().isNotEmpty
-                                    ? descCtrl.text.trim()
-                                    : '$t göreviniz var!',
-                                h,
-                                m,
-                              );
-                            }
-                          } else {
-                            await NotificationService()
-                                .cancelTaskNotification(notifId);
-                          }
+                          // Bildirim zamanlaması repo tarafından yapılıyor
+                          // (addTask/updateTask içinde tutarlı ID şemasıyla)
                           await _loadData();
                           widget.onTasksChanged?.call();
                         },
@@ -1652,516 +1620,6 @@ class ProfileScreenState extends State<ProfileScreen>
 
   void _removeAlarm(int index) {
     setState(() => _tahajjudTimes.removeAt(index));
-  }
-
-  Future<void> _showEditProfileSheet() async {
-    if (_user == null) return;
-    final nameCtrl = TextEditingController(text: _user!.nameSurname);
-    final phoneCtrl = TextEditingController(text: _user!.phone);
-    bool isSaving = false;
-    String? errorMsg;
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          final bgColor = isDark ? const Color(0xFF1A2035) : Colors.white;
-          final textColor = isDark ? Colors.white : AppColors.textPrimary;
-          final borderColor = Colors.grey.withValues(alpha: 0.3);
-
-          InputDecoration fieldDecor(String label, IconData icon) =>
-              InputDecoration(
-                labelText: label,
-                labelStyle:
-                    TextStyle(color: textColor.withValues(alpha: 0.6)),
-                prefixIcon: Icon(icon, color: AppColors.gold, size: 20),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: borderColor),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: AppColors.gold),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              );
-
-          return Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(ctx).viewInsets.bottom),
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Profili Düzenle',
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.gold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: nameCtrl,
-                      style: TextStyle(color: textColor),
-                      decoration: fieldDecor('Ad Soyad', Icons.person_outline),
-                      textCapitalization: TextCapitalization.words,
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: phoneCtrl,
-                      style: TextStyle(color: textColor),
-                      decoration:
-                          fieldDecor('Telefon', Icons.phone_outlined),
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: borderColor),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.email_outlined,
-                              color: AppColors.gold, size: 20),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'E-posta',
-                                  style: TextStyle(
-                                      color:
-                                          textColor.withValues(alpha: 0.6),
-                                      fontSize: 12),
-                                ),
-                                Text(
-                                  _user?.email ?? '',
-                                  style: TextStyle(
-                                      color: textColor, fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              Navigator.pop(ctx);
-                              await Future.delayed(
-                                  const Duration(milliseconds: 300));
-                              if (mounted) await _showEmailChangeDialog();
-                            },
-                            child: Text(
-                              'Değiştir',
-                              style: GoogleFonts.notoSans(
-                                  color: AppColors.turquoise, fontSize: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (errorMsg != null) ...[
-                      const SizedBox(height: 8),
-                      Text(errorMsg!,
-                          style: const TextStyle(
-                              color: Colors.red, fontSize: 12)),
-                    ],
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isSaving
-                            ? null
-                            : () async {
-                                final name = nameCtrl.text.trim();
-                                final phone = phoneCtrl.text.trim();
-                                String? err;
-                                if (name.length < 2) {
-                                  err =
-                                      'Ad soyad en az 2 karakter olmalıdır.';
-                                } else if (phone.isNotEmpty &&
-                                    !RegExp(r'^[0-9]{10,11}$').hasMatch(
-                                        phone.replaceAll(
-                                            RegExp(r'[\s\-\+\(\)]'),
-                                            ''))) {
-                                  err =
-                                      'Geçerli bir telefon numarası giriniz.';
-                                }
-                                if (err != null) {
-                                  setSheetState(() => errorMsg = err);
-                                  return;
-                                }
-                                setSheetState(() {
-                                  isSaving = true;
-                                  errorMsg = null;
-                                });
-                                try {
-                                  await _userRepo.updateUser(
-                                    _user!.copyWith(
-                                        nameSurname: name, phone: phone),
-                                  );
-                                  try {
-                                    await FirebaseService()
-                                        .updateDisplayName(name);
-                                  } catch (_) {}
-                                  if (ctx.mounted) Navigator.pop(ctx);
-                                  if (mounted) await _loadData();
-                                } catch (e) {
-                                  setSheetState(() {
-                                    isSaving = false;
-                                    errorMsg = 'Güncelleme başarısız.';
-                                  });
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.gold,
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: isSaving
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                    color: Colors.white, strokeWidth: 2),
-                              )
-                            : Text(
-                                'Kaydet',
-                                style: GoogleFonts.notoSans(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-    nameCtrl.dispose();
-    phoneCtrl.dispose();
-  }
-
-  Future<void> _showEmailChangeDialog() async {
-    final emailCtrl = TextEditingController();
-    final passwordCtrl = TextEditingController();
-    bool isSaving = false;
-    bool showPassword = false;
-    String? errorMsg;
-
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          final dialogBg = isDark ? const Color(0xFF1A2035) : Colors.white;
-          final textColor = isDark ? Colors.white : AppColors.textPrimary;
-          final subColor =
-              isDark ? Colors.white60 : AppColors.textSecondary;
-
-          return Dialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)),
-            backgroundColor: dialogBg,
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.turquoise.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.email_outlined,
-                            color: AppColors.turquoise, size: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'E-posta Değiştir',
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Güvenlik için mevcut şifrenizi ve yeni e-posta adresinizi girin.',
-                    style: GoogleFonts.notoSans(
-                        color: subColor, fontSize: 13, height: 1.5),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: emailCtrl,
-                    keyboardType: TextInputType.emailAddress,
-                    style: TextStyle(color: textColor),
-                    decoration: InputDecoration(
-                      labelText: 'Yeni E-posta',
-                      labelStyle: TextStyle(color: subColor),
-                      prefixIcon: const Icon(Icons.email_outlined,
-                          color: AppColors.turquoise, size: 20),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            const BorderSide(color: AppColors.turquoise),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: passwordCtrl,
-                    obscureText: !showPassword,
-                    style: TextStyle(color: textColor),
-                    decoration: InputDecoration(
-                      labelText: 'Mevcut Şifre',
-                      labelStyle: TextStyle(color: subColor),
-                      prefixIcon: const Icon(Icons.lock_outline,
-                          color: AppColors.turquoise, size: 20),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          showPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          size: 18,
-                          color: AppColors.textLight,
-                        ),
-                        onPressed: () => setDialogState(
-                            () => showPassword = !showPassword),
-                      ),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            const BorderSide(color: AppColors.turquoise),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  if (errorMsg != null) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                            color: Colors.red.withValues(alpha: 0.4)),
-                      ),
-                      child: Text(errorMsg!,
-                          style: const TextStyle(
-                              color: Colors.red, fontSize: 12)),
-                    ),
-                  ],
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: Text('Vazgeç',
-                              style: GoogleFonts.notoSans(
-                                  color: AppColors.textLight)),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: isSaving
-                              ? null
-                              : () async {
-                                  final newEmail =
-                                      emailCtrl.text.trim();
-                                  final password = passwordCtrl.text;
-                                  if (!RegExp(
-                                          r'^[\w\.\-\+]+@[\w\-]+\.\w{2,}$')
-                                      .hasMatch(newEmail)) {
-                                    setDialogState(() => errorMsg =
-                                        'Geçerli bir e-posta adresi giriniz.');
-                                    return;
-                                  }
-                                  if (password.length < 6) {
-                                    setDialogState(() => errorMsg =
-                                        'Şifre en az 6 karakter olmalıdır.');
-                                    return;
-                                  }
-                                  setDialogState(() {
-                                    isSaving = true;
-                                    errorMsg = null;
-                                  });
-                                  try {
-                                    await FirebaseService()
-                                        .updateEmail(newEmail, password);
-                                    if (ctx.mounted) Navigator.pop(ctx);
-                                    if (mounted) _showEmailChangeSentDialog(newEmail);
-                                  } on FirebaseAuthException catch (e) {
-                                    String msg;
-                                    switch (e.code) {
-                                      case 'wrong-password':
-                                      case 'invalid-credential':
-                                        msg =
-                                            'Şifre hatalı. Lütfen tekrar deneyin.';
-                                        break;
-                                      case 'email-already-in-use':
-                                        msg =
-                                            'Bu e-posta adresi zaten kullanımda.';
-                                        break;
-                                      case 'invalid-email':
-                                        msg = 'Geçersiz e-posta adresi.';
-                                        break;
-                                      case 'requires-recent-login':
-                                        msg =
-                                            'Güvenlik için tekrar giriş yapmanız gerekmektedir.';
-                                        break;
-                                      default:
-                                        msg =
-                                            'Bir hata oluştu. Lütfen tekrar deneyin.';
-                                    }
-                                    setDialogState(() {
-                                      isSaving = false;
-                                      errorMsg = msg;
-                                    });
-                                  } catch (_) {
-                                    setDialogState(() {
-                                      isSaving = false;
-                                      errorMsg =
-                                          'Beklenmeyen bir hata oluştu.';
-                                    });
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.turquoise,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: isSaving
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                      color: Colors.white, strokeWidth: 2),
-                                )
-                              : Text(
-                                  'Değiştir',
-                                  style: GoogleFonts.notoSans(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-    emailCtrl.dispose();
-    passwordCtrl.dispose();
-  }
-
-  void _showEmailChangeSentDialog(String newEmail) {
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.mark_email_read_outlined,
-                    color: Colors.green, size: 30),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Doğrulama Gönderildi',
-                style: GoogleFonts.playfairDisplay(
-                    fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '$newEmail adresine doğrulama bağlantısı gönderildi.\nBağlantıya tıkladıktan sonra e-postanız güncellenecektir.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.notoSans(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    height: 1.5),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.gold,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: Text('Tamam',
-                      style: GoogleFonts.notoSans(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   void _showAccountsSheet() {

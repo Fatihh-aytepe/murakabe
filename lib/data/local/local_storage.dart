@@ -297,4 +297,53 @@ class LocalStorage {
       await setLastTahajjudMonthlyCard(monthly);
     }
   }
+
+  // ── Bildirim tercihleri ───────────────────────────────────────────────────
+  bool get esmaNotifEnabled  => _prefs.getBool('notif_esma')  ?? true;
+  bool get hadisNotifEnabled => _prefs.getBool('notif_hadis') ?? true;
+  bool get ayetNotifEnabled  => _prefs.getBool('notif_ayet')  ?? true;
+  bool get kuranNotifEnabled => _prefs.getBool('notif_kuran') ?? true;
+  Future<void> setEsmaNotif(bool v)  => _prefs.setBool('notif_esma',  v);
+  Future<void> setHadisNotif(bool v) => _prefs.setBool('notif_hadis', v);
+  Future<void> setAyetNotif(bool v)  => _prefs.setBool('notif_ayet',  v);
+  Future<void> setKuranNotif(bool v) => _prefs.setBool('notif_kuran', v);
+
+  // ── Topluluk sohbet okunma takibi ─────────────────────────────────────────
+  // hasChatUnread: bu toplulukta okunmamış mesaj var mı (push bildirim kontrolü)
+  bool hasChatUnread(String communityId) =>
+      _prefs.getBool('chat_unread_$communityId') ?? false;
+  Future<void> setChatUnread(String communityId, bool value) =>
+      _prefs.setBool('chat_unread_$communityId', value);
+
+  // getChatReadTime: kullanıcının bu topluluğu en son açtığı zaman (epoch ms)
+  int getChatReadTime(String communityId) =>
+      _prefs.getInt('chat_read_at_$communityId') ?? 0;
+  Future<void> setChatReadTime(String communityId) =>
+      _prefs.setInt('chat_read_at_$communityId',
+          DateTime.now().millisecondsSinceEpoch);
+
+  // ── Gizlenmiş duyurular (topluluk bazında, sadece bu cihazda) ─────────────
+  // Key: hidden_announcements_{communityId} | Value: JSON string liste
+
+  Set<String> getHiddenAnnouncements(String communityId) {
+    final raw = _prefs.getString('hidden_announcements_$communityId');
+    if (raw == null || raw.isEmpty) return {};
+    try {
+      return List<String>.from(jsonDecode(raw) as List).toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<void> addHiddenAnnouncement(
+      String communityId, String docId) async {
+    final current = getHiddenAnnouncements(communityId);
+    current.add(docId);
+    await _prefs.setString(
+        'hidden_announcements_$communityId', jsonEncode(current.toList()));
+  }
+
+  Future<void> clearHiddenAnnouncements(String communityId) async {
+    await _prefs.remove('hidden_announcements_$communityId');
+  }
 }

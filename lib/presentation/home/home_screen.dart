@@ -199,6 +199,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _communityIdNameMap = communityIdNameMap;
           _isLoading = false;
         });
+        // Sohbet mesaj dinleyicilerini güncelle
+        FirestoreNotificationService().startChatListeners(_communityIdNameMap);
 
         if (!_notificationsScheduled) {
           _notificationsScheduled = true;
@@ -238,6 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onTabChanged(int i) {
     setState(() => _selectedIndex = i);
     if (i == 1) _notesKey.currentState?.reload();
+    if (i == 2) FirestoreNotificationService().clearCommunityBadge();
     if (i == 3) _profileKey.currentState?.reload();
   }
 
@@ -745,20 +748,42 @@ class _HomeScreenState extends State<HomeScreen> {
         unselectedItemColor: isDark ? Colors.white38 : AppColors.textLight,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             label: 'Ana Sayfa',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.note_outlined),
             label: 'Notlarım',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.group_outlined),
+            icon: ValueListenableBuilder<bool>(
+              valueListenable:
+                  FirestoreNotificationService().communityBadgeNotifier,
+              builder: (_, hasBadge, __) => Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(Icons.group_outlined),
+                  if (hasBadge)
+                    Positioned(
+                      top: -1,
+                      right: -3,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFEF5350),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
             label: 'Topluluk',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             label: 'Profil',
           ),

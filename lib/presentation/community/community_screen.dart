@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/services/firestore_notification_service.dart';
 import '../../../core/services/role_service.dart';
 import '../../../data/local/local_storage.dart';
 
@@ -25,6 +26,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   bool _isSending = false;
   bool _isFirstLoad = true;
   int _prevDocCount = 0;
+  Set<String> _hiddenAnnouncementIds = {};
 
   String? get _uid => _storage.userId;
 
@@ -32,6 +34,9 @@ class _CommunityScreenState extends State<CommunityScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _loadHiddenAnnouncements();
+    // Kullanıcı chat'e girdi → okunmamış bayrağını sıfırla
+    FirestoreNotificationService().markChatRead(widget.communityId);
   }
 
   @override
@@ -74,6 +79,23 @@ class _CommunityScreenState extends State<CommunityScreen>
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
+  }
+
+  // ── Duyuru gizleme ────────────────────────────────────────────────────────
+
+  void _loadHiddenAnnouncements() {
+    final hidden = _storage.getHiddenAnnouncements(widget.communityId);
+    setState(() => _hiddenAnnouncementIds = hidden);
+  }
+
+  Future<void> _hideAnnouncement(String docId) async {
+    await _storage.addHiddenAnnouncement(widget.communityId, docId);
+    setState(() => _hiddenAnnouncementIds.add(docId));
+  }
+
+  Future<void> _clearHiddenAnnouncements() async {
+    await _storage.clearHiddenAnnouncements(widget.communityId);
+    setState(() => _hiddenAnnouncementIds.clear());
   }
 
   // ── Yardımcılar ──────────────────────────────────────────────────────────
@@ -628,8 +650,15 @@ class _CommunityScreenState extends State<CommunityScreen>
           .orderBy('sentAt', descending: true)
           .snapshots(),
       builder: (_, snap) {
-        final docs = snap.data?.docs ?? [];
-        if (docs.isEmpty) {
+        final allDocs = snap.data?.docs ?? [];
+
+        // Gizlenmiş olanları filtrele (sadece bu kullanıcı cihazında)
+        final docs = allDocs
+            .where((d) => !_hiddenAnnouncementIds.contains(d.id))
+            .toList();
+        final hiddenCount = allDocs.length - docs.length;
+
+        if (allDocs.isEmpty) {
           return _buildEmptyState(
             icon: Icons.campaign_outlined,
             text: 'Duyuru yok',
@@ -637,126 +666,241 @@ class _CommunityScreenState extends State<CommunityScreen>
           );
         }
 
-        // Uyarıları başa al
-        final sorted = [...docs]..sort((a, b) {
-            final aw = (a.data() as Map<String, dynamic>)['isWarning'] as bool? ?? false;
-            final bw = (b.data() as Map<String, dynamic>)['isWarning'] as bool? ?? false;
-            return (bw ? 1 : 0) - (aw ? 1 : 0);
-          });
-
-        return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-          itemCount: sorted.length,
-          itemBuilder: (_, i) {
-            final data = sorted[i].data() as Map<String, dynamic>;
-            final isWarning = data['isWarning'] as bool? ?? false;
-            final msg = data['message'] as String? ?? '';
-            final ts =
-                (data['sentAt'] as Timestamp?)?.toDate();
-
-            final accent =
-                isWarning ? const Color(0xFFFF6B35) : AppColors.gold;
-            final bg = isWarning
-                ? const Color(0xFF2A1A10)
-                : const Color(0xFF1A1E0F);
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: bg,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                    color: accent.withValues(alpha: 0.3), width: 0.8),
-                boxShadow: [
-                  BoxShadow(
-                    color: accent.withValues(alpha: 0.06),
-                    blurRadius: 12,
-                  ),
-                ],
-              ),
-              child: IntrinsicHeight(
-                child: Row(
-                  children: [
-                    // Renkli sol şerit
-                    Container(
-                      width: 4,
-                      decoration: BoxDecoration(
-                        color: accent,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(14),
-                          bottomLeft: Radius.circular(14),
-                        ),
-                      ),
+        return Column(
+          children: [
+            // Gizlenmiş varsa üstte bilgi çubuğu
+            if (hiddenCount > 0)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                child: GestureDetector(
+                  onTap: _clearHiddenAnnouncements,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white12),
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.visibility_off_outlined,
+                            color: Colors.white38, size: 14),
+                        const SizedBox(width: 8),
+                        Text('$hiddenCount duyuru gizlendi',
+                            style: GoogleFonts.notoSans(
+                                color: Colors.white38, fontSize: 12)),
+                        const Spacer(),
+                        Text('Geri getir',
+                            style: GoogleFonts.notoSans(
+                                color: AppColors.turquoise,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            if (docs.isEmpty)
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.visibility_off_outlined,
+                          color: Colors.white12, size: 48),
+                      const SizedBox(height: 12),
+                      Text('Tüm duyurular gizlendi',
+                          style: GoogleFonts.notoSans(
+                              color: Colors.white38, fontSize: 14)),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: _clearHiddenAnnouncements,
+                        child: Text('Hepsini göster',
+                            style: GoogleFonts.notoSans(
+                                color: AppColors.turquoise,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                  itemCount: docs.length,
+                  itemBuilder: (_, i) {
+                    final data = docs[i].data() as Map<String, dynamic>;
+                    final docId = docs[i].id;
+                    bool asBool(dynamic v) =>
+                        v is bool ? v : (v is int ? v != 0 : false);
+                    final isWarning = asBool(data['isWarning']);
+                    final msg = data['message'] as String? ?? '';
+                    final ts = (data['sentAt'] as Timestamp?)?.toDate();
+                    final accent = isWarning
+                        ? const Color(0xFFFF6B35)
+                        : AppColors.gold;
+                    final bg = isWarning
+                        ? const Color(0xFF2A1A10)
+                        : const Color(0xFF1A1E0F);
+
+                    return Dismissible(
+                      key: Key(docId),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: accent.withValues(alpha: 0.12),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    isWarning
-                                        ? Icons.warning_amber_rounded
-                                        : Icons.campaign_rounded,
-                                    color: accent,
-                                    size: 16,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  isWarning ? 'Uyarı' : 'Duyuru',
-                                  style: GoogleFonts.notoSans(
-                                    color: accent,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                const Spacer(),
-                                if (ts != null)
-                                  Text(
-                                    _relTime(ts),
-                                    style: GoogleFonts.notoSans(
-                                        color: Colors.white38,
-                                        fontSize: 11),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              msg,
-                              style: GoogleFonts.notoSans(
-                                color:
-                                    Colors.white.withValues(alpha: 0.9),
-                                fontSize: 14,
-                                height: 1.5,
-                              ),
-                            ),
-                            if (ts != null) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                '${ts.day} ${_monthTR(ts.month)} ${ts.year}, ${_fmtTime(ts)}',
+                            const Icon(Icons.visibility_off_rounded,
+                                color: Colors.white38, size: 22),
+                            const SizedBox(height: 4),
+                            Text('Gizle',
                                 style: GoogleFonts.notoSans(
-                                    color: Colors.white24, fontSize: 11),
-                              ),
-                            ],
+                                    color: Colors.white38, fontSize: 11)),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                      confirmDismiss: (_) async {
+                        await _hideAnnouncement(docId);
+                        return false; // Widget'ı kendimiz güncelliyoruz
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: bg,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color: accent.withValues(alpha: 0.3),
+                              width: 0.8),
+                          boxShadow: [
+                            BoxShadow(
+                                color: accent.withValues(alpha: 0.06),
+                                blurRadius: 12)
+                          ],
+                        ),
+                        child: IntrinsicHeight(
+                          child: Row(
+                            children: [
+                              // Sol renkli şerit
+                              Container(
+                                width: 4,
+                                decoration: BoxDecoration(
+                                  color: accent,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(14),
+                                    bottomLeft: Radius.circular(14),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(14, 14, 8, 12),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: BoxDecoration(
+                                              color: accent
+                                                  .withValues(alpha: 0.12),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              isWarning
+                                                  ? Icons.warning_amber_rounded
+                                                  : Icons.campaign_rounded,
+                                              color: accent,
+                                              size: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            isWarning ? 'Uyarı' : 'Duyuru',
+                                            style: GoogleFonts.notoSans(
+                                              color: accent,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          if (ts != null)
+                                            Text(
+                                              _relTime(ts),
+                                              style: GoogleFonts.notoSans(
+                                                  color: Colors.white38,
+                                                  fontSize: 11),
+                                            ),
+                                          // Gizle butonu
+                                          IconButton(
+                                            icon: const Icon(
+                                                Icons.visibility_off_outlined,
+                                                color: Colors.white24,
+                                                size: 16),
+                                            tooltip: 'Gizle',
+                                            onPressed: () =>
+                                                _hideAnnouncement(docId),
+                                            padding: const EdgeInsets.all(8),
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        msg,
+                                        style: GoogleFonts.notoSans(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.9),
+                                          fontSize: 14,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                      if (ts != null) ...[
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              '${ts.day} ${_monthTR(ts.month)} ${ts.year}, ${_fmtTime(ts)}',
+                                              style: GoogleFonts.notoSans(
+                                                  color: Colors.white24,
+                                                  fontSize: 11),
+                                            ),
+                                            const Spacer(),
+                                            Text(
+                                              '← kaydır gizlemek için',
+                                              style: GoogleFonts.notoSans(
+                                                  color: Colors.white12,
+                                                  fontSize: 10),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-            );
-          },
+          ],
         );
       },
     );
