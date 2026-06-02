@@ -21,7 +21,6 @@ import 'widgets/islamic_header.dart';
 import 'widgets/quran_tracker_card.dart';
 import 'widgets/community_task_list.dart';
 import 'widgets/custom_task_card.dart';
-import 'widgets/streak_card.dart';
 import '../ayet/ayet_detail_screen.dart';
 import '../hadis/hadis_detail_screen.dart';
 import '../rewards/murakabe_hosgeldin_screen.dart';
@@ -32,6 +31,7 @@ import '../../core/services/firestore_notification_service.dart';
 import '../../core/services/role_service.dart';
 import '../quran/quran_screen.dart';
 import '../tefsir/tefhimul_kuran_screen.dart';
+import '../riyazussalihin/riyazus_salihin_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -186,7 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final quranRead = await _userRepo.isQuranReadToday();
       final user = await _userRepo.getCurrentUser();
       final tasks = await _taskRepo.getActiveTasks();
-      final communityIdNameMap = await RoleService().getUserCommunityIdNameMap();
+      final communityIdNameMap =
+          await RoleService().getUserCommunityIdNameMap();
 
       if (mounted) {
         setState(() {
@@ -359,11 +360,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () => _goToPage(const TefhimulKuranScreen()),
                   ),
                   _buildDrawerItem(
-                    icon: Icons.auto_stories_outlined,
-                    label: 'Feyzül Furkan',
-                    badge: 'Yakında',
-                    onTap: () => _showComingSoon('Feyzül Furkan'),
-                  ),
+                      icon: Icons.auto_stories_outlined,
+                      label: 'Riyazüs Salihin',
+                      onTap: () => _goToPage(const RiyazusSalihinScreen())),
                   const SizedBox(height: 8),
                   const Divider(color: Colors.white12),
                   const SizedBox(height: 4),
@@ -658,7 +657,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       final today =
                           DateTime.now().toIso8601String().substring(0, 10);
                       await _userRepo.markQuranRead(today);
-                      await NotificationService().cancelHourlyQuranReminders();
+                      await NotificationService().cancelKuranNotification();
                       final updatedUser = await _userRepo.getCurrentUser();
                       if (mounted) {
                         setState(() {
@@ -682,9 +681,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                     )),
-                if (_communityIdNameMap.isNotEmpty) _buildCommunityTasksSection(),
-                const SizedBox(height: 16),
-                if (_currentUser != null) StreakCard(user: _currentUser!),
+                if (_communityIdNameMap.isNotEmpty)
+                  _buildCommunityTasksSection(),
                 const SizedBox(height: 100),
               ]),
             ),
@@ -792,4 +790,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-

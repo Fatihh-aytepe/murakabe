@@ -206,8 +206,7 @@ class _QuranPageViewState extends State<QuranPageView> {
     Color turkishColor,
     bool isDark,
   ) {
-    final isSelected =
-        widget.selectedAyah?.globalNumber == ayah.globalNumber;
+    final isSelected = widget.selectedAyah?.globalNumber == ayah.globalNumber;
 
     return GestureDetector(
       onTap: () => widget.onAyahSelected(ayah),
@@ -224,7 +223,8 @@ class _QuranPageViewState extends State<QuranPageView> {
                   ? Colors.white.withValues(alpha: 0.03)
                   : Colors.black.withValues(alpha: 0.02),
           border: isSelected
-              ? Border.all(color: AppColors.gold.withValues(alpha: 0.5), width: 1)
+              ? Border.all(
+                  color: AppColors.gold.withValues(alpha: 0.5), width: 1)
               : null,
         ),
         child: Column(
@@ -236,8 +236,8 @@ class _QuranPageViewState extends State<QuranPageView> {
                 const Spacer(),
                 if (isSelected)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppColors.gold.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
@@ -269,10 +269,11 @@ class _QuranPageViewState extends State<QuranPageView> {
               ayah.arabic,
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,
-              style: GoogleFonts.amiri(
-                fontSize: widget.showMeal ? 26 : 32,
+              style: TextStyle(
+                fontFamily: 'NotoNaskhArabic',
+                fontSize: widget.showMeal ? 28 : 34,
                 color: isSelected ? AppColors.gold : arabicColor,
-                height: 2.0,
+                height: 2.2,
               ),
             ),
             if (widget.showMeal) ...[
@@ -410,7 +411,11 @@ class _QuranPageViewState extends State<QuranPageView> {
                   '${ayah.surahNumber}:${ayah.number} — ${ayah.arabic}',
                   textAlign: TextAlign.right,
                   textDirection: TextDirection.rtl,
-                  style: GoogleFonts.amiri(color: AppColors.gold, fontSize: 16),
+                  style: const TextStyle(
+                    fontFamily: 'NotoNaskhArabic',
+                    color: AppColors.gold,
+                    fontSize: 18,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

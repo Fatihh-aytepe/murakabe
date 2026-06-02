@@ -1,7 +1,7 @@
 name: murakabe
 description: Günlük İslami İbadet Hatırlatıcı
 publish_to: 'none'
-version: 1.1.7+1 
+version: 1.1.8+1
 environment:
   sdk: '>=3.0.0 <4.0.0'
 
@@ -68,6 +68,8 @@ flutter_launcher_icons:
   image_path: "assets/images/yenilogo.png"
 
 flutter:
+ 
+
   uses-material-design: true
   assets:
     - assets/images/
@@ -76,6 +78,14 @@ flutter:
     - assets/data/esmaul_husna.json
     - assets/sounds/
     - assets/tefsir/tefhimul_kuran.pdf
+    - assets/riyazusalihin/riyazusalihin.pdf
+  fonts:
+    - family: NotoNaskhArabic
+      fonts:
+        - asset: assets/fonts/NotoNaskhArabic-Regular.ttf
+        - asset: assets/fonts/NotoNaskhArabic-Bold.ttf
+          weight: 700
+
     
     
     
