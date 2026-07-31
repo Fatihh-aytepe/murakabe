@@ -42,66 +42,30 @@ class ContentRepository {
     return _ayetCache!;
   }
 
-  // Günün içeriğini al
+  int _dayOfYear(DateTime date) =>
+      date.difference(DateTime(date.year, 1, 1)).inDays;
+
+  // Günün içeriğini al — SharedPreferences'a bağımlı değil, tamamen
+  // takvim tarihinden deterministik hesaplanıyor. Böylece uygulama günler
+  // sonra açılsa bile (gün atlasa bile) doğru güne denk gelen içeriği verir,
+  // ve bildirim servisi (NotificationService) de aynı formülle aynı içeriği
+  // önceden hesaplayıp planlayabilir.
   Future<EsmaModel> getTodayEsma() async {
     final esmas = await getEsmas();
-    await _checkAndAdvanceIndex(
-      esmaCount: esmas.length,
-      hadisCount: (await getHadises()).length,
-      ayetCount: (await getAyets()).length,
-    );
-    final index = _storage.todayEsmaIndex % esmas.length;
+    final index = _dayOfYear(DateTime.now()) % esmas.length;
     return esmas[index];
   }
 
   Future<HadisModel> getTodayHadis() async {
     final hadises = await getHadises();
-    await _checkAndAdvanceIndex(
-      esmaCount: (await getEsmas()).length,
-      hadisCount: hadises.length,
-      ayetCount: (await getAyets()).length,
-    );
-    final index = _storage.todayHadisIndex % hadises.length;
+    final index = _dayOfYear(DateTime.now()) % hadises.length;
     return hadises[index];
   }
 
   Future<AyetModel> getTodayAyet() async {
     final ayets = await getAyets();
-    await _checkAndAdvanceIndex(
-      esmaCount: (await getEsmas()).length,
-      hadisCount: (await getHadises()).length,
-      ayetCount: ayets.length,
-    );
-    final index = _storage.todayAyetIndex % ayets.length;
+    final index = _dayOfYear(DateTime.now()) % ayets.length;
     return ayets[index];
-  }
-
-  /// Gün değiştiyse indeksleri ilerlet.
-  /// İlk kurulumda (lastUpdateDate null) rastgele başlangıç indeksi ata —
-  /// böylece uygulama her zaman 0. içerikten başlamaz.
-  Future<void> _checkAndAdvanceIndex({
-    required int esmaCount,
-    required int hadisCount,
-    required int ayetCount,
-  }) async {
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    final lastDate = _storage.lastUpdateDate;
-
-    if (lastDate == null) {
-      // İlk kurulum: rastgele başlangıç indeksleri ata
-      final rng = Random();
-      await _storage.setEsmaIndex(rng.nextInt(esmaCount));
-      await _storage.setHadisIndex(rng.nextInt(hadisCount));
-      await _storage.setAyetIndex(rng.nextInt(ayetCount));
-      await _storage.setLastUpdateDate(today);
-    } else if (lastDate != today) {
-      // Yeni gün: her indeksi 1 ilerlet (liste sonuna gelince başa döner)
-      await _storage.setEsmaIndex((_storage.todayEsmaIndex + 1) % esmaCount);
-      await _storage.setHadisIndex((_storage.todayHadisIndex + 1) % hadisCount);
-      await _storage.setAyetIndex((_storage.todayAyetIndex + 1) % ayetCount);
-      await _storage.setLastUpdateDate(today);
-    }
-    // Aynı gün ise hiçbir şey yapma — indeksler sabit kalır
   }
 
   // Random içerik (detail sayfaları için)

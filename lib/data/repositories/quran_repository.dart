@@ -79,6 +79,22 @@ class QuranProgress {
       );
 }
 
+// ─── Mealler ──────────────────────────────────────────────────────────────────
+
+class QuranTranslation {
+  final int id;
+  final String name;
+
+  const QuranTranslation({required this.id, required this.name});
+}
+
+/// Quran.com API `translations` kaynak id'leri (dil=tr).
+const List<QuranTranslation> kQuranTranslations = [
+  QuranTranslation(id: 210, name: 'Sade Meal'),
+  QuranTranslation(id: 77, name: 'Diyanet İşleri'),
+  QuranTranslation(id: 52, name: 'Elmalılı Hamdi Yazır'),
+];
+
 // ─── Kariler ──────────────────────────────────────────────────────────────────
 
 enum AudioCdn { everyayah, mp3quran }
@@ -128,7 +144,9 @@ class QuranRepository {
   QuranRepository._();
 
   static const String _baseUrl = 'https://api.quran.com/api/v4';
-  static const int _turkishTranslationId = 77;
+
+  /// Kullanılacak meal — `kQuranTranslations` içinden ayarlanabilir.
+  int translationId = kQuranTranslations.first.id;
 
   final _storage = LocalStorage();
   final _firestore = FirebaseFirestore.instance;
@@ -170,7 +188,7 @@ class QuranRepository {
       final res = await http.get(
         Uri.parse(
           '$_baseUrl/verses/by_page/$page'
-          '?translations=$_turkishTranslationId'
+          '?translations=$translationId'
           '&fields=text_uthmani,page_number,verse_key'
           '&per_page=50',
         ),
@@ -192,7 +210,7 @@ class QuranRepository {
       final res = await http.get(
         Uri.parse(
           '$_baseUrl/verses/by_chapter/$surahNumber'
-          '?translations=$_turkishTranslationId'
+          '?translations=$translationId'
           '&fields=text_uthmani,page_number,verse_key'
           '&per_page=300',
         ),

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:uuid/uuid.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/notification_service.dart';
-import '../../data/local/database_helper.dart';
 import '../../data/models/ayet_model.dart';
-import '../../data/models/note_model.dart';
 import '../../data/repositories/content_repository.dart';
+import '../notes/notes_screen.dart';
+import '../notes/note_quote_builder.dart';
 
 class AyetDetailScreen extends StatefulWidget {
   final AyetModel ayet;
@@ -18,7 +17,6 @@ class AyetDetailScreen extends StatefulWidget {
 
 class _AyetDetailScreenState extends State<AyetDetailScreen> {
   final _contentRepo = ContentRepository();
-  final _db = DatabaseHelper();
   bool _isSaved = false;
   late AyetModel _currentAyet;
 
@@ -369,158 +367,26 @@ class _AyetDetailScreenState extends State<AyetDetailScreen> {
   }
 
   void _openNoteEditor() {
-    final prefill =
+    final title =
         'Ayet: ${_currentAyet.surah} ${_currentAyet.ayahNumber}. Ayet';
-    final titleCtrl = TextEditingController(text: prefill);
-    final contentCtrl = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      useSafeArea: true,
-      builder: (sheetCtx) => AnimatedPadding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        child: _NoteSheet(
-          titleCtrl: titleCtrl,
-          contentCtrl: contentCtrl,
-          onSave: () async {
-            final nav = Navigator.of(sheetCtx);
-            final messenger = ScaffoldMessenger.of(context);
-            final t = titleCtrl.text.trim();
-            final c = contentCtrl.text.trim();
-            final now = DateTime.now();
-            await _db.insert(
-              'notes',
-              NoteModel(
-                id: const Uuid().v4(),
-                title: t.isNotEmpty ? t : prefill,
-                content: c,
-                createdAt: now,
-                updatedAt: now,
-              ).toMap(),
-            );
-            nav.pop();
-            messenger.showSnackBar(
-              const SnackBar(
-                content: Text('Not kaydedildi'),
-                backgroundColor: AppColors.success,
-              ),
-            );
-          },
-        ),
+    showNoteEditor(
+      context,
+      prefillTitle: title,
+      prefillDocument: buildQuoteDocument(
+        arabic: _currentAyet.arabic,
+        meal: _currentAyet.turkish,
+        source: '${_currentAyet.surah}, ${_currentAyet.ayahNumber}. Ayet',
       ),
-    );
-  }
-}
-
-class _NoteSheet extends StatelessWidget {
-  final TextEditingController titleCtrl;
-  final TextEditingController contentCtrl;
-  final VoidCallback onSave;
-
-  const _NoteSheet({
-    required this.titleCtrl,
-    required this.contentCtrl,
-    required this.onSave,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A2035),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+      prefillTags: const ['ayet'],
+      onSaved: () {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Not kaydedildi'),
+            backgroundColor: AppColors.success,
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              const Icon(Icons.edit_note, color: AppColors.turquoise),
-              const SizedBox(width: 8),
-              Text(
-                'Tefekkür Notu',
-                style: GoogleFonts.playfairDisplay(
-                  color: AppColors.gold,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: titleCtrl,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              labelText: 'Başlık',
-              labelStyle: const TextStyle(color: Colors.white54),
-              enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.white24),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: AppColors.gold),
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: contentCtrl,
-            maxLines: 4,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: 'Düşüncelerini buraya yaz...',
-              hintStyle: const TextStyle(color: Colors.white38),
-              enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.white24),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: AppColors.gold),
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onSave,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.gold,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              child: Text(
-                'Notu Kaydet',
-                style: GoogleFonts.notoSans(
-                    color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
+        );
+      },
     );
   }
 }

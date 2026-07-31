@@ -2,6 +2,9 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'dart:io';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/note_repository.dart';
 
@@ -27,17 +30,29 @@ class _TefhimulKuranScreenState extends State<TefhimulKuranScreen> {
   static const String _prefKeyPage = 'tefhimul_last_page';
   static const String _prefKeyBookmarks = 'tefhimul_bookmarks';
   static const String _assetPath = 'assets/tefsir/tefhimul_kuran.pdf';
-
   @override
   void initState() {
     super.initState();
     _loadSavedState();
+    _ensureLocalPdf();
   }
 
   @override
   void dispose() {
     _pdfController.dispose();
     super.dispose();
+  }
+
+  String? _localPdfPath;
+
+  Future<void> _ensureLocalPdf() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/tefhimul_kuran.pdf');
+    if (!await file.exists()) {
+      final data = await rootBundle.load(_assetPath);
+      await file.writeAsBytes(data.buffer.asUint8List(), flush: true);
+    }
+    setState(() => _localPdfPath = file.path);
   }
 
   Future<void> _loadSavedState() async {
@@ -428,33 +443,36 @@ class _TefhimulKuranScreenState extends State<TefhimulKuranScreen> {
           Expanded(
             child: GestureDetector(
               onTap: () => setState(() => _showToolbar = !_showToolbar),
-              child: SfPdfViewer.asset(
-                _assetPath,
-                key: _pdfKey,
-                controller: _pdfController,
-                initialPageNumber: _currentPage,
-                onDocumentLoaded: (details) {
-                  setState(() {
-                    _totalPages = details.document.pages.count;
-                  });
-                  // Kayıtlı sayfaya git
-                  if (_currentPage > 1) {
-                    _pdfController.jumpToPage(_currentPage);
-                  }
-                },
-                onPageChanged: (details) {
-                  setState(() => _currentPage = details.newPageNumber);
-                  _saveCurrentPage(details.newPageNumber);
-                },
-                onDocumentLoadFailed: (details) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('PDF yüklenemedi: ${details.description}'),
-                      backgroundColor: Colors.red,
+              child: _localPdfPath == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : SfPdfViewer.file(
+                      File(_localPdfPath!),
+                      key: _pdfKey,
+                      controller: _pdfController,
+                      initialPageNumber: _currentPage,
+                      onDocumentLoaded: (details) {
+                        setState(() {
+                          _totalPages = details.document.pages.count;
+                        });
+                        // Kayıtlı sayfaya git
+                        if (_currentPage > 1) {
+                          _pdfController.jumpToPage(_currentPage);
+                        }
+                      },
+                      onPageChanged: (details) {
+                        setState(() => _currentPage = details.newPageNumber);
+                        _saveCurrentPage(details.newPageNumber);
+                      },
+                      onDocumentLoadFailed: (details) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content:
+                                Text('PDF yüklenemedi: ${details.description}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ),
 

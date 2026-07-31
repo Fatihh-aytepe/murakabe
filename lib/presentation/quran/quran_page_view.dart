@@ -3,12 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/quran_repository.dart';
 import '../../../data/repositories/note_repository.dart';
+import 'quran_ayah_tile.dart';
 
 class QuranPageView extends StatefulWidget {
   final int initialPage;
   final Qari selectedQari;
   final QuranAyah? selectedAyah;
   final bool showMeal;
+  final double arabicFontSize;
   final void Function(int page, int surah, int ayah) onProgressChanged;
   final void Function(QuranAyah ayah) onAyahSelected;
 
@@ -18,6 +20,7 @@ class QuranPageView extends StatefulWidget {
     required this.selectedQari,
     this.selectedAyah,
     this.showMeal = true,
+    this.arabicFontSize = 32,
     required this.onProgressChanged,
     required this.onAyahSelected,
   });
@@ -184,138 +187,28 @@ class _QuranPageViewState extends State<QuranPageView> {
 
   Widget _buildPageContent(List<QuranAyah> ayahs, bool isDark) {
     final bg = isDark ? const Color(0xFF0A0E1A) : const Color(0xFFFAF8F0);
-    final arabicColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
-    final turkishColor = isDark ? Colors.white60 : AppColors.textSecondary;
 
     return Container(
       color: bg,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
         itemCount: ayahs.length,
-        itemBuilder: (_, i) {
-          final ayah = ayahs[i];
-          return _buildAyahTile(ayah, arabicColor, turkishColor, isDark);
-        },
+        itemBuilder: (_, i) => _buildAyahTile(ayahs[i]),
       ),
     );
   }
 
-  Widget _buildAyahTile(
-    QuranAyah ayah,
-    Color arabicColor,
-    Color turkishColor,
-    bool isDark,
-  ) {
+  Widget _buildAyahTile(QuranAyah ayah) {
     final isSelected = widget.selectedAyah?.globalNumber == ayah.globalNumber;
 
-    return GestureDetector(
+    return QuranAyahTile(
+      ayah: ayah,
+      isSelected: isSelected,
+      showMeal: widget.showMeal,
+      arabicFontSize: widget.arabicFontSize,
+      secondaryLabel: '${ayah.surahNumber}:${ayah.number}',
       onTap: () => widget.onAyahSelected(ayah),
       onLongPress: () => _showNoteSheet(ayah),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        margin: const EdgeInsets.only(bottom: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: isSelected
-              ? AppColors.gold.withValues(alpha: 0.12)
-              : isDark
-                  ? Colors.white.withValues(alpha: 0.03)
-                  : Colors.black.withValues(alpha: 0.02),
-          border: isSelected
-              ? Border.all(
-                  color: AppColors.gold.withValues(alpha: 0.5), width: 1)
-              : null,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                _buildAyahNumber(ayah.number, isSelected),
-                const Spacer(),
-                if (isSelected)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.gold.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.volume_up,
-                            color: AppColors.gold, size: 10),
-                        const SizedBox(width: 3),
-                        Text(
-                          'Seçili',
-                          style: GoogleFonts.notoSans(
-                              color: AppColors.gold, fontSize: 9),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  Text(
-                    '${ayah.surahNumber}:${ayah.number}',
-                    style:
-                        GoogleFonts.notoSans(color: Colors.grey, fontSize: 10),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              ayah.arabic,
-              textAlign: TextAlign.right,
-              textDirection: TextDirection.rtl,
-              style: TextStyle(
-                fontFamily: 'NotoNaskhArabic',
-                fontSize: widget.showMeal ? 28 : 34,
-                color: isSelected ? AppColors.gold : arabicColor,
-                height: 2.2,
-              ),
-            ),
-            if (widget.showMeal) ...[
-              const SizedBox(height: 6),
-              Text(
-                ayah.turkish,
-                style: GoogleFonts.notoSans(
-                  fontSize: 13,
-                  color: turkishColor,
-                  height: 1.6,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAyahNumber(int number, [bool isSelected = false]) {
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isSelected ? AppColors.gold : Colors.transparent,
-        border: Border.all(
-          color: isSelected
-              ? AppColors.gold
-              : AppColors.gold.withValues(alpha: 0.6),
-        ),
-      ),
-      child: Center(
-        child: Text(
-          '$number',
-          style: GoogleFonts.notoSans(
-            color: isSelected ? Colors.white : AppColors.gold,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
     );
   }
 
@@ -453,7 +346,11 @@ class _QuranPageViewState extends State<QuranPageView> {
                     final content = contentCtrl.text.trim();
                     if (content.isEmpty) return;
                     final title = 'Ayet ${ayah.surahNumber}:${ayah.number}';
-                    await _noteRepo.addNote(title: title, content: content);
+                    await _noteRepo.addNote(
+                      title: title,
+                      content: content,
+                      tags: const ['ayet'],
+                    );
                     if (mounted && ctx.mounted) {
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(

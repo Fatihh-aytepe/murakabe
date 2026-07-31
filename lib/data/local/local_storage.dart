@@ -53,6 +53,11 @@ class LocalStorage {
   bool get isDarkMode => _prefs.getBool('isDarkMode') ?? false;
   Future<void> setDarkMode(bool v) => _prefs.setBool('isDarkMode', v);
 
+  // Notlar ekranı görünüm tercihi: 'list' veya 'grid'
+  String get notesViewMode => _prefs.getString('notesViewMode') ?? 'list';
+  Future<void> setNotesViewMode(String v) =>
+      _prefs.setString('notesViewMode', v);
+
   String? get profilePhotoPath => _prefs.getString('profilePhotoPath');
   Future<void> setProfilePhotoPath(String path) =>
       _prefs.setString('profilePhotoPath', path);
@@ -152,7 +157,8 @@ class LocalStorage {
   Future<void> setEsmaStreak(int v) => _prefs.setInt('esmaStreak', v);
   String? get lastEsmaDate => _prefs.getString('lastEsmaDate');
   Future<void> setLastEsmaDate(String d) => _prefs.setString('lastEsmaDate', d);
-  int get lastRewardedEsmaStreak => _prefs.getInt('lastRewardedEsmaStreak') ?? 0;
+  int get lastRewardedEsmaStreak =>
+      _prefs.getInt('lastRewardedEsmaStreak') ?? 0;
   Future<void> setLastRewardedEsmaStreak(int v) =>
       _prefs.setInt('lastRewardedEsmaStreak', v);
 
@@ -162,7 +168,8 @@ class LocalStorage {
   String? get lastHadisDate => _prefs.getString('lastHadisDate');
   Future<void> setLastHadisDate(String d) =>
       _prefs.setString('lastHadisDate', d);
-  int get lastRewardedHadisStreak => _prefs.getInt('lastRewardedHadisStreak') ?? 0;
+  int get lastRewardedHadisStreak =>
+      _prefs.getInt('lastRewardedHadisStreak') ?? 0;
   Future<void> setLastRewardedHadisStreak(int v) =>
       _prefs.setInt('lastRewardedHadisStreak', v);
 
@@ -239,8 +246,8 @@ class LocalStorage {
   // Mevcut değerlerin üzerine yalnızca Firestore'daki daha büyük değerler yazılır
   // (geriye doğru veri kaybını önlemek için).
   Future<void> restoreFromMap(Map<String, dynamic> data) async {
-    Future<void> bigger(int current, dynamic raw,
-        Future<void> Function(int) setter) async {
+    Future<void> bigger(
+        int current, dynamic raw, Future<void> Function(int) setter) async {
       final v = raw is int ? raw : (raw as num?)?.toInt();
       if (v != null && v > current) await setter(v);
     }
@@ -251,8 +258,8 @@ class LocalStorage {
         setLastRewardedEsmaStreak);
     await bigger(lastRewardedHadisStreak, data['lastRewardedHadisStreak'],
         setLastRewardedHadisStreak);
-    await bigger(lastRewardedStreak, data['lastRewardedStreak'],
-        setLastRewardedStreak);
+    await bigger(
+        lastRewardedStreak, data['lastRewardedStreak'], setLastRewardedStreak);
     await bigger(lastRewardedKuranBadge, data['lastRewardedKuranBadge'],
         setLastRewardedKuranBadge);
     await bigger(lastRewardedEsmaBadge, data['lastRewardedEsmaBadge'],
@@ -265,11 +272,13 @@ class LocalStorage {
         setLastRewardedTahajjudBadge);
 
     final esmaDate = data['lastEsmaDate'] as String? ?? '';
-    if (esmaDate.isNotEmpty && (lastEsmaDate == null || esmaDate.compareTo(lastEsmaDate!) > 0)) {
+    if (esmaDate.isNotEmpty &&
+        (lastEsmaDate == null || esmaDate.compareTo(lastEsmaDate!) > 0)) {
       await setLastEsmaDate(esmaDate);
     }
     final hadisDate = data['lastHadisDate'] as String? ?? '';
-    if (hadisDate.isNotEmpty && (lastHadisDate == null || hadisDate.compareTo(lastHadisDate!) > 0)) {
+    if (hadisDate.isNotEmpty &&
+        (lastHadisDate == null || hadisDate.compareTo(lastHadisDate!) > 0)) {
       await setLastHadisDate(hadisDate);
     }
 
@@ -299,13 +308,13 @@ class LocalStorage {
   }
 
   // ── Bildirim tercihleri ───────────────────────────────────────────────────
-  bool get esmaNotifEnabled  => _prefs.getBool('notif_esma')  ?? true;
+  bool get esmaNotifEnabled => _prefs.getBool('notif_esma') ?? true;
   bool get hadisNotifEnabled => _prefs.getBool('notif_hadis') ?? true;
-  bool get ayetNotifEnabled  => _prefs.getBool('notif_ayet')  ?? true;
+  bool get ayetNotifEnabled => _prefs.getBool('notif_ayet') ?? true;
   bool get kuranNotifEnabled => _prefs.getBool('notif_kuran') ?? true;
-  Future<void> setEsmaNotif(bool v)  => _prefs.setBool('notif_esma',  v);
+  Future<void> setEsmaNotif(bool v) => _prefs.setBool('notif_esma', v);
   Future<void> setHadisNotif(bool v) => _prefs.setBool('notif_hadis', v);
-  Future<void> setAyetNotif(bool v)  => _prefs.setBool('notif_ayet',  v);
+  Future<void> setAyetNotif(bool v) => _prefs.setBool('notif_ayet', v);
   Future<void> setKuranNotif(bool v) => _prefs.setBool('notif_kuran', v);
 
   // ── Topluluk sohbet okunma takibi ─────────────────────────────────────────
@@ -318,9 +327,8 @@ class LocalStorage {
   // getChatReadTime: kullanıcının bu topluluğu en son açtığı zaman (epoch ms)
   int getChatReadTime(String communityId) =>
       _prefs.getInt('chat_read_at_$communityId') ?? 0;
-  Future<void> setChatReadTime(String communityId) =>
-      _prefs.setInt('chat_read_at_$communityId',
-          DateTime.now().millisecondsSinceEpoch);
+  Future<void> setChatReadTime(String communityId) => _prefs.setInt(
+      'chat_read_at_$communityId', DateTime.now().millisecondsSinceEpoch);
 
   // ── Gizlenmiş duyurular (topluluk bazında, sadece bu cihazda) ─────────────
   // Key: hidden_announcements_{communityId} | Value: JSON string liste
@@ -335,8 +343,7 @@ class LocalStorage {
     }
   }
 
-  Future<void> addHiddenAnnouncement(
-      String communityId, String docId) async {
+  Future<void> addHiddenAnnouncement(String communityId, String docId) async {
     final current = getHiddenAnnouncements(communityId);
     current.add(docId);
     await _prefs.setString(

@@ -12,6 +12,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_remote_config
   geolocator_windows
   permission_handler_windows
+  record_windows
   syncfusion_pdfviewer_windows
   url_launcher_windows
 )

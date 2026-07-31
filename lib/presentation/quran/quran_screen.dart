@@ -25,11 +25,14 @@ class _QuranScreenState extends State<QuranScreen>
   QuranAyah? _selectedAyah;
   Qari _selectedQari = kQariler.first;
   bool _showMeal = true;
+  double _arabicFontSize = 32;
+  int _translationId = kQuranTranslations.first.id;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _repo.translationId = _translationId;
     _loadProgress();
   }
 
@@ -75,6 +78,97 @@ class _QuranScreenState extends State<QuranScreen>
     setState(() => _selectedQari = qari);
   }
 
+  void _showSettingsSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Color(0xFF1A2035),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(Icons.tune, color: AppColors.gold),
+                  const SizedBox(width: 8),
+                  Text('Okuma Ayarları',
+                      style: GoogleFonts.playfairDisplay(
+                          color: AppColors.gold,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text('Yazı Boyutu',
+                  style: GoogleFonts.notoSans(
+                      color: Colors.white70, fontSize: 13)),
+              Slider(
+                value: _arabicFontSize,
+                min: 22,
+                max: 44,
+                divisions: 11,
+                activeColor: AppColors.gold,
+                label: _arabicFontSize.round().toString(),
+                onChanged: (v) {
+                  setState(() => _arabicFontSize = v);
+                  setSheetState(() {});
+                },
+              ),
+              const SizedBox(height: 12),
+              Text('Meal',
+                  style: GoogleFonts.notoSans(
+                      color: Colors.white70, fontSize: 13)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: kQuranTranslations.map((t) {
+                  final selected = t.id == _translationId;
+                  return ChoiceChip(
+                    label: Text(t.name),
+                    selected: selected,
+                    labelStyle: GoogleFonts.notoSans(
+                      color: selected ? Colors.black : Colors.white70,
+                      fontSize: 12,
+                    ),
+                    selectedColor: AppColors.gold,
+                    backgroundColor: Colors.white.withValues(alpha: 0.06),
+                    onSelected: (_) {
+                      setState(() {
+                        _translationId = t.id;
+                        _repo.translationId = t.id;
+                      });
+                      setSheetState(() {});
+                    },
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -115,20 +209,24 @@ class _QuranScreenState extends State<QuranScreen>
                     controller: _tabController,
                     children: [
                       QuranPageView(
+                        key: ValueKey('page_$_translationId'),
                         initialPage: _progress?.lastPage ?? 1,
                         selectedQari: _selectedQari,
                         selectedAyah: _selectedAyah,
                         showMeal: _showMeal,
+                        arabicFontSize: _arabicFontSize,
                         onProgressChanged: (page, surah, ayah) =>
                             _saveProgress(page: page, surah: surah, ayah: ayah),
                         onAyahSelected: _onAyahSelected,
                       ),
                       QuranSurahView(
+                        key: ValueKey('surah_$_translationId'),
                         initialSurah: _progress?.lastSurah ?? 1,
                         initialAyah: _progress?.lastAyah ?? 1,
                         selectedQari: _selectedQari,
                         selectedAyah: _selectedAyah,
                         showMeal: _showMeal,
+                        arabicFontSize: _arabicFontSize,
                         onProgressChanged: (page, surah, ayah) =>
                             _saveProgress(page: page, surah: surah, ayah: ayah),
                         onAyahSelected: _onAyahSelected,
@@ -216,6 +314,11 @@ class _QuranScreenState extends State<QuranScreen>
             ),
           ),
           const SizedBox(width: 4),
+          // Ayarlar
+          IconButton(
+            icon: const Icon(Icons.tune, color: Colors.white70, size: 20),
+            onPressed: _showSettingsSheet,
+          ),
           // Kaldığım yere git
           if (_progress != null)
             TextButton.icon(

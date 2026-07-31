@@ -1,8 +1,78 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:record/record.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/models/note_model.dart';
 import '../../data/repositories/note_repository.dart';
+import '../../data/local/local_storage.dart';
+import '../../data/local/note_file_storage.dart';
+
+/// Not editörünü herhangi bir ekrandan açmak için paylaşılan giriş noktası.
+/// - Mevcut bir notu düzenlemek için [note] ver.
+/// - Yeni, önceden doldurulmuş bir not (örn. "Ayeti Notlarıma Ekle" kısayolu)
+///   için [note]'u boş bırakıp [prefillTitle] / [prefillDocument] /
+///   [prefillTags] kullan.
+/// [onSaved] kayıt tamamlandığında çağrılır (liste yenileme, snackbar vb. için).
+Future<void> showNoteEditor(
+  BuildContext context, {
+  NoteModel? note,
+  String? prefillTitle,
+  quill.Document? prefillDocument,
+  List<String> prefillTags = const [],
+  VoidCallback? onSaved,
+}) {
+  final repo = NoteRepository();
+  return showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    useSafeArea: true,
+    builder: (_) => NoteEditorSheet(
+      note: note,
+      prefillTitle: prefillTitle,
+      prefillDocument: prefillDocument,
+      prefillTags: prefillTags,
+      onSave: (draft) async {
+        if (note != null) {
+          await repo.updateNote(NoteModel(
+            id: note.id,
+            title: draft.title,
+            content: draft.content,
+            contentDelta: draft.contentDelta,
+            tags: draft.tags,
+            color: draft.color,
+            isPinned: draft.isPinned,
+            imagePaths: draft.imagePaths,
+            audioPaths: draft.audioPaths,
+            reminderAt: draft.reminderAt,
+            createdAt: note.createdAt,
+            updatedAt: DateTime.now(),
+          ));
+        } else {
+          await repo.addNote(
+            title: draft.title,
+            content: draft.content,
+            contentDelta: draft.contentDelta,
+            tags: draft.tags,
+            color: draft.color,
+            isPinned: draft.isPinned,
+            imagePaths: draft.imagePaths,
+            audioPaths: draft.audioPaths,
+            reminderAt: draft.reminderAt,
+          );
+        }
+        onSaved?.call();
+      },
+    ),
+  );
+}
 
 class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
@@ -13,11 +83,15 @@ class NotesScreen extends StatefulWidget {
 
 class NotesScreenState extends State<NotesScreen> {
   final _repo = NoteRepository();
+  final _storage = LocalStorage();
   List<NoteModel> _notes = [];
+  String _viewMode = 'list'; // 'list' | 'grid'
+  String? _selectedTag;
 
   @override
   void initState() {
     super.initState();
+    _viewMode = _storage.notesViewMode;
     _loadNotes();
   }
 
@@ -25,11 +99,42 @@ class NotesScreenState extends State<NotesScreen> {
 
   Future<void> _loadNotes() async {
     final notes = await _repo.getNotes();
-    if (mounted) setState(() => _notes = notes);
+    if (mounted) {
+      setState(() {
+        _notes = notes;
+        // Filtrelenen tag artık hiçbir notta yoksa filtreyi temizle
+        if (_selectedTag != null &&
+            !_notes.any((n) => n.tags.contains(_selectedTag))) {
+          _selectedTag = null;
+        }
+      });
+    }
+  }
+
+  List<NoteModel> get _filteredNotes {
+    if (_selectedTag == null) return _notes;
+    return _notes.where((n) => n.tags.contains(_selectedTag)).toList();
+  }
+
+  List<String> get _allTags {
+    final set = <String>{};
+    for (final n in _notes) {
+      set.addAll(n.tags);
+    }
+    final list = set.toList()..sort();
+    return list;
+  }
+
+  void _toggleViewMode() {
+    final next = _viewMode == 'list' ? 'grid' : 'list';
+    setState(() => _viewMode = next);
+    _storage.setNotesViewMode(next);
   }
 
   @override
   Widget build(BuildContext context) {
+    final filtered = _filteredNotes;
+    final tags = _allTags;
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _loadNotes,
@@ -57,17 +162,43 @@ class NotesScreenState extends State<NotesScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      '${_notes.length} not',
-                      style: GoogleFonts.notoSans(
-                        color: Colors.white54,
-                        fontSize: 14,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          '${_notes.length} not',
+                          style: GoogleFonts.notoSans(
+                            color: Colors.white54,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: _toggleViewMode,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColors.gold.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: AppColors.gold.withValues(alpha: 0.4)),
+                            ),
+                            child: Icon(
+                              _viewMode == 'list'
+                                  ? Icons.grid_view_rounded
+                                  : Icons.view_list_rounded,
+                              color: AppColors.gold,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ),
+            if (tags.isNotEmpty)
+              SliverToBoxAdapter(child: _buildTagFilterBar(tags)),
             if (_notes.isEmpty)
               SliverFillRemaining(
                 child: Center(
@@ -90,13 +221,37 @@ class NotesScreenState extends State<NotesScreen> {
                   ),
                 ),
               )
+            else if (filtered.isEmpty)
+              SliverFillRemaining(
+                child: Center(
+                  child: Text(
+                    'Bu etikette not yok',
+                    style: GoogleFonts.notoSans(
+                        color: AppColors.textLight, fontSize: 14),
+                  ),
+                ),
+              )
+            else if (_viewMode == 'grid')
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverMasonryGrid.count(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childCount: filtered.length,
+                  itemBuilder: (_, i) => _buildNoteCard(filtered[i]),
+                ),
+              )
             else
               SliverPadding(
                 padding: const EdgeInsets.all(16),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (_, i) => _buildNoteCard(_notes[i]),
-                    childCount: _notes.length,
+                    (_, i) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildNoteCard(filtered[i]),
+                    ),
+                    childCount: filtered.length,
                   ),
                 ),
               ),
@@ -111,21 +266,82 @@ class NotesScreenState extends State<NotesScreen> {
     );
   }
 
+  Widget _buildTagFilterBar(List<String> tags) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      height: 44,
+      margin: const EdgeInsets.only(top: 12),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          _buildTagChip('Tümü', _selectedTag == null,
+              () => setState(() => _selectedTag = null), isDark),
+          const SizedBox(width: 8),
+          for (final tag in tags) ...[
+            _buildTagChip('#$tag', _selectedTag == tag,
+                () => setState(() => _selectedTag = tag), isDark),
+            const SizedBox(width: 8),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTagChip(
+      String label, bool selected, VoidCallback onTap, bool isDark) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.gold
+              : (isDark ? const Color(0xFF1A2035) : Colors.white),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected
+                ? AppColors.gold
+                : AppColors.textLight.withValues(alpha: 0.3),
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: GoogleFonts.notoSans(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: selected
+                ? Colors.white
+                : (isDark ? Colors.white70 : AppColors.textSecondary),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildNoteCard(NoteModel note) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDark ? const Color(0xFF1A2035) : Colors.white;
     final titleColor = isDark ? Colors.white : AppColors.textPrimary;
     final subColor = isDark ? Colors.white54 : AppColors.textSecondary;
     final dateColor = isDark ? Colors.white38 : AppColors.textLight;
+    final accent = NoteColors.colorFor(note.color);
+    final accentColor = accent != null ? Color(accent) : AppColors.gold;
 
     return GestureDetector(
       onTap: () => _openNoteEditor(note: note),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(16),
+          border: Border(
+            left: BorderSide(
+              color: accentColor,
+              width: 4,
+            ),
+          ),
           boxShadow: [
             BoxShadow(
               color: AppColors.gold.withValues(alpha: 0.08),
@@ -138,6 +354,7 @@ class NotesScreenState extends State<NotesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Text(
@@ -146,6 +363,20 @@ class NotesScreenState extends State<NotesScreen> {
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: titleColor,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await _repo.togglePin(note);
+                    await _loadNotes();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 6),
+                    child: Icon(
+                      note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                      color: note.isPinned ? AppColors.gold : dateColor,
+                      size: 18,
                     ),
                   ),
                 ),
@@ -158,6 +389,19 @@ class NotesScreenState extends State<NotesScreen> {
                 ),
               ],
             ),
+            if (note.imagePaths.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.file(
+                  File(note.imagePaths.first),
+                  height: 100,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ],
             if (note.content.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
@@ -171,10 +415,54 @@ class NotesScreenState extends State<NotesScreen> {
                 ),
               ),
             ],
+            if (note.tags.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: note.tags
+                    .map((t) => Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '#$t',
+                            style: GoogleFonts.notoSans(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: accentColor,
+                            ),
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ],
             const SizedBox(height: 8),
-            Text(
-              _formatDate(note.updatedAt),
-              style: GoogleFonts.notoSans(fontSize: 11, color: dateColor),
+            Row(
+              children: [
+                Text(
+                  _formatDate(note.updatedAt),
+                  style: GoogleFonts.notoSans(fontSize: 11, color: dateColor),
+                ),
+                if (note.reminderAt != null) ...[
+                  const SizedBox(width: 8),
+                  Icon(Icons.alarm, size: 12, color: AppColors.gold),
+                  const SizedBox(width: 2),
+                  Text(
+                    DateFormat('d MMM, HH:mm', 'tr_TR')
+                        .format(note.reminderAt!),
+                    style: GoogleFonts.notoSans(
+                        fontSize: 11, color: AppColors.gold),
+                  ),
+                ],
+                if (note.audioPaths.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Icon(Icons.mic, size: 12, color: dateColor),
+                ],
+              ],
             ),
           ],
         ),
@@ -183,30 +471,7 @@ class NotesScreenState extends State<NotesScreen> {
   }
 
   void _openNoteEditor({NoteModel? note}) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      // Klavye açılınca sheet otomatik yukarı kayar
-      useSafeArea: true,
-      builder: (_) => _NoteEditorSheet(
-        note: note,
-        onSave: (title, content) async {
-          if (note != null) {
-            await _repo.updateNote(NoteModel(
-              id: note.id,
-              title: title,
-              content: content,
-              createdAt: note.createdAt,
-              updatedAt: DateTime.now(),
-            ));
-          } else {
-            await _repo.addNote(title: title, content: content);
-          }
-          await _loadNotes();
-        },
-      ),
-    );
+    showNoteEditor(context, note: note, onSaved: _loadNotes);
   }
 
   Future<void> _deleteNote(NoteModel note) async {
@@ -239,34 +504,293 @@ class NotesScreenState extends State<NotesScreen> {
 
 // ─── NOT EDİTÖRÜ ──────────────────────────────────────────────────────────────
 
-class _NoteEditorSheet extends StatefulWidget {
-  final NoteModel? note;
-  final Function(String title, String content) onSave;
+/// Not editörünün kaydet anında ürettiği taslak veri paketi. Uzun,
+/// hataya açık pozisyonel parametre listesi yerine kullanılır.
+class NoteDraft {
+  final String title;
+  final String content;
+  final String contentDelta;
+  final List<String> tags;
+  final String color;
+  final bool isPinned;
+  final List<String> imagePaths;
+  final List<String> audioPaths;
+  final DateTime? reminderAt;
 
-  const _NoteEditorSheet({this.note, required this.onSave});
-
-  @override
-  State<_NoteEditorSheet> createState() => _NoteEditorSheetState();
+  const NoteDraft({
+    required this.title,
+    required this.content,
+    required this.contentDelta,
+    required this.tags,
+    required this.color,
+    required this.isPinned,
+    required this.imagePaths,
+    required this.audioPaths,
+    required this.reminderAt,
+  });
 }
 
-class _NoteEditorSheetState extends State<_NoteEditorSheet> {
+class NoteEditorSheet extends StatefulWidget {
+  final NoteModel? note;
+  // Yeni not için önceden doldurma (örn. "Notlarıma Ekle" kısayolu). note
+  // verilmişse bu alanlar yok sayılır.
+  final String? prefillTitle;
+  final quill.Document? prefillDocument;
+  final List<String> prefillTags;
+  final void Function(NoteDraft draft) onSave;
+
+  const NoteEditorSheet({
+    super.key,
+    this.note,
+    this.prefillTitle,
+    this.prefillDocument,
+    this.prefillTags = const [],
+    required this.onSave,
+  });
+
+  @override
+  State<NoteEditorSheet> createState() => _NoteEditorSheetState();
+}
+
+class _NoteEditorSheetState extends State<NoteEditorSheet> {
   late TextEditingController _titleCtrl;
-  late TextEditingController _contentCtrl;
+  late TextEditingController _tagInputCtrl;
+  late quill.QuillController _quillController;
   final FocusNode _contentFocus = FocusNode();
+  late List<String> _tags;
+  late String _color;
+  late bool _isPinned;
+  late List<String> _imagePaths;
+  late List<String> _audioPaths;
+  DateTime? _reminderAt;
+
+  final _picker = ImagePicker();
+  final _recorder = AudioRecorder();
+  bool _isRecording = false;
 
   @override
   void initState() {
     super.initState();
-    _titleCtrl = TextEditingController(text: widget.note?.title ?? '');
-    _contentCtrl = TextEditingController(text: widget.note?.content ?? '');
+    _titleCtrl = TextEditingController(
+        text: widget.note?.title ?? widget.prefillTitle ?? '');
+    _tagInputCtrl = TextEditingController();
+    _quillController = _buildQuillController(widget.note);
+    _tags = List<String>.from(widget.note?.tags ??
+        (widget.note == null ? widget.prefillTags : const []));
+    _color = widget.note?.color ?? '';
+    _isPinned = widget.note?.isPinned ?? false;
+    _imagePaths = List<String>.from(widget.note?.imagePaths ?? const []);
+    _audioPaths = List<String>.from(widget.note?.audioPaths ?? const []);
+    _reminderAt = widget.note?.reminderAt;
+  }
+
+  // Notun içeriğini Quill dokümanına çevirir.
+  // - Var olan not, formatlı içerik (contentDelta): doğrudan yüklenir.
+  // - Var olan not, eski/düz metin: content, tek paragraflık bir doküman
+  //   olarak sarmalanır.
+  // - Yeni not + prefillDocument verilmiş (örn. ayet/hadis aktarımı): o
+  //   doküman yüklenir, imleç sonuna konumlanır ki kullanıcı hemen kendi
+  //   notunu ekleyebilsin.
+  quill.QuillController _buildQuillController(NoteModel? note) {
+    if (note != null && note.contentDelta.isNotEmpty) {
+      try {
+        final delta = jsonDecode(note.contentDelta) as List<dynamic>;
+        return quill.QuillController(
+          document: quill.Document.fromJson(delta),
+          selection: const TextSelection.collapsed(offset: 0),
+        );
+      } catch (_) {
+        // Bozuk delta — düz metne düş
+      }
+    }
+    if (note == null && widget.prefillDocument != null) {
+      final doc = widget.prefillDocument!;
+      return quill.QuillController(
+        document: doc,
+        selection: TextSelection.collapsed(offset: doc.length),
+      );
+    }
+    final plain = note?.content ?? '';
+    if (plain.isEmpty) return quill.QuillController.basic();
+    return quill.QuillController(
+      document: quill.Document.fromJson([
+        {'insert': '$plain\n'},
+      ]),
+      selection: const TextSelection.collapsed(offset: 0),
+    );
   }
 
   @override
   void dispose() {
     _titleCtrl.dispose();
-    _contentCtrl.dispose();
+    _tagInputCtrl.dispose();
+    _quillController.dispose();
     _contentFocus.dispose();
+    _recorder.dispose();
     super.dispose();
+  }
+
+  void _addTagFromInput() {
+    final raw = _tagInputCtrl.text.trim().replaceAll('#', '');
+    if (raw.isEmpty) return;
+    // Virgülle ayrılmış birden fazla etiket girilebilir
+    final newTags = raw
+        .split(',')
+        .map((t) => t.trim().toLowerCase())
+        .where((t) => t.isNotEmpty && !_tags.contains(t));
+    setState(() {
+      _tags.addAll(newTags);
+      _tagInputCtrl.clear();
+    });
+  }
+
+  void _removeTag(String tag) {
+    setState(() => _tags.remove(tag));
+  }
+
+  Widget _colorDot(String? key, Color noneColor) {
+    final selected = _color == (key ?? '');
+    final circleColor = key == null ? null : Color(NoteColors.palette[key]!);
+    return GestureDetector(
+      onTap: () => setState(() => _color = key ?? ''),
+      child: Container(
+        width: 28,
+        height: 28,
+        margin: const EdgeInsets.only(right: 8),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: circleColor ?? Colors.transparent,
+          border: Border.all(
+            color: selected
+                ? AppColors.gold
+                : (circleColor == null
+                    ? noneColor
+                    : Colors.black.withValues(alpha: 0.15)),
+            width: selected ? 2.5 : 1,
+          ),
+        ),
+        child: circleColor == null
+            ? Icon(Icons.block, size: 14, color: noneColor)
+            : (selected
+                ? const Icon(Icons.check, size: 14, color: Colors.white)
+                : null),
+      ),
+    );
+  }
+
+  void _showImageSourceSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Galeriden seç'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Fotoğraf çek'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picked = await _picker.pickImage(source: source, imageQuality: 85);
+      if (picked == null) return;
+      final permanentPath = await NoteFileStorage.persistImage(picked.path);
+      setState(() => _imagePaths = [..._imagePaths, permanentPath]);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Resim eklenemedi')),
+      );
+    }
+  }
+
+  void _removeImage(String path) {
+    setState(() => _imagePaths = _imagePaths.where((p) => p != path).toList());
+    NoteFileStorage.deleteIfExists(path);
+  }
+
+  Future<void> _toggleRecording() async {
+    if (_isRecording) {
+      final path = await _recorder.stop();
+      setState(() => _isRecording = false);
+      if (path != null) {
+        setState(() => _audioPaths = [..._audioPaths, path]);
+      }
+      return;
+    }
+    final hasPermission = await _recorder.hasPermission();
+    if (!hasPermission) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mikrofon izni gerekli')),
+      );
+      return;
+    }
+    final targetPath = await NoteFileStorage.newAudioTargetPath();
+    await _recorder.start(const RecordConfig(), path: targetPath);
+    setState(() => _isRecording = true);
+  }
+
+  void _removeAudio(String path) {
+    setState(() => _audioPaths = _audioPaths.where((p) => p != path).toList());
+    NoteFileStorage.deleteIfExists(path);
+  }
+
+  Future<void> _pickReminder() async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _reminderAt ?? now,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365 * 2)),
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(
+          _reminderAt ?? now.add(const Duration(hours: 1))),
+    );
+    if (time == null) return;
+    setState(() {
+      _reminderAt =
+          DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    });
+  }
+
+  void _clearReminder() => setState(() => _reminderAt = null);
+
+  void _handleSave() {
+    final title = _titleCtrl.text.trim();
+    final plainText = _quillController.document.toPlainText().trim();
+    final deltaJson = jsonEncode(_quillController.document.toDelta().toJson());
+    widget.onSave(NoteDraft(
+      title: title,
+      content: plainText,
+      contentDelta: deltaJson,
+      tags: _tags,
+      color: _color,
+      isPinned: _isPinned,
+      imagePaths: _imagePaths,
+      audioPaths: _audioPaths,
+      reminderAt: _reminderAt,
+    ));
+    Navigator.pop(context);
   }
 
   @override
@@ -277,7 +801,6 @@ class _NoteEditorSheetState extends State<_NoteEditorSheet> {
     final bgColor = isDark ? const Color(0xFF1A2035) : Colors.white;
     final titleColor = isDark ? Colors.white : AppColors.textPrimary;
     final hintColor = isDark ? Colors.white38 : AppColors.textLight;
-    final contentColor = isDark ? Colors.white70 : AppColors.textSecondary;
 
     return AnimatedPadding(
       // Klavye açılınca sheet yukarı kayar
@@ -285,11 +808,11 @@ class _NoteEditorSheetState extends State<_NoteEditorSheet> {
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeOut,
       child: DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        maxChildSize: 0.95,
-        minChildSize: 0.4,
+        initialChildSize: 0.94,
+        maxChildSize: 0.96,
+        minChildSize: 0.5,
         expand: false,
-        builder: (_, scrollController) => Container(
+        builder: (_, __) => Container(
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -321,14 +844,28 @@ class _NoteEditorSheetState extends State<_NoteEditorSheet> {
                       ),
                     ),
                     const Spacer(),
+                    IconButton(
+                      onPressed: _pickReminder,
+                      icon: Icon(
+                        _reminderAt != null
+                            ? Icons.alarm_on
+                            : Icons.alarm_add_outlined,
+                        color: _reminderAt != null ? AppColors.gold : hintColor,
+                        size: 20,
+                      ),
+                      tooltip: 'Hatırlatıcı ekle',
+                    ),
+                    IconButton(
+                      onPressed: () => setState(() => _isPinned = !_isPinned),
+                      icon: Icon(
+                        _isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                        color: _isPinned ? AppColors.gold : hintColor,
+                        size: 20,
+                      ),
+                      tooltip: 'Başa sabitle',
+                    ),
                     TextButton(
-                      onPressed: () {
-                        widget.onSave(
-                          _titleCtrl.text.trim(),
-                          _contentCtrl.text.trim(),
-                        );
-                        Navigator.pop(context);
-                      },
+                      onPressed: _handleSave,
                       child: const Text('Kaydet',
                           style: TextStyle(color: AppColors.gold)),
                     ),
@@ -338,73 +875,353 @@ class _NoteEditorSheetState extends State<_NoteEditorSheet> {
 
               Divider(color: AppColors.textLight.withValues(alpha: 0.2)),
 
-              // Form alanları — Expanded + SingleChildScrollView klavyeyle uyumlu
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  // Klavye açıkken içerik görünür kalsın
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              // Başlık alanı
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _titleCtrl,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) =>
+                      FocusScope.of(context).requestFocus(_contentFocus),
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: titleColor,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Başlık',
+                    hintStyle: GoogleFonts.playfairDisplay(
+                      color: hintColor,
+                      fontSize: 20,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              Divider(
+                  height: 1, color: AppColors.textLight.withValues(alpha: 0.2)),
+
+              if (_reminderAt != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Chip(
+                      avatar: const Icon(Icons.alarm,
+                          size: 16, color: AppColors.gold),
+                      label: Text(
+                        DateFormat('d MMMM y, HH:mm', 'tr_TR')
+                            .format(_reminderAt!),
+                        style: GoogleFonts.notoSans(fontSize: 12),
+                      ),
+                      deleteIcon: const Icon(Icons.close, size: 14),
+                      onDeleted: _clearReminder,
+                      backgroundColor: AppColors.gold.withValues(alpha: 0.12),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
+                ),
+
+              // Renk paleti — kart rengini seç
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                child: SizedBox(
+                  height: 32,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
                     children: [
-                      // Başlık alanı
-                      TextField(
-                        controller: _titleCtrl,
-                        textInputAction: TextInputAction.next,
-                        onSubmitted: (_) =>
-                            FocusScope.of(context).requestFocus(_contentFocus),
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: titleColor,
-                        ),
+                      _colorDot(null, hintColor),
+                      for (final key in NoteColors.palette.keys)
+                        _colorDot(key, hintColor),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Etiket girişi
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    for (final tag in _tags)
+                      Chip(
+                        label: Text('#$tag',
+                            style: GoogleFonts.notoSans(fontSize: 11)),
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        deleteIcon: const Icon(Icons.close, size: 14),
+                        onDeleted: () => _removeTag(tag),
+                        backgroundColor: AppColors.gold.withValues(alpha: 0.12),
+                      ),
+                    SizedBox(
+                      width: 140,
+                      height: 32,
+                      child: TextField(
+                        controller: _tagInputCtrl,
+                        style: GoogleFonts.notoSans(fontSize: 12),
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => _addTagFromInput(),
                         decoration: InputDecoration(
-                          hintText: 'Başlık',
-                          hintStyle: GoogleFonts.playfairDisplay(
-                            color: hintColor,
-                            fontSize: 20,
-                          ),
+                          hintText: '#etiket ekle',
+                          hintStyle: GoogleFonts.notoSans(
+                              fontSize: 12, color: hintColor),
+                          isDense: true,
                           border: InputBorder.none,
+                          suffixIcon: GestureDetector(
+                            onTap: _addTagFromInput,
+                            child: Icon(Icons.add_circle_outline,
+                                size: 16, color: hintColor),
+                          ),
                         ),
                       ),
-                      Divider(
-                          height: 1,
-                          color: AppColors.textLight.withValues(alpha: 0.2)),
-                      const SizedBox(height: 12),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                  height: 1, color: AppColors.textLight.withValues(alpha: 0.2)),
 
-                      // İçerik alanı — minLines ile başlangıç yüksekliği verildi
-                      TextField(
-                        controller: _contentCtrl,
-                        focusNode: _contentFocus,
-                        maxLines: null,
-                        minLines: 12,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        style: GoogleFonts.notoSans(
-                          fontSize: 15,
-                          height: 1.7,
-                          color: contentColor,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Notunu buraya yaz...',
-                          hintStyle: GoogleFonts.notoSans(
-                            color: hintColor,
-                            fontSize: 15,
+              // Resim ekleri
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: SizedBox(
+                  height: 64,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      for (final path in _imagePaths)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.file(
+                                  File(path),
+                                  width: 64,
+                                  height: 64,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 64,
+                                    height: 64,
+                                    color: Colors.black12,
+                                    child: const Icon(Icons.broken_image,
+                                        size: 20),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 2,
+                                right: 2,
+                                child: GestureDetector(
+                                  onTap: () => _removeImage(path),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black54,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.close,
+                                        size: 12, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          border: InputBorder.none,
-                          // İçerik büyüdükçe alan genişlesin
-                          isDense: false,
+                        ),
+                      GestureDetector(
+                        onTap: () => _showImageSourceSheet(context),
+                        child: Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: hintColor),
+                          ),
+                          child: Icon(Icons.add_photo_alternate_outlined,
+                              color: hintColor, size: 22),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
+
+              // Ses notu ekleri
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final path in _audioPaths)
+                      _AudioTile(
+                        path: path,
+                        onDelete: () => _removeAudio(path),
+                      ),
+                    GestureDetector(
+                      onTap: _toggleRecording,
+                      child: Row(
+                        children: [
+                          Icon(
+                            _isRecording ? Icons.stop_circle : Icons.mic_none,
+                            color: _isRecording ? Colors.red : hintColor,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _isRecording
+                                ? 'Kaydediliyor... (durdur)'
+                                : 'Sesli not ekle',
+                            style: GoogleFonts.notoSans(
+                              fontSize: 12,
+                              color: _isRecording ? Colors.red : hintColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 4),
+
+              // Minimalist biçimlendirme araç çubuğu
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF141A2E)
+                      : const Color(0xFFF7F5F0),
+                  border: Border(
+                    bottom: BorderSide(
+                        color: AppColors.textLight.withValues(alpha: 0.15)),
+                  ),
+                ),
+                child: quill.QuillSimpleToolbar(
+                  controller: _quillController,
+                  config: const quill.QuillSimpleToolbarConfig(
+                    multiRowsDisplay: false,
+                    showFontFamily: false,
+                    showFontSize: false,
+                    showBoldButton: true,
+                    showItalicButton: true,
+                    showUnderLineButton: true,
+                    showStrikeThrough: true,
+                    showColorButton: true,
+                    showBackgroundColorButton: true,
+                    showClearFormat: false,
+                    showAlignmentButtons: false,
+                    showHeaderStyle: true,
+                    showListNumbers: true,
+                    showListBullets: true,
+                    showListCheck: true,
+                    showCodeBlock: false,
+                    showQuote: true,
+                    showIndent: false,
+                    showLink: false,
+                    showUndo: true,
+                    showRedo: true,
+                    showDirection: false,
+                    showSearchButton: false,
+                    showSubscript: false,
+                    showSuperscript: false,
+                    showInlineCode: false,
+                    showDividers: true,
+                  ),
+                ),
+              ),
+
+              // İçerik alanı — zengin metin editörü
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                  child: quill.QuillEditor(
+                    controller: _quillController,
+                    focusNode: _contentFocus,
+                    scrollController: ScrollController(),
+                    config: quill.QuillEditorConfig(
+                      placeholder: 'Notunu buraya yaz...',
+                      padding: EdgeInsets.zero,
+                      expands: true,
+                      scrollable: true,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── SES NOTU OYNATICI ─────────────────────────────────────────────────────
+
+class _AudioTile extends StatefulWidget {
+  final String path;
+  final VoidCallback onDelete;
+
+  const _AudioTile({required this.path, required this.onDelete});
+
+  @override
+  State<_AudioTile> createState() => _AudioTileState();
+}
+
+class _AudioTileState extends State<_AudioTile> {
+  final _player = AudioPlayer();
+  bool _isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _player.onPlayerComplete.listen((_) {
+      if (mounted) setState(() => _isPlaying = false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  Future<void> _toggle() async {
+    if (_isPlaying) {
+      await _player.pause();
+    } else {
+      await _player.play(DeviceFileSource(widget.path));
+    }
+    if (mounted) setState(() => _isPlaying = !_isPlaying);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white70 : AppColors.textSecondary;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: _toggle,
+            child: Icon(
+              _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+              color: AppColors.gold,
+              size: 26,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text('Sesli not',
+              style: GoogleFonts.notoSans(fontSize: 12, color: textColor)),
+          const Spacer(),
+          GestureDetector(
+            onTap: widget.onDelete,
+            child: const Icon(Icons.close, size: 16, color: Colors.red),
+          ),
+        ],
       ),
     );
   }

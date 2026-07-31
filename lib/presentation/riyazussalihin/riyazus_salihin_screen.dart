@@ -308,6 +308,7 @@ class _RiyazusSalihinScreenState extends State<RiyazusSalihinScreen> {
                     await _noteRepo.addNote(
                       title: 'Riyazüs Salihin — Sayfa $page',
                       content: content,
+                      tags: const ['ders'],
                     );
                     if (ctx.mounted) {
                       Navigator.pop(ctx);

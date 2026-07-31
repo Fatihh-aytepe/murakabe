@@ -219,14 +219,9 @@ class _HomeScreenState extends State<HomeScreen> {
     AyetModel? ayet,
   ) async {
     if (esma == null || hadis == null || ayet == null) return;
-    await NotificationService().scheduleDailyNotifications(
-      esmaArabic: esma.arabic,
-      esmaMeaning: esma.meaning,
-      hadisText: hadis.text,
-      hadisSource: hadis.source,
-      ayetTurkish: ayet.turkish,
-      surahName: ayet.surah,
-    );
+
+    await NotificationService().scheduleDailyNotifications();
+
     await NotificationService().scheduleThursdayTahajjud();
     await NotificationService().scheduleWeeklyFridaySummary();
     await NotificationService().scheduleHourlyQuranReminders(_quranReadToday);

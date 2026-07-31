@@ -17,7 +17,8 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'murakabe.db');
     return openDatabase(
       path,
-      version: 5, // 4 → 5: custom_tasks.userId kolonu eklendi
+      version:
+          8, // 7 → 8: notes.imagePaths / audioPaths / reminderAt kolonları eklendi
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -62,6 +63,13 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         title TEXT,
         content TEXT,
+        contentDelta TEXT DEFAULT '',
+        tags TEXT DEFAULT '[]',
+        color TEXT DEFAULT '',
+        isPinned INTEGER DEFAULT 0,
+        imagePaths TEXT DEFAULT '[]',
+        audioPaths TEXT DEFAULT '[]',
+        reminderAt TEXT DEFAULT '',
         createdAt TEXT,
         updatedAt TEXT
       )
@@ -177,7 +185,40 @@ class DatabaseHelper {
     }
     if (oldVersion < 5) {
       try {
-        await db.execute('ALTER TABLE custom_tasks ADD COLUMN userId TEXT DEFAULT ""');
+        await db.execute(
+            'ALTER TABLE custom_tasks ADD COLUMN userId TEXT DEFAULT ""');
+      } catch (_) {}
+    }
+    if (oldVersion < 6) {
+      try {
+        await db.execute(
+            "ALTER TABLE notes ADD COLUMN contentDelta TEXT DEFAULT ''");
+      } catch (_) {}
+    }
+    if (oldVersion < 7) {
+      try {
+        await db.execute("ALTER TABLE notes ADD COLUMN tags TEXT DEFAULT '[]'");
+      } catch (_) {}
+      try {
+        await db.execute("ALTER TABLE notes ADD COLUMN color TEXT DEFAULT ''");
+      } catch (_) {}
+      try {
+        await db
+            .execute('ALTER TABLE notes ADD COLUMN isPinned INTEGER DEFAULT 0');
+      } catch (_) {}
+    }
+    if (oldVersion < 8) {
+      try {
+        await db.execute(
+            "ALTER TABLE notes ADD COLUMN imagePaths TEXT DEFAULT '[]'");
+      } catch (_) {}
+      try {
+        await db.execute(
+            "ALTER TABLE notes ADD COLUMN audioPaths TEXT DEFAULT '[]'");
+      } catch (_) {}
+      try {
+        await db
+            .execute("ALTER TABLE notes ADD COLUMN reminderAt TEXT DEFAULT ''");
       } catch (_) {}
     }
   }
