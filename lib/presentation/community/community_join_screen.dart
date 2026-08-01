@@ -10,8 +10,8 @@ import 'admin_dashboard_screen.dart';
 import 'owner_panel_screen.dart' show CommunityOwnerPanelScreen;
 
 class CommunityJoinScreen extends StatefulWidget {
-  final VoidCallback? onBack;
-  const CommunityJoinScreen({super.key, this.onBack});
+  final VoidCallback? onMenuTap;
+  const CommunityJoinScreen({super.key, this.onMenuTap});
 
   @override
   State<CommunityJoinScreen> createState() => _CommunityJoinScreenState();
@@ -161,8 +161,8 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: AppColors.gold.withValues(alpha: 0.2)),
+                  border:
+                      Border.all(color: AppColors.gold.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,8 +194,8 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
               ),
               const SizedBox(height: 20),
               Text('Bu topluluğa katılmak istiyor musunuz?',
-                  style:
-                      GoogleFonts.notoSans(color: Colors.white70, fontSize: 14)),
+                  style: GoogleFonts.notoSans(
+                      color: Colors.white70, fontSize: 14)),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -209,8 +209,7 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                       ),
                       onPressed: () => Navigator.pop(ctx, false),
                       child: Text('Vazgeç',
-                          style:
-                              GoogleFonts.notoSans(color: Colors.white54)),
+                          style: GoogleFonts.notoSans(color: Colors.white54)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -340,16 +339,20 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                 ),
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios,
-                          color: Colors.white, size: 20),
-                      onPressed: () {
-                        if (widget.onBack != null) {
-                          widget.onBack!();
-                        } else {
-                          Navigator.maybePop(context);
-                        }
-                      },
+                    GestureDetector(
+                      onTap: widget.onMenuTap,
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 4),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.gold.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: AppColors.gold.withValues(alpha: 0.3)),
+                        ),
+                        child: const Icon(Icons.menu,
+                            color: AppColors.gold, size: 18),
+                      ),
                     ),
                     Expanded(
                       child: Text(
@@ -376,7 +379,8 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                         onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const CommunityOwnerPanelScreen()),
+                              builder: (_) =>
+                                  const CommunityOwnerPanelScreen()),
                         ),
                       ),
                   ],
@@ -401,8 +405,7 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding:
-                                const EdgeInsets.only(left: 4, bottom: 12),
+                            padding: const EdgeInsets.only(left: 4, bottom: 12),
                             child: Text(
                               'TOPLULUKLARIM',
                               style: GoogleFonts.notoSans(
@@ -421,8 +424,7 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                             }
                             final memberData =
                                 memberDoc.data() as Map<String, dynamic>;
-                            final isAdminOfThis =
-                                memberData['role'] == 'admin';
+                            final isAdminOfThis = memberData['role'] == 'admin';
                             return _CommunityCard(
                               communityId: communityId,
                               isAdminOfThis: isAdminOfThis,
@@ -436,7 +438,8 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                   const SizedBox(height: 20),
 
                   // ── Admin/Owner: Topluluk Oluştur ──────────────────────
-                  if (_userRole == UserRole.admin || _userRole == UserRole.owner) ...[
+                  if (_userRole == UserRole.admin ||
+                      _userRole == UserRole.owner) ...[
                     _buildCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,8 +488,8 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                                 onPressed: _isLoading ? null : _createCommunity,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.gold,
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 14),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12)),
                                 ),
@@ -519,8 +522,8 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         GestureDetector(
-                          onTap: () => setState(
-                              () => _showJoinForm = !_showJoinForm),
+                          onTap: () =>
+                              setState(() => _showJoinForm = !_showJoinForm),
                           child: Row(
                             children: [
                               const Icon(Icons.add_circle_outline,
@@ -560,8 +563,8 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                               hintStyle: const TextStyle(
                                   color: Colors.white38, letterSpacing: 1),
                               enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                    color: Colors.white24),
+                                borderSide:
+                                    const BorderSide(color: Colors.white24),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -578,8 +581,8 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                               onPressed: _isLoading ? null : _joinCommunity,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.turquoise,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 14),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12)),
                               ),
@@ -588,8 +591,7 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2),
+                                          color: Colors.white, strokeWidth: 2),
                                     )
                                   : Text(
                                       'Katıl',
@@ -661,11 +663,10 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
                                 onPressed: _isLoading ? null : _applyForAdmin,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.gold,
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 14),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(12)),
+                                      borderRadius: BorderRadius.circular(12)),
                                 ),
                                 child: Text(
                                   'Başvur',
@@ -703,21 +704,20 @@ class _CommunityJoinScreenState extends State<CommunityJoinScreen> {
           ),
           child: Column(
             children: [
-              const Icon(Icons.group_outlined,
-                  color: Colors.white24, size: 48),
+              const Icon(Icons.group_outlined, color: Colors.white24, size: 48),
               const SizedBox(height: 12),
               Text(
                 'Henüz bir topluluğa katılmadınız',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.notoSans(
-                    color: Colors.white54, fontSize: 14),
+                style:
+                    GoogleFonts.notoSans(color: Colors.white54, fontSize: 14),
               ),
               const SizedBox(height: 6),
               Text(
                 'Davet kodunuz varsa aşağıdan katılabilirsiniz.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.notoSans(
-                    color: Colors.white38, fontSize: 12),
+                style:
+                    GoogleFonts.notoSans(color: Colors.white38, fontSize: 12),
               ),
             ],
           ),
@@ -822,17 +822,17 @@ class _CommunityCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: (isAdminOfThis ? AppColors.gold : AppColors.turquoise)
-                          .withValues(alpha: 0.15),
+                      color:
+                          (isAdminOfThis ? AppColors.gold : AppColors.turquoise)
+                              .withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       isAdminOfThis
                           ? Icons.admin_panel_settings_outlined
                           : Icons.group_outlined,
-                      color: isAdminOfThis
-                          ? AppColors.gold
-                          : AppColors.turquoise,
+                      color:
+                          isAdminOfThis ? AppColors.gold : AppColors.turquoise,
                       size: 20,
                     ),
                   ),
@@ -886,8 +886,8 @@ class _CommunityCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   desc,
-                  style: GoogleFonts.notoSans(
-                      color: Colors.white54, fontSize: 12),
+                  style:
+                      GoogleFonts.notoSans(color: Colors.white54, fontSize: 12),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -944,8 +944,8 @@ class _CommunityCard extends StatelessWidget {
                         onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => AdminDashboardScreen(
-                                communityId: communityId),
+                            builder: (_) =>
+                                AdminDashboardScreen(communityId: communityId),
                           ),
                         ),
                       ),

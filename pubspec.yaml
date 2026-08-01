@@ -65,7 +65,10 @@ dependencies:
   adhan: ^2.0.0+1
   audioplayers: ^5.2.1
   http: ^1.2.0
-  
+
+# Pusula (Kıble Bulucu için)
+  flutter_compass: ^0.8.1
+
 path_provider: ^2.1.4
 
 dev_dependencies:
@@ -92,6 +95,7 @@ flutter:
     - assets/sounds/
     - assets/tefsir/tefhimul_kuran.pdf
     - assets/riyazusalihin/riyazusalihin.pdf
+    
   fonts:
     - family: NotoNaskhArabic
       fonts:

@@ -317,6 +317,18 @@ class LocalStorage {
   Future<void> setAyetNotif(bool v) => _prefs.setBool('notif_ayet', v);
   Future<void> setKuranNotif(bool v) => _prefs.setBool('notif_kuran', v);
 
+// ── Zikir bildirimi ─────────────────────────────────────────────────────
+  bool get zikirNotifEnabled => _prefs.getBool('notif_zikir') ?? true;
+  Future<void> setZikirNotif(bool v) => _prefs.setBool('notif_zikir', v);
+
+  // Varsayılan saat: 20:00 — kullanıcı ayarlar ekranından değiştirebilir
+  int get zikirNotifHour => _prefs.getInt('zikirNotifHour') ?? 20;
+  int get zikirNotifMinute => _prefs.getInt('zikirNotifMinute') ?? 0;
+  Future<void> setZikirNotifTime(int hour, int minute) async {
+    await _prefs.setInt('zikirNotifHour', hour);
+    await _prefs.setInt('zikirNotifMinute', minute);
+  }
+
   // ── Topluluk sohbet okunma takibi ─────────────────────────────────────────
   // hasChatUnread: bu toplulukta okunmamış mesaj var mı (push bildirim kontrolü)
   bool hasChatUnread(String communityId) =>
@@ -352,5 +364,62 @@ class LocalStorage {
 
   Future<void> clearHiddenAnnouncements(String communityId) async {
     await _prefs.remove('hidden_announcements_$communityId');
+  } // ── Zikir ────────────────────────────────────────────────────────────────
+
+  String get zikirMode => _prefs.getString('zikirMode') ?? 'default';
+  Future<void> setZikirMode(String mode) => _prefs.setString('zikirMode', mode);
+
+  int get zikirDefaultTarget => _prefs.getInt('zikirDefaultTarget') ?? 33;
+  Future<void> setZikirDefaultTarget(int t) =>
+      _prefs.setInt('zikirDefaultTarget', t);
+
+  String? get customZikirTurkish => _prefs.getString('customZikirTurkish');
+  Future<void> setCustomZikirTurkish(String v) =>
+      _prefs.setString('customZikirTurkish', v);
+
+  String? get customZikirArabic => _prefs.getString('customZikirArabic');
+  Future<void> setCustomZikirArabic(String v) =>
+      _prefs.setString('customZikirArabic', v);
+
+  int get customZikirTarget => _prefs.getInt('customZikirTarget') ?? 33;
+  Future<void> setCustomZikirTarget(int t) =>
+      _prefs.setInt('customZikirTarget', t);
+
+  String? get customZikirEndDate => _prefs.getString('customZikirEndDate');
+  Future<void> setCustomZikirEndDate(String d) =>
+      _prefs.setString('customZikirEndDate', d);
+  Future<void> clearCustomZikirEndDate() => _prefs.remove('customZikirEndDate');
+
+  int get zikirCurrentCount => _prefs.getInt('zikirCurrentCount') ?? 0;
+  Future<void> setZikirCurrentCount(int c) =>
+      _prefs.setInt('zikirCurrentCount', c);
+
+  String? get zikirProgressDate => _prefs.getString('zikirProgressDate');
+  Future<void> setZikirProgressDate(String d) =>
+      _prefs.setString('zikirProgressDate', d);
+
+  bool get zikirCelebrationShown =>
+      _prefs.getBool('zikirCelebrationShown') ?? false;
+  Future<void> setZikirCelebrationShown(bool v) =>
+      _prefs.setBool('zikirCelebrationShown', v);
+
+  // ── Ana ekran bölüm görünürlüğü (kullanıcı gizleyebilir) ──────────────────
+  bool get tasksSectionHidden => _prefs.getBool('tasksSectionHidden') ?? false;
+  Future<void> setTasksSectionHidden(bool v) =>
+      _prefs.setBool('tasksSectionHidden', v);
+
+  bool get communitySectionHidden =>
+      _prefs.getBool('communitySectionHidden') ?? false;
+  Future<void> setCommunitySectionHidden(bool v) =>
+      _prefs.setBool('communitySectionHidden', v);
+
+  // ── Bottom nav kısayolları (Ana Sayfa hariç, sıralı en fazla 3 id) ────────
+  List<String> get navShortcutIds {
+    final raw = _prefs.getStringList('navShortcutIds');
+    if (raw == null) return ['notes', 'community', 'profile'];
+    return raw;
   }
+
+  Future<void> setNavShortcutIds(List<String> ids) =>
+      _prefs.setStringList('navShortcutIds', ids);
 }

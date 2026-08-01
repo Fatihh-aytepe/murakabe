@@ -33,7 +33,8 @@ import '../settings/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onTasksChanged;
-  const ProfileScreen({super.key, this.onTasksChanged});
+  final VoidCallback? onMenuTap;
+  const ProfileScreen({super.key, this.onTasksChanged, this.onMenuTap});
 
   @override
   State<ProfileScreen> createState() => ProfileScreenState();
@@ -171,6 +172,25 @@ class ProfileScreenState extends State<ProfileScreen>
       ),
       child: Column(
         children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: widget.onMenuTap,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.gold.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: AppColors.gold.withValues(alpha: 0.3)),
+                  ),
+                  child:
+                      const Icon(Icons.menu, color: AppColors.gold, size: 18),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           GestureDetector(
             onTap: _showPhotoOptions,
             child: Stack(
@@ -262,8 +282,7 @@ class ProfileScreenState extends State<ProfileScreen>
                       color: AppColors.turquoise, fontSize: 12),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side:
-                      const BorderSide(color: AppColors.turquoise, width: 1),
+                  side: const BorderSide(color: AppColors.turquoise, width: 1),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20)),
                   padding:
@@ -276,8 +295,7 @@ class ProfileScreenState extends State<ProfileScreen>
               OutlinedButton.icon(
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (_) => const SettingsScreen()),
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 ).then((_) => _loadData()),
                 icon: const Icon(Icons.settings_outlined,
                     size: 14, color: AppColors.gold),
@@ -1137,8 +1155,7 @@ class ProfileScreenState extends State<ProfileScreen>
                 colors: [Color(0xFF0D1B2A), Color(0xFF1B3A4B)],
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: AppColors.gold.withValues(alpha: 0.3)),
+              border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -1187,8 +1204,7 @@ class ProfileScreenState extends State<ProfileScreen>
                       Text(
                         _formatRewardDate(reward.earnedAt),
                         style: GoogleFonts.notoSans(
-                            color: AppColors.turquoiseLight,
-                            fontSize: 10),
+                            color: AppColors.turquoiseLight, fontSize: 10),
                       ),
                     ],
                   ),
@@ -1437,13 +1453,15 @@ class ProfileScreenState extends State<ProfileScreen>
                 child: DropdownButton<String>(
                   value: current.id,
                   isExpanded: true,
-                  dropdownColor: isDark ? const Color(0xFF1A2035) : Colors.white,
+                  dropdownColor:
+                      isDark ? const Color(0xFF1A2035) : Colors.white,
                   underline: const SizedBox(),
                   style: GoogleFonts.notoSans(
                     color: isDark ? Colors.white : AppColors.textPrimary,
                     fontSize: 14,
                   ),
-                  icon: const Icon(Icons.music_note, color: AppColors.gold, size: 20),
+                  icon: const Icon(Icons.music_note,
+                      color: AppColors.gold, size: 20),
                   items: AlarmService.availableSounds
                       .map((s) => DropdownMenuItem(
                             value: s.id,
@@ -1454,8 +1472,8 @@ class ProfileScreenState extends State<ProfileScreen>
                     if (val == null) return;
                     await _previewPlayer.stop();
                     if (mounted) setState(() => _isPreviewing = false);
-                    final sound =
-                        AlarmService.availableSounds.firstWhere((s) => s.id == val);
+                    final sound = AlarmService.availableSounds
+                        .firstWhere((s) => s.id == val);
                     await _alarmService.setSelectedSound(sound);
                     setState(() {});
                   },
@@ -1477,7 +1495,9 @@ class ProfileScreenState extends State<ProfileScreen>
                     ),
                   ),
                   child: Icon(
-                    _isPreviewing ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                    _isPreviewing
+                        ? Icons.stop_rounded
+                        : Icons.play_arrow_rounded,
                     color: _isPreviewing ? Colors.red : AppColors.gold,
                     size: 18,
                   ),
@@ -1713,8 +1733,7 @@ class ProfileScreenState extends State<ProfileScreen>
                             ),
                             child: Center(
                               child: Text(
-                                (acc['name'] as String? ?? '?')
-                                    .isNotEmpty
+                                (acc['name'] as String? ?? '?').isNotEmpty
                                     ? (acc['name'] as String)[0].toUpperCase()
                                     : '?',
                                 style: TextStyle(
@@ -1770,8 +1789,8 @@ class ProfileScreenState extends State<ProfileScreen>
                   Navigator.pop(ctx);
                   _addNewAccount();
                 },
-                icon: const Icon(Icons.add, color: AppColors.turquoise,
-                    size: 18),
+                icon:
+                    const Icon(Icons.add, color: AppColors.turquoise, size: 18),
                 label: Text('Hesap Ekle',
                     style: GoogleFonts.notoSans(
                         color: AppColors.turquoise, fontSize: 13)),
@@ -1785,8 +1804,8 @@ class ProfileScreenState extends State<ProfileScreen>
                 },
                 icon: const Icon(Icons.logout, color: Colors.red, size: 18),
                 label: Text('Çıkış Yap',
-                    style: GoogleFonts.notoSans(
-                        color: Colors.red, fontSize: 13)),
+                    style:
+                        GoogleFonts.notoSans(color: Colors.red, fontSize: 13)),
               ),
             ],
           ),
@@ -1826,8 +1845,8 @@ class ProfileScreenState extends State<ProfileScreen>
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   Text(email,
-                      style: GoogleFonts.notoSans(
-                          color: subColor, fontSize: 12)),
+                      style:
+                          GoogleFonts.notoSans(color: subColor, fontSize: 12)),
                   const SizedBox(height: 16),
                   TextField(
                     controller: passCtrl,
@@ -1860,8 +1879,8 @@ class ProfileScreenState extends State<ProfileScreen>
                           child: TextButton(
                               onPressed: () => Navigator.pop(ctx),
                               child: Text('İptal',
-                                  style: GoogleFonts.notoSans(
-                                      color: subColor)))),
+                                  style:
+                                      GoogleFonts.notoSans(color: subColor)))),
                       const SizedBox(width: 8),
                       Expanded(
                         child: ElevatedButton(
@@ -1879,8 +1898,7 @@ class ProfileScreenState extends State<ProfileScreen>
                                   });
                                   try {
                                     await FirebaseService().signInWithEmail(
-                                        email: email,
-                                        password: passCtrl.text);
+                                        email: email, password: passCtrl.text);
                                     final authUser =
                                         FirebaseService().currentAuthUser!;
                                     await LocalStorage()
@@ -1893,8 +1911,8 @@ class ProfileScreenState extends State<ProfileScreen>
                                       name: acc['name'] as String? ?? email,
                                     );
                                     // Yerel veri yoksa Firestore'dan geri yükle
-                                    final existing = await _userRepo
-                                        .getCurrentUser();
+                                    final existing =
+                                        await _userRepo.getCurrentUser();
                                     if (existing == null) {
                                       await UserRepository()
                                           .restoreFromFirestore(authUser.uid);
@@ -1904,8 +1922,7 @@ class ProfileScreenState extends State<ProfileScreen>
                                       Navigator.pushAndRemoveUntil(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (_) =>
-                                                const HomeScreen()),
+                                            builder: (_) => const HomeScreen()),
                                         (_) => false,
                                       );
                                     }
@@ -1961,8 +1978,8 @@ class ProfileScreenState extends State<ProfileScreen>
               child: const Text('Vazgeç')),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Çıkış Yap',
-                  style: TextStyle(color: Colors.red))),
+              child:
+                  const Text('Çıkış Yap', style: TextStyle(color: Colors.red))),
         ],
       ),
     );

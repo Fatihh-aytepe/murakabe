@@ -1,0 +1,158 @@
+[
+    {
+        "id": 1,
+        "arabic": "لاَ إِلٰهَ إِلاَّ اللَّهُ",
+        "turkish": "La ilahe illallah",
+        "meaning": "Allah’tan başka ilah yoktur."
+    },
+    {
+        "id": 2,
+        "arabic": "سُبْحَانَ اللَّهِ",
+        "turkish": "Sübhanallah",
+        "meaning": "Allah her türlü noksanlıktan münezzehtir."
+    },
+    {
+        "id": 3,
+        "arabic": "اَلْحَمْدُ لِلَّهِ",
+        "turkish": "Elhamdulillah",
+        "meaning": "Hamd ve övgü yalnızca Allah’a mahsustur."
+    },
+    {
+        "id": 4,
+        "arabic": "اَللَّهُ أَكْبَرُ",
+        "turkish": "Allahu Ekber",
+        "meaning": "Allah en büyüktür."
+    },
+    {
+        "id": 5,
+        "arabic": "لاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللَّهِ",
+        "turkish": "La havle vela kuvvete illa billah",
+        "meaning": "Güç ve kuvvet ancak Allah’ın yardımıyladır."
+    },
+    {
+        "id": 6,
+        "arabic": "أَسْتَغْفِرُ اللَّهَ",
+        "turkish": "Estagfirullah",
+        "meaning": "Allah’tan bağışlanma dilerim."
+    },
+    {
+        "id": 7,
+        "arabic": "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ ، سُبْحَانَ اللَّهِ الْعَظِيمِ",
+        "turkish": "Sübhanallahi ve bihamdihi, Sübhanallahil azim",
+        "meaning": "Allah’ı hamd ile noksanlıklardan tenzih ederim, Yüce Allah her türlü noksanlıktan uzaktır."
+    },
+    {
+        "id": 8,
+        "arabic": "حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ",
+        "turkish": "Hasbunallahu ve ni'mel vekil",
+        "meaning": "Allah bize yeter, O ne güzel vekildir."
+    },
+    {
+        "id": 9,
+        "arabic": "لاَ إِلٰهَ إِلاَّ أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ",
+        "turkish": "La ilahe illa ente sübhaneke inni kuntu minez zalimin",
+        "meaning": "Senden başka ilah yoktur, Seni tenzih ederim. Şüphesiz ben zalimlerden oldum."
+    },
+    {
+        "id": 10,
+        "arabic": "يَا حَيُّ يَا قَيُّومُ",
+        "turkish": "Ya Hayyu Ya Kayyum",
+        "meaning": "Ey diri olan ve her şeyi ayakta tutan Allah’ım."
+    },
+    {
+        "id": 11,
+        "arabic": "لاَ إِلٰهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
+        "turkish": "La ilahe illallahu vahdehu la şerike leh, lehul mulku ve lehul hamdu ve huve ala kulli şey'in kadir",
+        "meaning": "Allah’tan başka ilah yoktur, O tektir, ortağı yoktur. Mülk O’nundur, hamd O’nadır ve O her şeye kadirdir."
+    },
+    {
+        "id": 12,
+        "arabic": "اَللَّهُمَّ صَلِّ عَلَىٰ سَيِّدِنَا مُحَمَّدٍ",
+        "turkish": "Allahümme salli ala sayyidina Muhammed",
+        "meaning": "Allah’ım, Efendimiz Muhammed’e salat ve selam eyle."
+    },
+    {
+        "id": 13,
+        "arabic": "أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ",
+        "turkish": "Estagfirullahal azim ve etubu ileyh",
+        "meaning": "Yüce Allah’tan bağışlanma diler ve O’na tövbe ederim."
+    },
+    {
+        "id": 14,
+        "arabic": "يَا ذَا الْجَلاَلِ وَالإِكْرَامِ",
+        "turkish": "Ya Zel celali vel ikram",
+        "meaning": "Ey celal ve ikram sahibi Allah’ım."
+    },
+    {
+        "id": 15,
+        "arabic": "بِسْمِ اللَّهِ الَّذِي لاَ يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الأَرْضِ وَلاَ فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+        "turkish": "Bismillahillezi la yedurru ma'asmihi şey'un fil ardi vela fis sema'i ve huves semi'ul alim",
+        "meaning": "İsmiyle yerde ve gökte hiçbir şeyin zarar veremediği Allah’ın adıyla. O, hakkıyla işiten ve bilendir."
+    },
+    {
+        "id": 16,
+        "arabic": "سُبْحَانَ اللَّهِ وَالْحَمْدُ لِلَّهِ وَلاَ إِلٰهَ إِلاَّ اللَّهُ وَاللَّهُ أَكْبَرُ",
+        "turkish": "Sübhanallahi velhamdulillahi vela ilahe illallahu vallahu ekber",
+        "meaning": "Allah eksikliklerden uzaktır, hamd Allah’adır, Allah’tan başka ilah yoktur ve Allah en büyüktür."
+    },
+    {
+        "id": 17,
+        "arabic": "اَللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",
+        "turkish": "Allahümme inneke afuvvun tuhibbul afve fa'fu anni",
+        "meaning": "Allah’ım! Sen affedicisin, affetmeyi seversin, beni de affet."
+    },
+    {
+        "id": 18,
+        "arabic": "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَىٰ دِينِكَ",
+        "turkish": "Ya mukallibel kulub, sabbit kalbi ala dinik",
+        "meaning": "Ey kalpleri evirip çeviren Allah’ım! Kalbimi dinin üzere sabit kıl."
+    },
+    {
+        "id": 19,
+        "arabic": "اَللَّهُمَّ أَعِنِّي عَلَىٰ ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ",
+        "turkish": "Allahümme e'inni ala zikrike ve şukrike ve husni ibadetik",
+        "meaning": "Allah’ım! Seni anmak, sana şükretmek ve sana güzelce ibadet etmek için bana yardım et."
+    },
+    {
+        "id": 20,
+        "arabic": "حَسْبِيَ اللَّهُ لاَ إِلٰهَ إِلاَّ هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
+        "turkish": "Hasbiyallahu la ilahe illa hu, aleyhi tevekkeltu ve huve rabbul arşil azim",
+        "meaning": "Allah bana yeter. O'ndan başka ilah yoktur. Ben O'na tevekkül ettim. O, yüce Arş'ın Rabbidir."
+    },
+    {
+        "id": 21,
+        "arabic": "رَبِّ زِدْنِي عِلْمًا",
+        "turkish": "Rabbi zidni ilmen",
+        "meaning": "Rabbim, ilmimi artır."
+    },
+    {
+        "id": 22,
+        "arabic": "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي",
+        "turkish": "Rabbişrah li sadri ve yessir li emri",
+        "meaning": "Rabbim! Göğsümü genişlet ve işimi kolaylaştır."
+    },
+    {
+        "id": 23,
+        "arabic": "اَللَّهُمَّ آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+        "turkish": "Allahümme atina fid dunya haseneten ve fil ahirati haseneten ve kına azaben nar",
+        "meaning": "Allah’ım! Bize dünyada da iyilik ver, ahirette de iyilik ver ve bizi cehennem azabından koru."
+    },
+    {
+        "id": 24,
+        "arabic": "رَبَّنَا ظَلَمْنَا أَنْفُسَنَا وَإِنْ لَمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ",
+        "turkish": "Rabbena zalemna enfusena ve in lem tagfir lena ve terhamna lenekunenne minal khasirin",
+        "meaning": "Rabbimiz! Biz kendimize zulmettik. Eğer bizi bağışlamaz ve bize acımazsan, mutlaka ziyana uğrayanlardan oluruz."
+    },
+    {
+        "id": 25,
+        "arabic": "اَللَّهُمَّ صَلِّ صَلاَةً كَامِلَةً وَسَلِّمْ سَلاَمًا تَامًّا عَلَىٰ سَيِّدِنَا مُحَمَّدٍ",
+        "turkish": "Allahümme salli salaten kamileten ve sellim selamen tammen ala sayyidina Muhammed",
+        "meaning": "Allah’ım, Efendimiz Muhammed’e eksiksiz bir salat ve tam bir selam eyle."
+    },
+    {
+        "id": 26,
+        "arabic": "رَبِّ اجْعَلْنِي مُقِيمَ الصَّلَاةِ وَمِن ذُرِّيَّتِي رَبَّنَا وَتَقَبَّلْ دُعَاءِ",
+        "turkish": "Rabbi ja'alni mukimassalati ve min zurriyeti rabbena ve teqabel du'a",
+        "meaning": "Rabbim! Beni namazı dosdoğru kılanlardan eyle ve soyumdan da. Rabbimiz! Duamı kabul et."
+    }
+]

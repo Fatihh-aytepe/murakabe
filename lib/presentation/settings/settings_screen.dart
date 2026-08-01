@@ -13,6 +13,7 @@ import '../../data/local/local_storage.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/remote/firebase_service.dart';
+import 'nav_shortcuts_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -42,6 +43,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _hadisNotif = true;
   bool _ayetNotif = true;
   bool _kuranNotif = true;
+  bool _zikirNotif = true;
+  int _zikirHour = 20;
+  int _zikirMinute = 0;
 
   @override
   void initState() {
@@ -53,6 +57,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _hadisNotif = _storage.hadisNotifEnabled;
     _ayetNotif = _storage.ayetNotifEnabled;
     _kuranNotif = _storage.kuranNotifEnabled;
+    _zikirNotif = _storage.zikirNotifEnabled;
+    _zikirHour = _storage.zikirNotifHour;
+    _zikirMinute = _storage.zikirNotifMinute;
     _previewPlayer.onPlayerComplete.listen((_) {
       if (mounted) setState(() => _isPreviewing = false);
     });
@@ -268,8 +275,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       decoration: BoxDecoration(
                         color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border:
-                            Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                        border: Border.all(
+                            color: Colors.red.withValues(alpha: 0.4)),
                       ),
                       child: Text(errorMsg!,
                           style:
@@ -295,8 +302,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               : () async {
                                   final newEmail = emailCtrl.text.trim();
                                   final password = passwordCtrl.text;
-                                  if (!RegExp(
-                                          r'^[\w\.\-\+]+@[\w\-]+\.\w{2,}$')
+                                  if (!RegExp(r'^[\w\.\-\+]+@[\w\-]+\.\w{2,}$')
                                       .hasMatch(newEmail)) {
                                     setDialogState(() => errorMsg =
                                         'Geçerli bir e-posta adresi giriniz.');
@@ -398,8 +404,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor =
-        isDark ? const Color(0xFF0D1B2A) : const Color(0xFFF0F2F5);
+    final bgColor = isDark ? const Color(0xFF0D1B2A) : const Color(0xFFF0F2F5);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -411,6 +416,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _buildProfileCard(isDark),
+                const SizedBox(height: 16),
+                _buildShortcutsCard(isDark),
                 const SizedBox(height: 16),
                 _buildThemeCard(isDark),
                 const SizedBox(height: 16),
@@ -428,8 +435,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   SliverAppBar _buildAppBar(bool isDark) {
     return SliverAppBar(
       pinned: true,
-      backgroundColor:
-          isDark ? const Color(0xFF0D1B2A) : Colors.white,
+      backgroundColor: isDark ? const Color(0xFF0D1B2A) : Colors.white,
       elevation: 0,
       leading: IconButton(
         icon: Icon(Icons.arrow_back_ios,
@@ -570,9 +576,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: AppColors.gold,
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: isDark
-                                ? const Color(0xFF1A2035)
-                                : Colors.white,
+                            color:
+                                isDark ? const Color(0xFF1A2035) : Colors.white,
                             width: 2),
                       ),
                       child: const Icon(Icons.camera_alt,
@@ -601,8 +606,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 12),
             // Email row
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 border: Border.all(color: borderColor),
                 borderRadius: BorderRadius.circular(12),
@@ -666,8 +670,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     : Text(
                         'Kaydet',
                         style: GoogleFonts.notoSans(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
               ),
             ),
@@ -677,6 +680,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildShortcutsCard(bool isDark) {
+    return _buildCard(
+      title: 'Alt Menü',
+      icon: Icons.apps_outlined,
+      isDark: isDark,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NavShortcutsScreen()),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.dashboard_customize_outlined,
+                  color: Colors.white60, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Kısayolları Düzenle',
+                  style: GoogleFonts.notoSans(
+                    color: isDark ? Colors.white : AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.white38, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
   // ── Theme section ─────────────────────────────────────────────────────────
 
   Widget _buildThemeCard(bool isDark) {
@@ -689,8 +725,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Consumer<ThemeService>(
           builder: (_, theme, __) => Row(
             children: [
-              const Icon(Icons.light_mode,
-                  color: Colors.white60, size: 20),
+              const Icon(Icons.light_mode, color: Colors.white60, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -710,8 +745,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 inactiveTrackColor: Colors.white24,
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.dark_mode,
-                  color: Colors.white60, size: 20),
+              const Icon(Icons.dark_mode, color: Colors.white60, size: 20),
             ],
           ),
         ),
@@ -737,8 +771,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: DropdownButton<String>(
                 value: current.id,
                 isExpanded: true,
-                dropdownColor:
-                    isDark ? const Color(0xFF1A2035) : Colors.white,
+                dropdownColor: isDark ? const Color(0xFF1A2035) : Colors.white,
                 underline: const SizedBox(),
                 style: GoogleFonts.notoSans(
                   color: textColor,
@@ -779,9 +812,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 child: Icon(
-                  _isPreviewing
-                      ? Icons.stop_rounded
-                      : Icons.play_arrow_rounded,
+                  _isPreviewing ? Icons.stop_rounded : Icons.play_arrow_rounded,
                   color: _isPreviewing ? Colors.red : AppColors.gold,
                   size: 18,
                 ),
@@ -868,6 +899,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() => _kuranNotif = v);
               },
             ),
+            _buildNotifTile(
+              isDark: isDark,
+              label: 'Zikir Hatırlatıcısı',
+              subtitle:
+                  'Her gün ${_zikirHour.toString().padLeft(2, '0')}:${_zikirMinute.toString().padLeft(2, '0')}',
+              icon: Icons.spa_outlined,
+              value: _zikirNotif,
+              onChanged: (v) async {
+                await _storage.setZikirNotif(v);
+                if (v) {
+                  await _notifService.rescheduleZikirNotification();
+                } else {
+                  await _notifService.cancelZikirNotification();
+                }
+                setState(() => _zikirNotif = v);
+              },
+            ),
+            if (_zikirNotif) _buildZikirTimeRow(isDark),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildZikirTimeRow(bool isDark) {
+    final textColor = isDark ? Colors.white70 : AppColors.textSecondary;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(48, 0, 16, 8),
+      child: GestureDetector(
+        onTap: () async {
+          final picked = await showTimePicker(
+            context: context,
+            initialTime: TimeOfDay(hour: _zikirHour, minute: _zikirMinute),
+          );
+          if (picked == null) return;
+          await _storage.setZikirNotifTime(picked.hour, picked.minute);
+          await _notifService.rescheduleZikirNotification();
+          if (mounted) {
+            setState(() {
+              _zikirHour = picked.hour;
+              _zikirMinute = picked.minute;
+            });
+          }
+        },
+        child: Row(
+          children: [
+            const Icon(Icons.access_time, color: AppColors.turquoise, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              'Bildirim saatini değiştir',
+              style: GoogleFonts.notoSans(
+                  color: AppColors.turquoise, fontSize: 12),
+            ),
+            const Spacer(),
+            Text(
+              '${_zikirHour.toString().padLeft(2, '0')}:${_zikirMinute.toString().padLeft(2, '0')}',
+              style: GoogleFonts.notoSans(
+                  color: textColor, fontSize: 12, fontWeight: FontWeight.w600),
+            ),
           ],
         ),
       ),
@@ -896,11 +986,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: GoogleFonts.notoSans(
-                        color: textColor, fontSize: 14)),
+                    style:
+                        GoogleFonts.notoSans(color: textColor, fontSize: 14)),
                 Text(subtitle,
-                    style: GoogleFonts.notoSans(
-                        color: subColor, fontSize: 12)),
+                    style: GoogleFonts.notoSans(color: subColor, fontSize: 12)),
               ],
             ),
           ),

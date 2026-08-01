@@ -75,7 +75,8 @@ Future<void> showNoteEditor(
 }
 
 class NotesScreen extends StatefulWidget {
-  const NotesScreen({super.key});
+  final VoidCallback? onMenuTap;
+  const NotesScreen({super.key, this.onMenuTap});
 
   @override
   State<NotesScreen> createState() => NotesScreenState();
@@ -154,13 +155,32 @@ class NotesScreenState extends State<NotesScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Notlarım',
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 26,
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: widget.onMenuTap,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.gold.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                  color: AppColors.gold.withValues(alpha: 0.3)),
+                            ),
+                            child: const Icon(Icons.menu,
+                                color: AppColors.gold, size: 18),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Notlarım',
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 26,
+                            color: AppColors.gold,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                     Row(
                       children: [

@@ -7,6 +7,7 @@ import '../../data/repositories/content_repository.dart';
 import '../../data/models/esma_model.dart';
 import '../../data/models/hadis_model.dart';
 import '../../data/models/ayet_model.dart';
+import '../../data/repositories/zikir_repository.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -22,6 +23,7 @@ class NotificationService {
   static const int quranNotifId = 4;
   static const int tahajjudNotifId = 5;
   static const int weeklyNotifId = 6;
+  static const int zikirNotifId = 7;
   static const int remindLaterEsmaId = 11;
   static const int remindLaterHadisId = 12;
   static const int remindLaterAyetId = 13;
@@ -113,6 +115,14 @@ class NotificationService {
         importance: Importance.high,
       ),
     );
+    await androidPlugin?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'zikir_channel',
+        'Zikir',
+        description: 'Günlük zikir hatırlatıcısı',
+        importance: Importance.high,
+      ),
+    );
   }
 
   void _onNotificationTapped(NotificationResponse response) {}
@@ -123,6 +133,7 @@ class NotificationService {
   Future<void> cancelEsmaNotification() => _cancelDailyContentType(1);
   Future<void> cancelHadisNotification() => _cancelDailyContentType(2);
   Future<void> cancelAyetNotification() => _cancelDailyContentType(3);
+  Future<void> cancelZikirNotification() => _cancelDailyContentType(4);
   Future<void> cancelKuranNotification() async {
     await cancelNotification(quranNotifId);
     await cancelHourlyQuranReminders();
@@ -132,6 +143,7 @@ class NotificationService {
   Future<void> rescheduleEsmaNotification() => _rescheduleAllDailyContent();
   Future<void> rescheduleHadisNotification() => _rescheduleAllDailyContent();
   Future<void> rescheduleAyetNotification() => _rescheduleAllDailyContent();
+  Future<void> rescheduleZikirNotification() => _rescheduleAllDailyContent();
   Future<void> rescheduleKuranNotification() => _scheduleQuranNotification();
 
   Future<void> _rescheduleAllDailyContent() async {
@@ -224,6 +236,24 @@ class NotificationService {
           bigText: ayet.turkish,
         );
       }
+      if (storage.zikirNotifEnabled) {
+        final active = await ZikirRepository().getZikirForDate(date);
+        if (active.turkish.isNotEmpty) {
+          final body = active.arabic.isNotEmpty
+              ? '${active.arabic} — ${active.turkish}'
+              : active.turkish;
+          await _scheduleOne(
+            id: id + 4,
+            when: tz.TZDateTime(tz.local, date.year, date.month, date.day,
+                storage.zikirNotifHour, storage.zikirNotifMinute),
+            title: active.isCustom ? 'Özel Zikrin' : 'Günün Zikri',
+            body: body,
+            channelId: 'zikir_channel',
+            channelName: 'Zikir',
+            bigText: body,
+          );
+        }
+      }
     }
   }
 
@@ -271,6 +301,7 @@ class NotificationService {
       await _plugin.cancel(id + 1);
       await _plugin.cancel(id + 2);
       await _plugin.cancel(id + 3);
+      await _plugin.cancel(id + 4);
     }
   }
 

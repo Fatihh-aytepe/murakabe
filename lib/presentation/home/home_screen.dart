@@ -32,6 +32,15 @@ import '../../core/services/role_service.dart';
 import '../quran/quran_screen.dart';
 import '../tefsir/tefhimul_kuran_screen.dart';
 import '../riyazussalihin/riyazus_salihin_screen.dart';
+import '../../data/repositories/zikir_repository.dart';
+import 'widgets/zikir_home_card.dart';
+import '../zikir/zikir_sayac_screen.dart';
+import '../../data/local/local_storage.dart';
+import '../community/community_screen.dart';
+import 'widgets/community_activity_preview.dart';
+import '../../core/constants/nav_shortcuts.dart';
+import '../kible/kible_bulucu_screen.dart';
+import '../settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -52,6 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
   EsmaModel? _todayEsma;
   HadisModel? _todayHadis;
   AyetModel? _todayAyet;
+  ActiveZikir? _todayZikir;
+  int _zikirCount = 0;
   UserModel? _currentUser;
   bool _quranReadToday = false;
   bool _isLoading = true;
@@ -59,10 +70,14 @@ class _HomeScreenState extends State<HomeScreen> {
   List<CustomTaskModel> _activeTasks = [];
   bool _notificationsScheduled = false;
   Map<String, String> _communityIdNameMap = {};
+  bool _tasksSectionHidden = false;
+  bool _communitySectionHidden = false;
 
   @override
   void initState() {
     super.initState();
+    _tasksSectionHidden = LocalStorage().tasksSectionHidden;
+    _communitySectionHidden = LocalStorage().communitySectionHidden;
     FirestoreNotificationService().start();
     _loadContent().then((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -184,6 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final hadis = await _contentRepo.getTodayHadis();
       final ayet = await _contentRepo.getTodayAyet();
       final quranRead = await _userRepo.isQuranReadToday();
+      final zikirRepo = ZikirRepository();
+      final zikir = await zikirRepo.getActiveZikir();
+      final zikirCount = zikirRepo.currentCount;
       final user = await _userRepo.getCurrentUser();
       final tasks = await _taskRepo.getActiveTasks();
       final communityIdNameMap =
@@ -195,6 +213,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _todayHadis = hadis;
           _todayAyet = ayet;
           _quranReadToday = quranRead;
+          _todayZikir = zikir;
+          _zikirCount = zikirCount;
           _currentUser = user;
           _activeTasks = tasks;
           _communityIdNameMap = communityIdNameMap;
@@ -226,6 +246,28 @@ class _HomeScreenState extends State<HomeScreen> {
     await NotificationService().scheduleWeeklyFridaySummary();
     await NotificationService().scheduleHourlyQuranReminders(_quranReadToday);
     await _taskRepo.syncNotifications();
+  }
+
+  Future<void> _refreshZikirCount() async {
+    final repo = ZikirRepository();
+    final zikir = await repo.getActiveZikir();
+    final count = repo.currentCount;
+    if (mounted) {
+      setState(() {
+        _todayZikir = zikir;
+        _zikirCount = count;
+      });
+    }
+  }
+
+  void _toggleTasksSection() {
+    setState(() => _tasksSectionHidden = !_tasksSectionHidden);
+    LocalStorage().setTasksSectionHidden(_tasksSectionHidden);
+  }
+
+  void _toggleCommunitySection() {
+    setState(() => _communitySectionHidden = !_communitySectionHidden);
+    LocalStorage().setCommunitySectionHidden(_communitySectionHidden);
   }
 
   Future<void> _refreshContent() async {
@@ -281,11 +323,17 @@ class _HomeScreenState extends State<HomeScreen> {
           index: _selectedIndex,
           children: [
             _buildHomePage(),
-            NotesScreen(key: _notesKey),
-            CommunityJoinScreen(onBack: () => _onTabChanged(0)),
+            NotesScreen(
+              key: _notesKey,
+              onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
+            CommunityJoinScreen(
+              onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
             ProfileScreen(
               key: _profileKey,
               onTasksChanged: _refreshContent,
+              onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
             ),
           ],
         ),
@@ -645,6 +693,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     onRemind: () {},
                   ),
                 const SizedBox(height: 16),
+                if (_todayZikir != null)
+                  ZikirHomeCard(
+                    active: _todayZikir!,
+                    count: _zikirCount,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ZikirSayacScreen(),
+                      ),
+                    ).then((_) => _refreshZikirCount()),
+                  ),
+                if (_todayZikir != null) const SizedBox(height: 16),
+                const SizedBox(height: 16),
                 QuranTrackerCard(
                   isRead: _quranReadToday,
                   onRead: () async {
@@ -663,19 +724,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     } catch (_) {}
                   },
                 ),
-                ..._activeTasks.map((task) => Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: CustomTaskCard(
-                        task: task,
-                        onCompleted: () async {
-                          try {
-                            await _taskRepo.markTaskCompleted(task.id);
-                            final tasks = await _taskRepo.getActiveTasks();
-                            if (mounted) setState(() => _activeTasks = tasks);
-                          } catch (_) {}
-                        },
-                      ),
-                    )),
+                if (_activeTasks.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  _buildSectionHeader(
+                    icon: Icons.checklist_outlined,
+                    label: 'GÖREVLERİM',
+                    color: AppColors.gold,
+                    isHidden: _tasksSectionHidden,
+                    onToggle: _toggleTasksSection,
+                  ),
+                  if (!_tasksSectionHidden)
+                    ..._activeTasks.map((task) => Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: CustomTaskCard(
+                            task: task,
+                            onCompleted: () async {
+                              try {
+                                await _taskRepo.markTaskCompleted(task.id);
+                                final tasks = await _taskRepo.getActiveTasks();
+                                if (mounted)
+                                  setState(() => _activeTasks = tasks);
+                              } catch (_) {}
+                            },
+                          ),
+                        )),
+                ],
                 if (_communityIdNameMap.isNotEmpty)
                   _buildCommunityTasksSection(),
                 const SizedBox(height: 100),
@@ -687,41 +760,83 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── TOPLULUK GÖREVLERİ ────────────────────────────────────────────────────
+  Widget _buildSectionHeader({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required bool isHidden,
+    required VoidCallback onToggle,
+  }) {
+    return GestureDetector(
+      onTap: onToggle,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8, top: 2),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 14),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.notoSans(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              isHidden ? 'göster' : 'gizle',
+              style: GoogleFonts.notoSans(color: Colors.white24, fontSize: 10),
+            ),
+            const SizedBox(width: 2),
+            Icon(
+              isHidden ? Icons.chevron_right : Icons.expand_more,
+              color: Colors.white24,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
+  // ── TOPLULUK GÖREVLERİ ────────────────────────────────────────────────────
   Widget _buildCommunityTasksSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
-          child: Row(
-            children: [
-              const Icon(Icons.group_outlined,
-                  color: AppColors.turquoise, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                'TOPLULUK GÖREVLERİ',
-                style: GoogleFonts.notoSans(
-                  color: AppColors.turquoise,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
-          ),
+        _buildSectionHeader(
+          icon: Icons.group_outlined,
+          label: 'TOPLULUK',
+          color: AppColors.turquoise,
+          isHidden: _communitySectionHidden,
+          onToggle: _toggleCommunitySection,
         ),
-        ..._communityIdNameMap.entries.map((e) =>
-            CommunityTaskList(communityId: e.key, communityName: e.value)),
+        if (!_communitySectionHidden)
+          ..._communityIdNameMap.entries.expand((e) => [
+                CommunityActivityPreview(
+                  communityId: e.key,
+                  communityName: e.value,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CommunityScreen(communityId: e.key),
+                    ),
+                  ),
+                ),
+                CommunityTaskList(communityId: e.key, communityName: e.value),
+              ]),
       ],
     );
   }
-
   // ── ALT NAV ───────────────────────────────────────────────────────────────
 
   Widget _buildBottomNav(bool isDark) {
+    final shortcutIds = LocalStorage().navShortcutIds;
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A2035) : Colors.white,
@@ -734,8 +849,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       child: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onTabChanged,
+        currentIndex: _displayIndexFor(shortcutIds),
+        onTap: (tappedIndex) => _onBottomNavTap(tappedIndex, shortcutIds),
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.gold,
         unselectedItemColor: isDark ? Colors.white38 : AppColors.textLight,
@@ -746,42 +861,94 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.home_outlined),
             label: 'Ana Sayfa',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.note_outlined),
-            label: 'Notlarım',
-          ),
-          BottomNavigationBarItem(
-            icon: ValueListenableBuilder<bool>(
-              valueListenable:
-                  FirestoreNotificationService().communityBadgeNotifier,
-              builder: (_, hasBadge, __) => Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  const Icon(Icons.group_outlined),
-                  if (hasBadge)
-                    Positioned(
-                      top: -1,
-                      right: -3,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFEF5350),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            label: 'Topluluk',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profil',
-          ),
+          for (final id in shortcutIds) _buildNavItem(id),
         ],
       ),
+    );
+  }
+
+  // Görsel slot pozisyonunu, sabit _selectedIndex değerine çevirir.
+  int _displayIndexFor(List<String> shortcutIds) {
+    if (_selectedIndex == 0) return 0;
+    final pos = shortcutIds
+        .indexWhere((id) => kTabShortcutFixedIndex[id] == _selectedIndex);
+    return pos == -1 ? 0 : pos + 1;
+  }
+
+  void _onBottomNavTap(int tappedIndex, List<String> shortcutIds) {
+    if (tappedIndex == 0) {
+      _onTabChanged(0);
+      return;
+    }
+    final id = shortcutIds[tappedIndex - 1];
+    final def = findNavShortcut(id);
+    if (def == null) return;
+
+    if (def.type == NavShortcutType.tab) {
+      final fixedIndex = kTabShortcutFixedIndex[id];
+      if (fixedIndex != null) _onTabChanged(fixedIndex);
+    } else {
+      _openPushShortcut(id);
+    }
+  }
+
+  void _openPushShortcut(String id) {
+    Widget? screen;
+    switch (id) {
+      case 'kible':
+        screen = const KibleBulucuScreen();
+        break;
+      case 'kuran':
+        screen = const QuranScreen();
+        break;
+      case 'zikir':
+        screen = const ZikirSayacScreen();
+        break;
+      case 'ayarlar':
+        screen = const SettingsScreen();
+        break;
+    }
+    if (screen == null) return;
+    Navigator.push(context, MaterialPageRoute(builder: (_) => screen!))
+        .then((_) => setState(() {})); // dönünce kısayollar tazelensin
+  }
+
+  BottomNavigationBarItem _buildNavItem(String id) {
+    final def = findNavShortcut(id);
+
+    // Topluluk rozeti (okunmamış mesaj göstergesi) hangi slotta olursa olsun korunur.
+    if (id == 'community') {
+      return BottomNavigationBarItem(
+        icon: ValueListenableBuilder<bool>(
+          valueListenable:
+              FirestoreNotificationService().communityBadgeNotifier,
+          builder: (_, hasBadge, __) => Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(def?.icon ?? Icons.group_outlined),
+              if (hasBadge)
+                Positioned(
+                  top: -1,
+                  right: -3,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEF5350),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        label: def?.label ?? 'Topluluk',
+      );
+    }
+
+    return BottomNavigationBarItem(
+      icon: Icon(def?.icon ?? Icons.circle_outlined),
+      label: def?.label ?? '',
     );
   }
 }
