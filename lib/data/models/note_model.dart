@@ -15,6 +15,10 @@ class NoteModel {
       imagePaths; // Cihazda kalıcı olarak kopyalanmış resim dosya yolları
   final List<String>
       audioPaths; // Cihazda kalıcı olarak kaydedilmiş ses notu dosya yolları
+  final List<String>
+      imageUrls; // Firebase Storage yedek linkleri (imagePaths ile aynı sırada)
+  final List<String>
+      audioUrls; // Firebase Storage yedek linkleri (audioPaths ile aynı sırada)
   final DateTime? reminderAt; // Ayarlıysa bu tarihte bildirim planlanır
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -29,6 +33,8 @@ class NoteModel {
     this.isPinned = false,
     this.imagePaths = const [],
     this.audioPaths = const [],
+    this.imageUrls = const [],
+    this.audioUrls = const [],
     this.reminderAt,
     required this.createdAt,
     required this.updatedAt,
@@ -62,6 +68,8 @@ class NoteModel {
       isPinned: (map['isPinned'] ?? 0) == 1,
       imagePaths: parseStringList(map['imagePaths']),
       audioPaths: parseStringList(map['audioPaths']),
+      imageUrls: parseStringList(map['imageUrls']),
+      audioUrls: parseStringList(map['audioUrls']),
       reminderAt: (rawReminder != null && rawReminder.isNotEmpty)
           ? DateTime.tryParse(rawReminder)
           : null,
@@ -82,6 +90,8 @@ class NoteModel {
         'isPinned': isPinned ? 1 : 0,
         'imagePaths': jsonEncode(imagePaths),
         'audioPaths': jsonEncode(audioPaths),
+        'imageUrls': jsonEncode(imageUrls),
+        'audioUrls': jsonEncode(audioUrls),
         'reminderAt': reminderAt?.toIso8601String() ?? '',
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
@@ -96,6 +106,8 @@ class NoteModel {
     bool? isPinned,
     List<String>? imagePaths,
     List<String>? audioPaths,
+    List<String>? imageUrls,
+    List<String>? audioUrls,
     DateTime? reminderAt,
     bool clearReminder = false,
   }) {
@@ -109,6 +121,8 @@ class NoteModel {
       isPinned: isPinned ?? this.isPinned,
       imagePaths: imagePaths ?? this.imagePaths,
       audioPaths: audioPaths ?? this.audioPaths,
+      imageUrls: imageUrls ?? this.imageUrls,
+      audioUrls: audioUrls ?? this.audioUrls,
       reminderAt: clearReminder ? null : (reminderAt ?? this.reminderAt),
       createdAt: createdAt,
       updatedAt: updatedAt,

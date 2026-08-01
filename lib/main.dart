@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart'
+    show FlutterQuillLocalizations;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -76,6 +79,22 @@ class MurakabeApp extends StatelessWidget {
         darkTheme: AppTheme.darkTheme,
         themeMode: themeService.isDark ? ThemeMode.dark : ThemeMode.light,
         debugShowCheckedModeBanner: false,
+        // NOT: flutter_quill'in araç çubuğu/editörü çalışması için
+        // FlutterQuillLocalizations.delegate şart — eksik olduğunda
+        // "FlutterQuillLocalizations instance is required and could not
+        // found" hatası konsolu dolduruyordu. flutter_localizations paketi
+        // pubspec'te zaten vardı ama hiç bağlanmamıştı.
+        localizationsDelegates: const [
+          FlutterQuillLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('tr'),
+          Locale('en'),
+        ],
+        locale: const Locale('tr'),
         home: const SplashScreen(),
       ),
     );

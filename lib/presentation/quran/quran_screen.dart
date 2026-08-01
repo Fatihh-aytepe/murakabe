@@ -137,27 +137,50 @@ class _QuranScreenState extends State<QuranScreen>
                   style: GoogleFonts.notoSans(
                       color: Colors.white70, fontSize: 13)),
               const SizedBox(height: 8),
+              // NOT: Burada eskiden Flutter'ın ChoiceChip'i kullanılıyordu.
+              // Material 3'ün ambient ChipTheme'i, widget'a verilen
+              // backgroundColor/labelStyle'ı bazı durumlarda görmezden
+              // gelip kendi (çoğu zaman beyaza yakın) rengini uyguluyor —
+              // bu yüzden seçili olmayan seçenek "beyaz buton + beyaz yazı"
+              // gibi görünüp kayboluyordu. Kendi renklerimizi tam kontrol
+              // eden basit bir chip ile (notlardaki etiket filtresiyle
+              // aynı desen) bu sorunu kökten çözüyoruz.
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: kQuranTranslations.map((t) {
                   final selected = t.id == _translationId;
-                  return ChoiceChip(
-                    label: Text(t.name),
-                    selected: selected,
-                    labelStyle: GoogleFonts.notoSans(
-                      color: selected ? Colors.black : Colors.white70,
-                      fontSize: 12,
-                    ),
-                    selectedColor: AppColors.gold,
-                    backgroundColor: Colors.white.withValues(alpha: 0.06),
-                    onSelected: (_) {
+                  return GestureDetector(
+                    onTap: () {
                       setState(() {
                         _translationId = t.id;
                         _repo.translationId = t.id;
                       });
                       setSheetState(() {});
                     },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color:
+                            selected ? AppColors.gold : const Color(0xFF262E4A),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: selected
+                              ? AppColors.gold
+                              : Colors.white.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Text(
+                        t.name,
+                        style: GoogleFonts.notoSans(
+                          color: selected ? Colors.black : Colors.white,
+                          fontSize: 12,
+                          fontWeight:
+                              selected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   );
                 }).toList(),
               ),
@@ -290,8 +313,7 @@ class _QuranScreenState extends State<QuranScreen>
           GestureDetector(
             onTap: () => setState(() => _showMeal = !_showMeal),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: _showMeal
                     ? AppColors.gold.withValues(alpha: 0.15)

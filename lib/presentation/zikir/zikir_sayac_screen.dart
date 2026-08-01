@@ -45,13 +45,238 @@ class _ZikirSayacScreenState extends State<ZikirSayacScreen>
   }
 
   Future<void> _load() async {
-    final active = await _repo.getActiveZikir();
-    if (!mounted) return;
-    setState(() {
-      _active = active;
-      _count = _repo.currentCount;
-      _isLoading = false;
-    });
+    try {
+      final active = await _repo.getActiveZikir();
+      if (!mounted) return;
+      setState(() {
+        _active = active;
+        _count = _repo.currentCount;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('❌ Zikir yüklenemedi: $e');
+      if (!mounted) return;
+      // Veri çekilemese bile ekran sonsuza dek dönen bir yükleme
+      // göstergesinde takılı kalmasın diye güvenli bir varsayılanla devam et.
+      setState(() {
+        _active = ActiveZikir(
+          isCustom: false,
+          turkish: 'Sübhanallah',
+          arabic: '',
+          meaning: '',
+          target: 33,
+        );
+        _count = _repo.currentCount;
+        _isLoading = false;
+      });
+    }
+  }
+
+  // ── ZİKRİ ÖZELLEŞTİR ──────────────────────────────────────────────────────
+  // Kullanıcı kendi zikrini (Türkçe metin, opsiyonel Arapça, hedef sayı,
+  // opsiyonel süre) girebilir. setCustomZikir zaten repository katmanında
+  // vardı ama hiçbir ekran çağırmıyordu — bu eksik olan giriş noktasıydı.
+  void _showCustomizeSheet() {
+    final turkishCtrl = TextEditingController(
+      text: _repo.isCustomActive ? (_active?.turkish ?? '') : '',
+    );
+    final arabicCtrl = TextEditingController(
+      text: _repo.isCustomActive ? (_active?.arabic ?? '') : '',
+    );
+    int target = _repo.isCustomActive ? (_active?.target ?? 33) : 33;
+    int? durationDays; // null = süresiz
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Color(0xFF2A1500),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'Zikri Özelleştir',
+                    style: GoogleFonts.playfairDisplay(
+                      color: AppColors.gold,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: turkishCtrl,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Zikir (Türkçe)',
+                      labelStyle: const TextStyle(color: Colors.white54),
+                      hintText: 'Örn: Sübhanallah',
+                      hintStyle: const TextStyle(color: Colors.white24),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.gold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: arabicCtrl,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Arapça (opsiyonel)',
+                      labelStyle: const TextStyle(color: Colors.white54),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.gold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Text('Hedef sayı',
+                          style: GoogleFonts.notoSans(
+                              color: Colors.white70, fontSize: 13)),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () => setSheetState(
+                            () => target = (target - 1).clamp(1, 9999)),
+                        icon: const Icon(Icons.remove_circle_outline,
+                            color: AppColors.gold),
+                      ),
+                      Text('$target',
+                          style: GoogleFonts.playfairDisplay(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold)),
+                      IconButton(
+                        onPressed: () => setSheetState(
+                            () => target = (target + 1).clamp(1, 9999)),
+                        icon: const Icon(Icons.add_circle_outline,
+                            color: AppColors.gold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Süre',
+                      style: GoogleFonts.notoSans(
+                          color: Colors.white70, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final opt in [null, 7, 30, 90])
+                        GestureDetector(
+                          onTap: () => setSheetState(() => durationDays = opt),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: durationDays == opt
+                                  ? AppColors.gold
+                                  : Colors.white.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: durationDays == opt
+                                    ? AppColors.gold
+                                    : Colors.white24,
+                              ),
+                            ),
+                            child: Text(
+                              opt == null ? 'Süresiz' : '$opt gün',
+                              style: GoogleFonts.notoSans(
+                                color: durationDays == opt
+                                    ? Colors.black
+                                    : Colors.white70,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      if (_repo.isCustomActive)
+                        TextButton(
+                          onPressed: () async {
+                            await _repo.clearCustomZikir();
+                            if (!ctx.mounted) return;
+                            Navigator.pop(ctx);
+                            await _load();
+                          },
+                          child: Text('Varsayılana dön',
+                              style: GoogleFonts.notoSans(
+                                  color: Colors.white54, fontSize: 13)),
+                        ),
+                      const Spacer(),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final text = turkishCtrl.text.trim();
+                          if (text.isEmpty) return;
+                          await _repo.setCustomZikir(
+                            turkish: text,
+                            arabic: arabicCtrl.text.trim(),
+                            target: target,
+                            durationDays: durationDays,
+                          );
+                          if (!ctx.mounted) return;
+                          Navigator.pop(ctx);
+                          await _load();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text('Kaydet',
+                            style: GoogleFonts.notoSans(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _onTap() async {
@@ -185,20 +410,31 @@ class _ZikirSayacScreenState extends State<ZikirSayacScreen>
               ),
             ],
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          Row(
             children: [
-              Text(
-                'HEDEF',
-                style: GoogleFonts.notoSans(
-                    color: Colors.white38, fontSize: 10, letterSpacing: 1.2),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'HEDEF',
+                    style: GoogleFonts.notoSans(
+                        color: Colors.white38,
+                        fontSize: 10,
+                        letterSpacing: 1.2),
+                  ),
+                  Text(
+                    '${_active!.target}',
+                    style: GoogleFonts.notoSans(
+                        color: AppColors.turquoiseLight,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
               ),
-              Text(
-                '${_active!.target}',
-                style: GoogleFonts.notoSans(
-                    color: AppColors.turquoiseLight,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600),
+              IconButton(
+                onPressed: _showCustomizeSheet,
+                tooltip: 'Zikri özelleştir',
+                icon: const Icon(Icons.tune, color: Colors.white70, size: 20),
               ),
             ],
           ),

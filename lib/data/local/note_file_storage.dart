@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -52,5 +53,84 @@ class NoteFileStorage {
       final f = File(path);
       if (await f.exists()) await f.delete();
     } catch (_) {}
+  }
+
+  // ── Firebase Storage yedekleme ──────────────────────────────────────────
+  // Notlara eklenen resim/ses dosyaları sadece cihazda tutulduğu için
+  // uygulama silinip yeniden yüklendiğinde kaybolur. Bu metodlar dosyayı
+  // Storage'a yükler / oradan geri indirir, böylece Firestore'daki not
+  // metniyle birlikte ekler de geri gelir.
+
+  static Reference _ref(
+          String uid, String noteId, String subDir, String fileName) =>
+      FirebaseStorage.instance.ref('notes/$uid/$noteId/$subDir/$fileName');
+
+  /// Yerel dosyayı Storage'a yükler ve indirme URL'ini döner.
+  /// Ağ/izin hatalarında null döner — yükleme başarısızsa not yine de
+  /// yerelde kalmaya devam eder, bir sonraki kayışta tekrar denenir.
+  static Future<String?> uploadToStorage({
+    required String uid,
+    required String noteId,
+    required String localPath,
+    required bool isImage,
+  }) async {
+    try {
+      final file = File(localPath);
+      if (!await file.exists()) return null;
+      final subDir = isImage ? _imagesDir : _audioDir;
+      final ref = _ref(uid, noteId, subDir, p.basename(localPath));
+      await ref.putFile(file);
+      return await ref.getDownloadURL();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<void> deleteFromStorage({
+    required String uid,
+    required String noteId,
+    required String fileName,
+    required bool isImage,
+  }) async {
+    try {
+      final subDir = isImage ? _imagesDir : _audioDir;
+      await _ref(uid, noteId, subDir, fileName).delete();
+    } catch (_) {}
+  }
+
+  /// Tüm notun Storage klasörünü (resim + ses) siler.
+  static Future<void> deleteNoteFolder(String uid, String noteId) async {
+    for (final subDir in [_imagesDir, _audioDir]) {
+      try {
+        final dirRef =
+            FirebaseStorage.instance.ref('notes/$uid/$noteId/$subDir');
+        final list = await dirRef.listAll();
+        for (final item in list.items) {
+          try {
+            await item.delete();
+          } catch (_) {}
+        }
+      } catch (_) {}
+    }
+  }
+
+  /// Storage URL'inden dosyayı indirip kalıcı yerel dizine kaydeder,
+  /// yeni yerel path'i döner. İndirme başarısızsa null döner.
+  static Future<String?> downloadFromUrl({
+    required String url,
+    required bool isImage,
+  }) async {
+    try {
+      final dir = await _ensureDir(isImage ? _imagesDir : _audioDir);
+      final ref = FirebaseStorage.instance.refFromURL(url);
+      final fileName = p.basename(ref.fullPath);
+      final targetPath = p.join(dir.path, fileName);
+      final file = File(targetPath);
+      if (await file.exists()) return targetPath; // zaten indirilmiş
+      await ref.writeToFile(file);
+      return targetPath;
+    } catch (_) {
+      return null;
+    }
   }
 }

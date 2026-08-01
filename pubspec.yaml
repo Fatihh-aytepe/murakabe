@@ -1,7 +1,7 @@
 name: murakabe
 description: Günlük İslami İbadet Hatırlatıcı
 publish_to: 'none'
-version: 1.1.8+1
+version: 1.1.9+1
 environment:
   sdk: '>=3.0.0 <4.0.0'
 
@@ -68,6 +68,7 @@ dependencies:
 
 # Pusula (Kıble Bulucu için)
   flutter_compass: ^0.8.1
+  firebase_storage: ^13.4.5
 
 path_provider: ^2.1.4
 
@@ -92,6 +93,7 @@ flutter:
     - assets/data/ayetler.json
     - assets/data/hadisler.json
     - assets/data/esmaul_husna.json
+    - assets/data/zikirler.json
     - assets/sounds/
     - assets/tefsir/tefhimul_kuran.pdf
     - assets/riyazusalihin/riyazusalihin.pdf

@@ -195,7 +195,8 @@ class NotificationService {
         final esma = esmas[doy % esmas.length];
         await _scheduleOne(
           id: id + 1,
-          when: tz.TZDateTime(tz.local, date.year, date.month, date.day, 9, 0),
+          when: tz.TZDateTime(tz.local, date.year, date.month, date.day,
+              storage.esmaNotifHour, storage.esmaNotifMinute),
           title: esma.arabic,
           body: esma.meaning,
           channelId: 'esma_channel',
@@ -211,7 +212,8 @@ class NotificationService {
             : hadis.text;
         await _scheduleOne(
           id: id + 2,
-          when: tz.TZDateTime(tz.local, date.year, date.month, date.day, 13, 0),
+          when: tz.TZDateTime(tz.local, date.year, date.month, date.day,
+              storage.hadisNotifHour, storage.hadisNotifMinute),
           title: 'Günün Hadisi',
           body: shortText,
           channelId: 'hadis_channel',
@@ -228,7 +230,8 @@ class NotificationService {
             : ayet.turkish;
         await _scheduleOne(
           id: id + 3,
-          when: tz.TZDateTime(tz.local, date.year, date.month, date.day, 18, 0),
+          when: tz.TZDateTime(tz.local, date.year, date.month, date.day,
+              storage.ayetNotifHour, storage.ayetNotifMinute),
           title: 'Günün Ayeti — ${ayet.surah}',
           body: shortText,
           channelId: 'ayet_channel',
@@ -318,7 +321,9 @@ class NotificationService {
   }
 
   Future<void> _scheduleQuranNotification() async {
-    final scheduled = _nextTime(19, 0);
+    final storage = LocalStorage();
+    final scheduled =
+        _nextTime(storage.kuranNotifHour, storage.kuranNotifMinute);
     await _plugin.zonedSchedule(
       quranNotifId,
       AppStrings.quranReminder,

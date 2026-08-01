@@ -207,6 +207,7 @@ class _KibleBulucuScreenState extends State<KibleBulucuScreen> {
               'Kıble Açısı (Kuzeyden saat yönünde)',
               style: GoogleFonts.notoSans(color: Colors.white54, fontSize: 12),
             ),
+            _buildAlignmentStatus(qiblaBearing, heading, hasLiveHeading),
             const SizedBox(height: 20),
             if (!hasLiveHeading)
               Padding(
@@ -264,9 +265,94 @@ class _KibleBulucuScreenState extends State<KibleBulucuScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.mosque, color: AppColors.gold, size: 22),
+        _buildKaabaIcon(),
         const Icon(Icons.navigation, color: AppColors.gold, size: 48),
       ],
+    );
+  }
+
+  // Kullanıcının eklediği gerçek Kâbe görseli.
+  Widget _buildKaabaIcon() {
+    return Image.asset(
+      'assets/images/kaabe.png',
+      width: 22,
+      height: 22,
+      fit: BoxFit.contain,
+      // Asset bulunamazsa (yanlış dosya adı/yol) uygulama çökmesin diye
+      // eski çizilmiş ikona düşer.
+      errorBuilder: (_, __, ___) => Container(
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          color: const Color(0xFF161616),
+          borderRadius: BorderRadius.circular(2.5),
+          border: Border.all(color: AppColors.gold, width: 1.2),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Container(
+            height: 3.5,
+            color: AppColors.gold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Kıble açısı ile telefonun anlık yönü arasındaki fark ±5° içindeyse
+  // "hizalandı" kabul edilir. Değilse, hangi yöne (sağa/sola) dönmesi
+  // gerektiğini işaret eder. Fark, [-180, 180) aralığına normalize edilir:
+  // pozitifse hedef saat yönünde (sağa dönmeli), negatifse tersi (sola).
+  Widget _buildAlignmentStatus(
+      double qiblaBearing, double? heading, bool hasLiveHeading) {
+    if (!hasLiveHeading || heading == null) return const SizedBox.shrink();
+
+    final diff = ((qiblaBearing - heading + 540) % 360) - 180;
+    final aligned = diff.abs() <= 5;
+
+    if (aligned) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 22),
+            const SizedBox(width: 8),
+            Text(
+              'Kıble yönünü buldun!',
+              style: GoogleFonts.notoSans(
+                color: const Color(0xFF4CAF50),
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final turnRight = diff > 0;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            turnRight ? Icons.rotate_right : Icons.rotate_left,
+            color: AppColors.gold,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            turnRight ? 'Sağa dön' : 'Sola dön',
+            style: GoogleFonts.notoSans(
+              color: AppColors.gold,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

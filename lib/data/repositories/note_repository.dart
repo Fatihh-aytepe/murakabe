@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:uuid/uuid.dart';
 import '../local/database_helper.dart';
 import '../local/local_storage.dart';
@@ -58,6 +59,8 @@ class NoteRepository {
         await _firebase.saveNote(_uid!, note.toMap());
       } catch (_) {}
     }
+    // Ekler varsa arka planda Storage'a yükle (yavaşlatmamak için beklenmeden).
+    unawaited(_syncAttachmentsToStorage(note));
     return note;
   }
 
@@ -76,6 +79,59 @@ class NoteRepository {
         await _firebase.saveNote(_uid!, updated.toMap());
       } catch (_) {}
     }
+    unawaited(_syncAttachmentsToStorage(updated));
+  }
+
+  /// Notun resim/ses eklerinden henüz Storage'a yüklenmemiş olanları
+  /// (imageUrls/audioUrls listesinde karşılığı olmayanlar) yükler ve
+  /// dönen URL'leri hem yerel DB'ye hem Firestore'a yazar.
+  /// Ağ yoksa sessizce başarısız olur — bir sonraki kayıtta tekrar dener.
+  Future<void> _syncAttachmentsToStorage(NoteModel note) async {
+    if (_uid == null) return;
+    try {
+      final newImageUrls = List<String>.from(note.imageUrls);
+      final newAudioUrls = List<String>.from(note.audioUrls);
+      var changed = false;
+
+      for (var i = 0; i < note.imagePaths.length; i++) {
+        if (i < newImageUrls.length && newImageUrls[i].isNotEmpty) continue;
+        final url = await NoteFileStorage.uploadToStorage(
+          uid: _uid!,
+          noteId: note.id,
+          localPath: note.imagePaths[i],
+          isImage: true,
+        );
+        if (url == null) continue;
+        while (newImageUrls.length <= i) {
+          newImageUrls.add('');
+        }
+        newImageUrls[i] = url;
+        changed = true;
+      }
+
+      for (var i = 0; i < note.audioPaths.length; i++) {
+        if (i < newAudioUrls.length && newAudioUrls[i].isNotEmpty) continue;
+        final url = await NoteFileStorage.uploadToStorage(
+          uid: _uid!,
+          noteId: note.id,
+          localPath: note.audioPaths[i],
+          isImage: false,
+        );
+        if (url == null) continue;
+        while (newAudioUrls.length <= i) {
+          newAudioUrls.add('');
+        }
+        newAudioUrls[i] = url;
+        changed = true;
+      }
+
+      if (!changed) return;
+      final withUrls =
+          note.copyWith(imageUrls: newImageUrls, audioUrls: newAudioUrls);
+      await _db.update('notes', withUrls.toMap(),
+          where: 'id = ?', whereArgs: [note.id]);
+      await _firebase.saveNote(_uid!, withUrls.toMap());
+    } catch (_) {}
   }
 
   Future<void> _scheduleReminder(NoteModel note) async {
@@ -118,6 +174,7 @@ class NoteRepository {
       try {
         await _firebase.deleteNote(_uid!, noteId);
       } catch (_) {}
+      unawaited(NoteFileStorage.deleteNoteFolder(_uid!, noteId));
     }
   }
 
@@ -149,6 +206,8 @@ extension _TouchUpdatedAt on NoteModel {
         isPinned: isPinned,
         imagePaths: imagePaths,
         audioPaths: audioPaths,
+        imageUrls: imageUrls,
+        audioUrls: audioUrls,
         reminderAt: reminderAt,
         createdAt: createdAt,
         updatedAt: DateTime.now(),

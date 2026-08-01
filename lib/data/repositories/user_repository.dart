@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../local/database_helper.dart';
 import '../local/local_storage.dart';
+import '../local/note_file_storage.dart';
 import '../models/user_model.dart';
 import '../remote/firebase_service.dart';
 
@@ -115,7 +117,9 @@ class UserRepository {
     final notes = await _firebase.getSubcollection(uid, 'notes');
     for (final n in notes) {
       try {
-        await _db.insert('notes', n..remove('_docId'));
+        final row = Map<String, dynamic>.from(n)..remove('_docId');
+        await _db.insert('notes', row);
+        await _restoreNoteAttachments(row);
       } catch (_) {}
     }
 
@@ -185,6 +189,62 @@ class UserRepository {
       try {
         await _db.insert('reminders', r..remove('_docId'));
       } catch (_) {}
+    }
+  }
+
+  /// Firestore'dan geri yüklenen bir not satırındaki resim/ses dosyaları
+  /// cihazda yoksa (uygulama yeni yüklendiyse), Storage URL'lerinden tekrar
+  /// indirir ve yerel path listesini günceller. URL yoksa (eski notlar,
+  /// yükleme hiç yapılmamışsa) ek sessizce atlanır — not metni yine de kalır.
+  Future<void> _restoreNoteAttachments(Map<String, dynamic> row) async {
+    List<String> parseList(dynamic raw) {
+      if (raw is String && raw.isNotEmpty) {
+        try {
+          return List<String>.from(jsonDecode(raw) as List);
+        } catch (_) {}
+      }
+      return const [];
+    }
+
+    final noteId = row['id'] as String?;
+    if (noteId == null) return;
+
+    final imagePaths = parseList(row['imagePaths']);
+    final imageUrls = parseList(row['imageUrls']);
+    final audioPaths = parseList(row['audioPaths']);
+    final audioUrls = parseList(row['audioUrls']);
+
+    Future<List<String>> resolve(
+        List<String> paths, List<String> urls, bool isImage) async {
+      final result = List<String>.from(paths);
+      for (var i = 0; i < result.length; i++) {
+        final exists =
+            result[i].isNotEmpty && await File(result[i]).exists();
+        if (exists) continue;
+        if (i >= urls.length || urls[i].isEmpty) continue;
+        final downloaded = await NoteFileStorage.downloadFromUrl(
+          url: urls[i],
+          isImage: isImage,
+        );
+        if (downloaded != null) result[i] = downloaded;
+      }
+      return result;
+    }
+
+    final newImagePaths = await resolve(imagePaths, imageUrls, true);
+    final newAudioPaths = await resolve(audioPaths, audioUrls, false);
+
+    if (newImagePaths.join() != imagePaths.join() ||
+        newAudioPaths.join() != audioPaths.join()) {
+      await _db.update(
+        'notes',
+        {
+          'imagePaths': jsonEncode(newImagePaths),
+          'audioPaths': jsonEncode(newAudioPaths),
+        },
+        where: 'id = ?',
+        whereArgs: [noteId],
+      );
     }
   }
 

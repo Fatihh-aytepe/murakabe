@@ -317,6 +317,37 @@ class LocalStorage {
   Future<void> setAyetNotif(bool v) => _prefs.setBool('notif_ayet', v);
   Future<void> setKuranNotif(bool v) => _prefs.setBool('notif_kuran', v);
 
+  // Bildirim saatleri — kullanıcı ayarlar ekranından değiştirebilir.
+  // Varsayılanlar, önceden koddaki sabit saatlerle aynı: Esma 09:00,
+  // Hadis 13:00, Ayet 18:00, Kuran Hatırlatıcı 19:00.
+  int get esmaNotifHour => _prefs.getInt('esmaNotifHour') ?? 9;
+  int get esmaNotifMinute => _prefs.getInt('esmaNotifMinute') ?? 0;
+  Future<void> setEsmaNotifTime(int hour, int minute) async {
+    await _prefs.setInt('esmaNotifHour', hour);
+    await _prefs.setInt('esmaNotifMinute', minute);
+  }
+
+  int get hadisNotifHour => _prefs.getInt('hadisNotifHour') ?? 13;
+  int get hadisNotifMinute => _prefs.getInt('hadisNotifMinute') ?? 0;
+  Future<void> setHadisNotifTime(int hour, int minute) async {
+    await _prefs.setInt('hadisNotifHour', hour);
+    await _prefs.setInt('hadisNotifMinute', minute);
+  }
+
+  int get ayetNotifHour => _prefs.getInt('ayetNotifHour') ?? 18;
+  int get ayetNotifMinute => _prefs.getInt('ayetNotifMinute') ?? 0;
+  Future<void> setAyetNotifTime(int hour, int minute) async {
+    await _prefs.setInt('ayetNotifHour', hour);
+    await _prefs.setInt('ayetNotifMinute', minute);
+  }
+
+  int get kuranNotifHour => _prefs.getInt('kuranNotifHour') ?? 19;
+  int get kuranNotifMinute => _prefs.getInt('kuranNotifMinute') ?? 0;
+  Future<void> setKuranNotifTime(int hour, int minute) async {
+    await _prefs.setInt('kuranNotifHour', hour);
+    await _prefs.setInt('kuranNotifMinute', minute);
+  }
+
 // ── Zikir bildirimi ─────────────────────────────────────────────────────
   bool get zikirNotifEnabled => _prefs.getBool('notif_zikir') ?? true;
   Future<void> setZikirNotif(bool v) => _prefs.setBool('notif_zikir', v);

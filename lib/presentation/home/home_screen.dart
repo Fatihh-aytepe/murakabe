@@ -193,43 +193,92 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // ÖNEMLİ: Her veri kaynağı kendi try/catch'i içinde çağrılıyor.
+  // Eskiden tüm await'ler tek bir try bloğundaydı — herhangi biri
+  // (görevler, topluluk, zikir vb.) hata fırlattığında setState hiç
+  // çalışmıyordu ve esma/ayet/hadis çekilmiş olsa bile ekrana hiçbir şey
+  // yansımıyordu. Artık bir kaynağın başarısız olması diğerlerini etkilemiyor.
   Future<void> _loadContent() async {
+    EsmaModel? esma;
+    HadisModel? hadis;
+    AyetModel? ayet;
+    bool quranRead = false;
+    ActiveZikir? zikir;
+    int zikirCount = 0;
+    UserModel? user;
+    List<CustomTaskModel> tasks = [];
+    Map<String, String> communityIdNameMap = {};
+
     try {
-      final esma = await _contentRepo.getTodayEsma();
-      final hadis = await _contentRepo.getTodayHadis();
-      final ayet = await _contentRepo.getTodayAyet();
-      final quranRead = await _userRepo.isQuranReadToday();
-      final zikirRepo = ZikirRepository();
-      final zikir = await zikirRepo.getActiveZikir();
-      final zikirCount = zikirRepo.currentCount;
-      final user = await _userRepo.getCurrentUser();
-      final tasks = await _taskRepo.getActiveTasks();
-      final communityIdNameMap =
-          await RoleService().getUserCommunityIdNameMap();
-
-      if (mounted) {
-        setState(() {
-          _todayEsma = esma;
-          _todayHadis = hadis;
-          _todayAyet = ayet;
-          _quranReadToday = quranRead;
-          _todayZikir = zikir;
-          _zikirCount = zikirCount;
-          _currentUser = user;
-          _activeTasks = tasks;
-          _communityIdNameMap = communityIdNameMap;
-          _isLoading = false;
-        });
-        // Sohbet mesaj dinleyicilerini güncelle
-        FirestoreNotificationService().startChatListeners(_communityIdNameMap);
-
-        if (!_notificationsScheduled) {
-          _notificationsScheduled = true;
-          _scheduleAllNotifications(esma, hadis, ayet);
-        }
-      }
+      esma = await _contentRepo.getTodayEsma();
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      debugPrint('❌ getTodayEsma hata: $e');
+    }
+    try {
+      hadis = await _contentRepo.getTodayHadis();
+    } catch (e) {
+      debugPrint('❌ getTodayHadis hata: $e');
+    }
+    try {
+      ayet = await _contentRepo.getTodayAyet();
+    } catch (e) {
+      debugPrint('❌ getTodayAyet hata: $e');
+    }
+    try {
+      quranRead = await _userRepo.isQuranReadToday();
+    } catch (e) {
+      debugPrint('❌ isQuranReadToday hata: $e');
+    }
+    try {
+      final zikirRepo = ZikirRepository();
+      zikir = await zikirRepo.getActiveZikir();
+      zikirCount = zikirRepo.currentCount;
+    } catch (e) {
+      debugPrint('❌ getActiveZikir hata: $e');
+    }
+    try {
+      user = await _userRepo.getCurrentUser();
+    } catch (e) {
+      debugPrint('❌ getCurrentUser hata: $e');
+    }
+    try {
+      tasks = await _taskRepo.getActiveTasks();
+    } catch (e) {
+      debugPrint('❌ getActiveTasks hata: $e');
+    }
+    try {
+      communityIdNameMap = await RoleService().getUserCommunityIdNameMap();
+    } catch (e) {
+      debugPrint('❌ getUserCommunityIdNameMap hata: $e');
+    }
+
+    if (mounted) {
+      setState(() {
+        _todayEsma = esma;
+        _todayHadis = hadis;
+        _todayAyet = ayet;
+        _quranReadToday = quranRead;
+        _todayZikir = zikir;
+        _zikirCount = zikirCount;
+        _currentUser = user;
+        _activeTasks = tasks;
+        _communityIdNameMap = communityIdNameMap;
+        _isLoading = false;
+      });
+      // Sohbet mesaj dinleyicilerini güncelle
+      try {
+        FirestoreNotificationService().startChatListeners(_communityIdNameMap);
+      } catch (e) {
+        debugPrint('❌ startChatListeners hata: $e');
+      }
+
+      if (!_notificationsScheduled &&
+          esma != null &&
+          hadis != null &&
+          ayet != null) {
+        _notificationsScheduled = true;
+        _scheduleAllNotifications(esma, hadis, ayet);
+      }
     }
   }
 
@@ -387,6 +436,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: 'Profil',
                     isActive: _selectedIndex == 3,
                     onTap: () => _goToTab(3),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.self_improvement_outlined,
+                    label: 'Zikir',
+                    onTap: () => _goToPage(const ZikirSayacScreen()),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.explore_outlined,
+                    label: 'Kıble Bulucu',
+                    onTap: () => _goToPage(const KibleBulucuScreen()),
                   ),
                   const SizedBox(height: 8),
                   const Divider(color: Colors.white12),

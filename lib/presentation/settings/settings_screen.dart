@@ -44,6 +44,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _ayetNotif = true;
   bool _kuranNotif = true;
   bool _zikirNotif = true;
+  int _esmaHour = 9;
+  int _esmaMinute = 0;
+  int _hadisHour = 13;
+  int _hadisMinute = 0;
+  int _ayetHour = 18;
+  int _ayetMinute = 0;
+  int _kuranHour = 19;
+  int _kuranMinute = 0;
   int _zikirHour = 20;
   int _zikirMinute = 0;
 
@@ -58,6 +66,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _ayetNotif = _storage.ayetNotifEnabled;
     _kuranNotif = _storage.kuranNotifEnabled;
     _zikirNotif = _storage.zikirNotifEnabled;
+    _esmaHour = _storage.esmaNotifHour;
+    _esmaMinute = _storage.esmaNotifMinute;
+    _hadisHour = _storage.hadisNotifHour;
+    _hadisMinute = _storage.hadisNotifMinute;
+    _ayetHour = _storage.ayetNotifHour;
+    _ayetMinute = _storage.ayetNotifMinute;
+    _kuranHour = _storage.kuranNotifHour;
+    _kuranMinute = _storage.kuranNotifMinute;
     _zikirHour = _storage.zikirNotifHour;
     _zikirMinute = _storage.zikirNotifMinute;
     _previewPlayer.onPlayerComplete.listen((_) {
@@ -838,7 +854,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildNotifTile(
               isDark: isDark,
               label: 'Esmaül Hüsna',
-              subtitle: 'Her gün 08:00',
+              subtitle:
+                  'Her gün ${_esmaHour.toString().padLeft(2, '0')}:${_esmaMinute.toString().padLeft(2, '0')}',
               icon: Icons.auto_awesome_outlined,
               value: _esmaNotif,
               onChanged: (v) async {
@@ -851,10 +868,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() => _esmaNotif = v);
               },
             ),
+            if (_esmaNotif)
+              _buildTimeRow(
+                isDark: isDark,
+                hour: _esmaHour,
+                minute: _esmaMinute,
+                onPicked: (h, m) async {
+                  await _storage.setEsmaNotifTime(h, m);
+                  await _notifService.rescheduleEsmaNotification();
+                  if (mounted) {
+                    setState(() {
+                      _esmaHour = h;
+                      _esmaMinute = m;
+                    });
+                  }
+                },
+              ),
             _buildNotifTile(
               isDark: isDark,
               label: 'Günün Hadisi',
-              subtitle: 'Her gün 12:00',
+              subtitle:
+                  'Her gün ${_hadisHour.toString().padLeft(2, '0')}:${_hadisMinute.toString().padLeft(2, '0')}',
               icon: Icons.menu_book_outlined,
               value: _hadisNotif,
               onChanged: (v) async {
@@ -867,10 +901,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() => _hadisNotif = v);
               },
             ),
+            if (_hadisNotif)
+              _buildTimeRow(
+                isDark: isDark,
+                hour: _hadisHour,
+                minute: _hadisMinute,
+                onPicked: (h, m) async {
+                  await _storage.setHadisNotifTime(h, m);
+                  await _notifService.rescheduleHadisNotification();
+                  if (mounted) {
+                    setState(() {
+                      _hadisHour = h;
+                      _hadisMinute = m;
+                    });
+                  }
+                },
+              ),
             _buildNotifTile(
               isDark: isDark,
               label: 'Günün Ayeti',
-              subtitle: 'Her gün 14:00',
+              subtitle:
+                  'Her gün ${_ayetHour.toString().padLeft(2, '0')}:${_ayetMinute.toString().padLeft(2, '0')}',
               icon: Icons.import_contacts_outlined,
               value: _ayetNotif,
               onChanged: (v) async {
@@ -883,10 +934,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() => _ayetNotif = v);
               },
             ),
+            if (_ayetNotif)
+              _buildTimeRow(
+                isDark: isDark,
+                hour: _ayetHour,
+                minute: _ayetMinute,
+                onPicked: (h, m) async {
+                  await _storage.setAyetNotifTime(h, m);
+                  await _notifService.rescheduleAyetNotification();
+                  if (mounted) {
+                    setState(() {
+                      _ayetHour = h;
+                      _ayetMinute = m;
+                    });
+                  }
+                },
+              ),
             _buildNotifTile(
               isDark: isDark,
               label: 'Kuran Hatırlatması',
-              subtitle: 'Her gün 19:00',
+              subtitle:
+                  'Her gün ${_kuranHour.toString().padLeft(2, '0')}:${_kuranMinute.toString().padLeft(2, '0')}',
               icon: Icons.mosque_outlined,
               value: _kuranNotif,
               onChanged: (v) async {
@@ -899,6 +967,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() => _kuranNotif = v);
               },
             ),
+            if (_kuranNotif)
+              _buildTimeRow(
+                isDark: isDark,
+                hour: _kuranHour,
+                minute: _kuranMinute,
+                onPicked: (h, m) async {
+                  await _storage.setKuranNotifTime(h, m);
+                  await _notifService.rescheduleKuranNotification();
+                  if (mounted) {
+                    setState(() {
+                      _kuranHour = h;
+                      _kuranMinute = m;
+                    });
+                  }
+                },
+              ),
             _buildNotifTile(
               isDark: isDark,
               label: 'Zikir Hatırlatıcısı',
@@ -916,14 +1000,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() => _zikirNotif = v);
               },
             ),
-            if (_zikirNotif) _buildZikirTimeRow(isDark),
+            if (_zikirNotif)
+              _buildTimeRow(
+                isDark: isDark,
+                hour: _zikirHour,
+                minute: _zikirMinute,
+                onPicked: (h, m) async {
+                  await _storage.setZikirNotifTime(h, m);
+                  await _notifService.rescheduleZikirNotification();
+                  if (mounted) {
+                    setState(() {
+                      _zikirHour = h;
+                      _zikirMinute = m;
+                    });
+                  }
+                },
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildZikirTimeRow(bool isDark) {
+  Widget _buildTimeRow({
+    required bool isDark,
+    required int hour,
+    required int minute,
+    required Future<void> Function(int hour, int minute) onPicked,
+  }) {
     final textColor = isDark ? Colors.white70 : AppColors.textSecondary;
     return Padding(
       padding: const EdgeInsets.fromLTRB(48, 0, 16, 8),
@@ -931,17 +1035,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         onTap: () async {
           final picked = await showTimePicker(
             context: context,
-            initialTime: TimeOfDay(hour: _zikirHour, minute: _zikirMinute),
+            initialTime: TimeOfDay(hour: hour, minute: minute),
           );
           if (picked == null) return;
-          await _storage.setZikirNotifTime(picked.hour, picked.minute);
-          await _notifService.rescheduleZikirNotification();
-          if (mounted) {
-            setState(() {
-              _zikirHour = picked.hour;
-              _zikirMinute = picked.minute;
-            });
-          }
+          await onPicked(picked.hour, picked.minute);
         },
         child: Row(
           children: [
@@ -954,7 +1051,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const Spacer(),
             Text(
-              '${_zikirHour.toString().padLeft(2, '0')}:${_zikirMinute.toString().padLeft(2, '0')}',
+              '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}',
               style: GoogleFonts.notoSans(
                   color: textColor, fontSize: 12, fontWeight: FontWeight.w600),
             ),

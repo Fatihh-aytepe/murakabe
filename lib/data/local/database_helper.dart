@@ -18,7 +18,7 @@ class DatabaseHelper {
     return openDatabase(
       path,
       version:
-          8, // 7 → 8: notes.imagePaths / audioPaths / reminderAt kolonları eklendi
+          9, // 7 → 8: notes.imagePaths / audioPaths / reminderAt | 8 → 9: notes.imageUrls / audioUrls (Firebase Storage yedek linkleri)
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -69,6 +69,8 @@ class DatabaseHelper {
         isPinned INTEGER DEFAULT 0,
         imagePaths TEXT DEFAULT '[]',
         audioPaths TEXT DEFAULT '[]',
+        imageUrls TEXT DEFAULT '[]',
+        audioUrls TEXT DEFAULT '[]',
         reminderAt TEXT DEFAULT '',
         createdAt TEXT,
         updatedAt TEXT
@@ -219,6 +221,19 @@ class DatabaseHelper {
       try {
         await db
             .execute("ALTER TABLE notes ADD COLUMN reminderAt TEXT DEFAULT ''");
+      } catch (_) {}
+    }
+    if (oldVersion < 9) {
+      // Not eklerinin (resim/ses) Firebase Storage'daki yedek linkleri.
+      // Cihazda dosya silinirse (uygulama kaldırılıp tekrar yüklenirse) bu
+      // URL'ler üzerinden dosyalar tekrar indirilip yerel path'e kopyalanır.
+      try {
+        await db.execute(
+            "ALTER TABLE notes ADD COLUMN imageUrls TEXT DEFAULT '[]'");
+      } catch (_) {}
+      try {
+        await db.execute(
+            "ALTER TABLE notes ADD COLUMN audioUrls TEXT DEFAULT '[]'");
       } catch (_) {}
     }
   }

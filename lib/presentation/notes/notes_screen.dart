@@ -14,6 +14,66 @@ import '../../data/repositories/note_repository.dart';
 import '../../data/local/local_storage.dart';
 import '../../data/local/note_file_storage.dart';
 
+/// Bir not resmine dokunulduğunda tam ekran, yakınlaştırılabilir önizleme açar.
+void openImageViewer(BuildContext context, String path, {String? heroTag}) {
+  Navigator.of(context).push(
+    PageRouteBuilder(
+      opaque: false,
+      barrierColor: Colors.black87,
+      pageBuilder: (_, __, ___) => _FullScreenImageViewer(
+        path: path,
+        heroTag: heroTag,
+      ),
+    ),
+  );
+}
+
+class _FullScreenImageViewer extends StatelessWidget {
+  final String path;
+  final String? heroTag;
+  const _FullScreenImageViewer({required this.path, this.heroTag});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 5,
+              child: Center(
+                child: heroTag != null
+                    ? Hero(
+                        tag: heroTag!,
+                        child: Image.file(File(path), fit: BoxFit.contain),
+                      )
+                    : Image.file(File(path), fit: BoxFit.contain),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 40,
+            right: 16,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, color: Colors.white, size: 22),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Not editörünü herhangi bir ekrandan açmak için paylaşılan giriş noktası.
 /// - Mevcut bir notu düzenlemek için [note] ver.
 /// - Yeni, önceden doldurulmuş bir not (örn. "Ayeti Notlarıma Ekle" kısayolu)
@@ -347,21 +407,23 @@ class NotesScreenState extends State<NotesScreen> {
     final subColor = isDark ? Colors.white54 : AppColors.textSecondary;
     final dateColor = isDark ? Colors.white38 : AppColors.textLight;
     final accent = NoteColors.colorFor(note.color);
-    final accentColor = accent != null ? Color(accent) : AppColors.gold;
+    final hasColor = accent != null;
+    final accentColor = hasColor ? Color(accent) : AppColors.gold;
 
     return GestureDetector(
       onTap: () => _openNoteEditor(note: note),
       child: Container(
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: cardColor,
+          // Seçilen renk artık ince bir çizgi değil, net görünen bir üst
+          // bant + hafif arkaplan tonuyla gösteriliyor.
+          color: hasColor
+              ? Color.alphaBlend(accentColor.withValues(alpha: 0.10), cardColor)
+              : cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border(
-            left: BorderSide(
-              color: accentColor,
-              width: 4,
-            ),
-          ),
+          border: hasColor
+              ? Border.all(
+                  color: accentColor.withValues(alpha: 0.35), width: 1.2)
+              : null,
           boxShadow: [
             BoxShadow(
               color: AppColors.gold.withValues(alpha: 0.08),
@@ -370,119 +432,150 @@ class NotesScreenState extends State<NotesScreen> {
             ),
           ],
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    note.title.isNotEmpty ? note.title : 'Başlıksız Not',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: titleColor,
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    await _repo.togglePin(note);
-                    await _loadNotes();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 6),
-                    child: Icon(
-                      note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                      color: note.isPinned ? AppColors.gold : dateColor,
-                      size: 18,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      color: Colors.red, size: 20),
-                  onPressed: () => _deleteNote(note),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-            if (note.imagePaths.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.file(
-                  File(note.imagePaths.first),
-                  height: 100,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                ),
-              ),
-            ],
-            if (note.content.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              Text(
-                note.content,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.notoSans(
-                  fontSize: 13,
-                  color: subColor,
-                  height: 1.5,
-                ),
-              ),
-            ],
-            if (note.tags.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: note.tags
-                    .map((t) => Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: accentColor.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(10),
+            if (hasColor) Container(height: 6, color: accentColor),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          note.title.isNotEmpty ? note.title : 'Başlıksız Not',
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: titleColor,
                           ),
-                          child: Text(
-                            '#$t',
-                            style: GoogleFonts.notoSans(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: accentColor,
-                            ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          await _repo.togglePin(note);
+                          await _loadNotes();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 6),
+                          child: Icon(
+                            note.isPinned
+                                ? Icons.push_pin
+                                : Icons.push_pin_outlined,
+                            color: note.isPinned ? AppColors.gold : dateColor,
+                            size: 18,
                           ),
-                        ))
-                    .toList(),
-              ),
-            ],
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  _formatDate(note.updatedAt),
-                  style: GoogleFonts.notoSans(fontSize: 11, color: dateColor),
-                ),
-                if (note.reminderAt != null) ...[
-                  const SizedBox(width: 8),
-                  Icon(Icons.alarm, size: 12, color: AppColors.gold),
-                  const SizedBox(width: 2),
-                  Text(
-                    DateFormat('d MMM, HH:mm', 'tr_TR')
-                        .format(note.reminderAt!),
-                    style: GoogleFonts.notoSans(
-                        fontSize: 11, color: AppColors.gold),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline,
+                            color: Colors.red, size: 20),
+                        onPressed: () => _deleteNote(note),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  if (note.imagePaths.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () => openImageViewer(
+                          context, note.imagePaths.first,
+                          heroTag: 'note_img_${note.id}_0'),
+                      child: Hero(
+                        tag: 'note_img_${note.id}_0',
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(
+                            File(note.imagePaths.first),
+                            height: 140,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                const SizedBox.shrink(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (note.imagePaths.length > 1)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          '+${note.imagePaths.length - 1} resim daha',
+                          style: GoogleFonts.notoSans(
+                              fontSize: 11, color: dateColor),
+                        ),
+                      ),
+                  ],
+                  if (note.content.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      note.content,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.notoSans(
+                        fontSize: 13,
+                        color: subColor,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                  if (note.tags.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: note.tags
+                          .map((t) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: accentColor.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '#$t',
+                                  style: GoogleFonts.notoSans(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: accentColor,
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        _formatDate(note.updatedAt),
+                        style: GoogleFonts.notoSans(
+                            fontSize: 11, color: dateColor),
+                      ),
+                      if (note.reminderAt != null) ...[
+                        const SizedBox(width: 8),
+                        Icon(Icons.alarm, size: 12, color: AppColors.gold),
+                        const SizedBox(width: 2),
+                        Text(
+                          DateFormat('d MMM, HH:mm', 'tr_TR')
+                              .format(note.reminderAt!),
+                          style: GoogleFonts.notoSans(
+                              fontSize: 11, color: AppColors.gold),
+                        ),
+                      ],
+                      if (note.audioPaths.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Icon(Icons.mic, size: 12, color: dateColor),
+                      ],
+                    ],
                   ),
                 ],
-                if (note.audioPaths.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  Icon(Icons.mic, size: 12, color: dateColor),
-                ],
-              ],
+              ),
             ),
           ],
         ),
@@ -583,6 +676,10 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
   late List<String> _imagePaths;
   late List<String> _audioPaths;
   DateTime? _reminderAt;
+  // Resim/ses ekleri varsayılan olarak DARALTILMIŞ — metin yazma alanına
+  // (özellikle klavye açıkken) daha çok yer kalsın diye. Notta zaten
+  // ek varsa kullanıcı hemen görsün diye açık başlıyor.
+  late bool _attachmentsExpanded;
 
   final _picker = ImagePicker();
   final _recorder = AudioRecorder();
@@ -602,6 +699,7 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
     _imagePaths = List<String>.from(widget.note?.imagePaths ?? const []);
     _audioPaths = List<String>.from(widget.note?.audioPaths ?? const []);
     _reminderAt = widget.note?.reminderAt;
+    _attachmentsExpanded = _imagePaths.isNotEmpty || _audioPaths.isNotEmpty;
   }
 
   // Notun içeriğini Quill dokümanına çevirir.
@@ -666,36 +764,6 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
 
   void _removeTag(String tag) {
     setState(() => _tags.remove(tag));
-  }
-
-  Widget _colorDot(String? key, Color noneColor) {
-    final selected = _color == (key ?? '');
-    final circleColor = key == null ? null : Color(NoteColors.palette[key]!);
-    return GestureDetector(
-      onTap: () => setState(() => _color = key ?? ''),
-      child: Container(
-        width: 28,
-        height: 28,
-        margin: const EdgeInsets.only(right: 8),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: circleColor ?? Colors.transparent,
-          border: Border.all(
-            color: selected
-                ? AppColors.gold
-                : (circleColor == null
-                    ? noneColor
-                    : Colors.black.withValues(alpha: 0.15)),
-            width: selected ? 2.5 : 1,
-          ),
-        ),
-        child: circleColor == null
-            ? Icon(Icons.block, size: 14, color: noneColor)
-            : (selected
-                ? const Icon(Icons.check, size: 14, color: Colors.white)
-                : null),
-      ),
-    );
   }
 
   void _showImageSourceSheet(BuildContext context) {
@@ -921,194 +989,248 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
               Divider(
                   height: 1, color: AppColors.textLight.withValues(alpha: 0.2)),
 
-              if (_reminderAt != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Chip(
-                      avatar: const Icon(Icons.alarm,
-                          size: 16, color: AppColors.gold),
-                      label: Text(
-                        DateFormat('d MMMM y, HH:mm', 'tr_TR')
-                            .format(_reminderAt!),
-                        style: GoogleFonts.notoSans(fontSize: 12),
-                      ),
-                      deleteIcon: const Icon(Icons.close, size: 14),
-                      onDeleted: _clearReminder,
-                      backgroundColor: AppColors.gold.withValues(alpha: 0.12),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  ),
-                ),
-
-              // Renk paleti — kart rengini seç
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                child: SizedBox(
-                  height: 32,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      _colorDot(null, hintColor),
-                      for (final key in NoteColors.palette.keys)
-                        _colorDot(key, hintColor),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Etiket girişi
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    for (final tag in _tags)
-                      Chip(
-                        label: Text('#$tag',
-                            style: GoogleFonts.notoSans(fontSize: 11)),
-                        visualDensity: VisualDensity.compact,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        deleteIcon: const Icon(Icons.close, size: 14),
-                        onDeleted: () => _removeTag(tag),
-                        backgroundColor: AppColors.gold.withValues(alpha: 0.12),
-                      ),
-                    SizedBox(
-                      width: 140,
-                      height: 32,
-                      child: TextField(
-                        controller: _tagInputCtrl,
-                        style: GoogleFonts.notoSans(fontSize: 12),
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => _addTagFromInput(),
-                        decoration: InputDecoration(
-                          hintText: '#etiket ekle',
-                          hintStyle: GoogleFonts.notoSans(
-                              fontSize: 12, color: hintColor),
-                          isDense: true,
-                          border: InputBorder.none,
-                          suffixIcon: GestureDetector(
-                            onTap: _addTagFromInput,
-                            child: Icon(Icons.add_circle_outline,
-                                size: 16, color: hintColor),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Divider(
-                  height: 1, color: AppColors.textLight.withValues(alpha: 0.2)),
-
-              // Resim ekleri
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: SizedBox(
-                  height: 64,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      for (final path in _imagePaths)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.file(
-                                  File(path),
-                                  width: 64,
-                                  height: 64,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
-                                    width: 64,
-                                    height: 64,
-                                    color: Colors.black12,
-                                    child: const Icon(Icons.broken_image,
-                                        size: 20),
-                                  ),
+              // NOT: Renk paleti + etiketler + resim/ses ekleri artık sabit
+              // (scroll'suz) bir Column içinde değil — sınırlı yükseklikli,
+              // kendi içinde kayan bir kutu içinde. Eskiden içerik çoğaldıkça
+              // (çok resim/ses/etiket eklenince) sheet'in geri kalanıyla
+              // yer çakışması "bottom overflowed by NNN pixels" hatasına
+              // yol açıyordu. Artık bu bölüm en fazla 260px yer kaplıyor,
+              // fazlası kendi içinde kayıyor — editör alanı asla sıkışmıyor.
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 260),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_reminderAt != null)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Chip(
+                                avatar: const Icon(Icons.alarm,
+                                    size: 16, color: AppColors.gold),
+                                label: Text(
+                                  DateFormat('d MMMM y, HH:mm', 'tr_TR')
+                                      .format(_reminderAt!),
+                                  style: GoogleFonts.notoSans(fontSize: 12),
                                 ),
+                                deleteIcon: const Icon(Icons.close, size: 14),
+                                onDeleted: _clearReminder,
+                                backgroundColor:
+                                    AppColors.gold.withValues(alpha: 0.12),
+                                visualDensity: VisualDensity.compact,
                               ),
-                              Positioned(
-                                top: 2,
-                                right: 2,
-                                child: GestureDetector(
-                                  onTap: () => _removeImage(path),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.black54,
-                                      shape: BoxShape.circle,
+                            ),
+                          ),
+
+                        // Etiket girişi
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              for (final tag in _tags)
+                                Chip(
+                                  label: Text('#$tag',
+                                      style:
+                                          GoogleFonts.notoSans(fontSize: 11)),
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  deleteIcon: const Icon(Icons.close, size: 14),
+                                  onDeleted: () => _removeTag(tag),
+                                  backgroundColor:
+                                      AppColors.gold.withValues(alpha: 0.12),
+                                ),
+                              SizedBox(
+                                width: 140,
+                                height: 32,
+                                child: TextField(
+                                  controller: _tagInputCtrl,
+                                  style: GoogleFonts.notoSans(fontSize: 12),
+                                  textInputAction: TextInputAction.done,
+                                  onSubmitted: (_) => _addTagFromInput(),
+                                  decoration: InputDecoration(
+                                    hintText: '#etiket ekle',
+                                    hintStyle: GoogleFonts.notoSans(
+                                        fontSize: 12, color: hintColor),
+                                    isDense: true,
+                                    border: InputBorder.none,
+                                    suffixIcon: GestureDetector(
+                                      onTap: _addTagFromInput,
+                                      child: Icon(Icons.add_circle_outline,
+                                          size: 16, color: hintColor),
                                     ),
-                                    child: const Icon(Icons.close,
-                                        size: 12, color: Colors.white),
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      GestureDetector(
-                        onTap: () => _showImageSourceSheet(context),
-                        child: Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: hintColor),
-                          ),
-                          child: Icon(Icons.add_photo_alternate_outlined,
-                              color: hintColor, size: 22),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                        Divider(
+                            height: 1,
+                            color: AppColors.textLight.withValues(alpha: 0.2)),
 
-              // Ses notu ekleri
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (final path in _audioPaths)
-                      _AudioTile(
-                        path: path,
-                        onDelete: () => _removeAudio(path),
-                      ),
-                    GestureDetector(
-                      onTap: _toggleRecording,
-                      child: Row(
-                        children: [
-                          Icon(
-                            _isRecording ? Icons.stop_circle : Icons.mic_none,
-                            color: _isRecording ? Colors.red : hintColor,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _isRecording
-                                ? 'Kaydediliyor... (durdur)'
-                                : 'Sesli not ekle',
-                            style: GoogleFonts.notoSans(
-                              fontSize: 12,
-                              color: _isRecording ? Colors.red : hintColor,
+                        // ── Ekler şeridi ─────────────────────────────────────────────
+                        // NOT: Eskiden resim/ses ekleri her zaman açık, sabit yer
+                        // kaplayan iki ayrı blok halindeydi — klavye açılınca metin
+                        // yazma alanını ciddi şekilde daraltıyordu. Artık tek satırlık
+                        // KOMPAKT bir şerit: hızlı ekleme ikonları + kaç ek olduğu +
+                        // detayları görmek için aç/kapa oku. Detaylar sadece kullanıcı
+                        // açtığında yer kaplıyor, yazarken hiç etkilemiyor.
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
+                          child: GestureDetector(
+                            onTap: () => setState(() =>
+                                _attachmentsExpanded = !_attachmentsExpanded),
+                            behavior: HitTestBehavior.opaque,
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () =>
+                                      _showImageSourceSheet(context),
+                                  icon: Icon(Icons.add_photo_alternate_outlined,
+                                      color: hintColor, size: 20),
+                                  tooltip: 'Resim ekle',
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                IconButton(
+                                  onPressed: _toggleRecording,
+                                  icon: Icon(
+                                    _isRecording
+                                        ? Icons.stop_circle
+                                        : Icons.mic_none,
+                                    color:
+                                        _isRecording ? Colors.red : hintColor,
+                                    size: 20,
+                                  ),
+                                  tooltip: 'Sesli not ekle',
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                if (_imagePaths.isNotEmpty ||
+                                    _audioPaths.isNotEmpty)
+                                  Text(
+                                    '${_imagePaths.length + _audioPaths.length} ek',
+                                    style: GoogleFonts.notoSans(
+                                        fontSize: 11, color: hintColor),
+                                  ),
+                                const Spacer(),
+                                if (_imagePaths.isNotEmpty ||
+                                    _audioPaths.isNotEmpty)
+                                  Icon(
+                                    _attachmentsExpanded
+                                        ? Icons.expand_less
+                                        : Icons.expand_more,
+                                    color: hintColor,
+                                    size: 20,
+                                  ),
+                              ],
                             ),
                           ),
+                        ),
+                        if (_attachmentsExpanded) ...[
+                          // Resim ekleri
+                          if (_imagePaths.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                              child: SizedBox(
+                                height: 56,
+                                child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  children: [
+                                    for (final path in _imagePaths)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 8),
+                                        child: Stack(
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () => openImageViewer(
+                                                  context, path),
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                child: Image.file(
+                                                  File(path),
+                                                  width: 56,
+                                                  height: 56,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (_, __, ___) =>
+                                                      Container(
+                                                    width: 56,
+                                                    height: 56,
+                                                    color: Colors.black12,
+                                                    child: const Icon(
+                                                        Icons.broken_image,
+                                                        size: 18),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              top: 2,
+                                              right: 2,
+                                              child: GestureDetector(
+                                                onTap: () => _removeImage(path),
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.all(2),
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    color: Colors.black54,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: const Icon(Icons.close,
+                                                      size: 11,
+                                                      color: Colors.white),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          // Ses ekleri
+                          if (_audioPaths.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxHeight: 180),
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const ClampingScrollPhysics(),
+                                  itemCount: _audioPaths.length,
+                                  itemBuilder: (_, i) => _AudioTile(
+                                    path: _audioPaths[i],
+                                    onDelete: () =>
+                                        _removeAudio(_audioPaths[i]),
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
               const SizedBox(height: 4),
 
               // Minimalist biçimlendirme araç çubuğu
+              // NOT: Daha önce bu bar koyu temada "boş gri şerit" gibi
+              // görünüyordu — sebebi ikonların Quill'in varsayılan Theme
+              // ikon rengini (koyu arkaplanda koyu ikon) kullanmasıydı.
+              // Theme override ile ikon/metin rengini bilinçli olarak
+              // arkaplanla kontrast oluşturacak şekilde zorluyoruz.
               Container(
                 decoration: BoxDecoration(
                   color: isDark
@@ -1119,36 +1241,50 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
                         color: AppColors.textLight.withValues(alpha: 0.15)),
                   ),
                 ),
-                child: quill.QuillSimpleToolbar(
-                  controller: _quillController,
-                  config: const quill.QuillSimpleToolbarConfig(
-                    multiRowsDisplay: false,
-                    showFontFamily: false,
-                    showFontSize: false,
-                    showBoldButton: true,
-                    showItalicButton: true,
-                    showUnderLineButton: true,
-                    showStrikeThrough: true,
-                    showColorButton: true,
-                    showBackgroundColorButton: true,
-                    showClearFormat: false,
-                    showAlignmentButtons: false,
-                    showHeaderStyle: true,
-                    showListNumbers: true,
-                    showListBullets: true,
-                    showListCheck: true,
-                    showCodeBlock: false,
-                    showQuote: true,
-                    showIndent: false,
-                    showLink: false,
-                    showUndo: true,
-                    showRedo: true,
-                    showDirection: false,
-                    showSearchButton: false,
-                    showSubscript: false,
-                    showSuperscript: false,
-                    showInlineCode: false,
-                    showDividers: true,
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    brightness: isDark ? Brightness.dark : Brightness.light,
+                    iconTheme: IconThemeData(
+                      color: isDark ? Colors.white70 : AppColors.textPrimary,
+                    ),
+                    textTheme: Theme.of(context).textTheme.apply(
+                          bodyColor:
+                              isDark ? Colors.white70 : AppColors.textPrimary,
+                          displayColor:
+                              isDark ? Colors.white70 : AppColors.textPrimary,
+                        ),
+                  ),
+                  child: quill.QuillSimpleToolbar(
+                    controller: _quillController,
+                    config: const quill.QuillSimpleToolbarConfig(
+                      multiRowsDisplay: false,
+                      showFontFamily: false,
+                      showFontSize: false,
+                      showBoldButton: true,
+                      showItalicButton: true,
+                      showUnderLineButton: true,
+                      showStrikeThrough: true,
+                      showColorButton: true,
+                      showBackgroundColorButton: true,
+                      showClearFormat: false,
+                      showAlignmentButtons: false,
+                      showHeaderStyle: true,
+                      showListNumbers: true,
+                      showListBullets: true,
+                      showListCheck: true,
+                      showCodeBlock: false,
+                      showQuote: true,
+                      showIndent: false,
+                      showLink: false,
+                      showUndo: true,
+                      showRedo: true,
+                      showDirection: false,
+                      showSearchButton: false,
+                      showSubscript: false,
+                      showSuperscript: false,
+                      showInlineCode: false,
+                      showDividers: true,
+                    ),
                   ),
                 ),
               ),
@@ -1179,6 +1315,9 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
 }
 
 // ─── SES NOTU OYNATICI ─────────────────────────────────────────────────────
+// Kapalı hâlde küçük bir kart olarak görünür (oynat/duraklat + süre + sil).
+// Karta dokununca genişler ve ilerleme çubuğu, ileri/geri 10sn atlama ve
+// 1x / 1.5x / 2x oynatma hızı seçenekleri ortaya çıkar.
 
 class _AudioTile extends StatefulWidget {
   final String path;
@@ -1193,12 +1332,28 @@ class _AudioTile extends StatefulWidget {
 class _AudioTileState extends State<_AudioTile> {
   final _player = AudioPlayer();
   bool _isPlaying = false;
+  bool _isExpanded = false;
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
+  double _speed = 1.0;
+
+  static const _speeds = [1.0, 1.5, 2.0];
 
   @override
   void initState() {
     super.initState();
     _player.onPlayerComplete.listen((_) {
-      if (mounted) setState(() => _isPlaying = false);
+      if (!mounted) return;
+      setState(() {
+        _isPlaying = false;
+        _position = Duration.zero;
+      });
+    });
+    _player.onPositionChanged.listen((p) {
+      if (mounted) setState(() => _position = p);
+    });
+    _player.onDurationChanged.listen((d) {
+      if (mounted) setState(() => _duration = d);
     });
   }
 
@@ -1212,36 +1367,198 @@ class _AudioTileState extends State<_AudioTile> {
     if (_isPlaying) {
       await _player.pause();
     } else {
-      await _player.play(DeviceFileSource(widget.path));
+      if (_position == Duration.zero) {
+        await _player.play(DeviceFileSource(widget.path));
+        await _player.setPlaybackRate(_speed);
+      } else {
+        await _player.resume();
+      }
     }
     if (mounted) setState(() => _isPlaying = !_isPlaying);
+  }
+
+  Future<void> _seekRelative(int seconds) async {
+    final target = _position + Duration(seconds: seconds);
+    final clamped = target < Duration.zero
+        ? Duration.zero
+        : (_duration > Duration.zero && target > _duration
+            ? _duration
+            : target);
+    await _player.seek(clamped);
+    if (mounted) setState(() => _position = clamped);
+  }
+
+  Future<void> _cycleSpeed() async {
+    final nextIndex = (_speeds.indexOf(_speed) + 1) % _speeds.length;
+    final next = _speeds[nextIndex];
+    await _player.setPlaybackRate(next);
+    if (mounted) setState(() => _speed = next);
+  }
+
+  String _fmt(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white70 : AppColors.textSecondary;
+    final cardBg = isDark ? const Color(0xFF20273D) : const Color(0xFFF7F5F0);
+    final maxMs = _duration.inMilliseconds > 0 ? _duration.inMilliseconds : 1;
+    final curMs = _position.inMilliseconds.clamp(0, maxMs);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: _toggle,
-            child: Icon(
-              _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-              color: AppColors.gold,
-              size: 26,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.gold.withValues(alpha: 0.25)),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: _toggle,
+                        child: Icon(
+                          _isPlaying
+                              ? Icons.pause_circle_filled
+                              : Icons.play_circle_fill,
+                          color: AppColors.gold,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Sesli not',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                isDark ? Colors.white : AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        _duration > Duration.zero
+                            ? _fmt(_duration)
+                            : (_isPlaying || _position > Duration.zero
+                                ? _fmt(_position)
+                                : ''),
+                        style: GoogleFonts.notoSans(
+                            fontSize: 11, color: textColor),
+                      ),
+                      const SizedBox(width: 6),
+                      Icon(
+                        _isExpanded ? Icons.expand_less : Icons.expand_more,
+                        size: 18,
+                        color: textColor,
+                      ),
+                      GestureDetector(
+                        onTap: widget.onDelete,
+                        child: const Padding(
+                          padding: EdgeInsets.only(left: 4),
+                          child: Icon(Icons.close, size: 16, color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_isExpanded) ...[
+                    const SizedBox(height: 4),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 3,
+                        thumbShape:
+                            const RoundSliderThumbShape(enabledThumbRadius: 6),
+                        overlayShape:
+                            const RoundSliderOverlayShape(overlayRadius: 12),
+                      ),
+                      child: Slider(
+                        value: curMs.toDouble(),
+                        min: 0,
+                        max: maxMs.toDouble(),
+                        activeColor: AppColors.gold,
+                        inactiveColor: AppColors.gold.withValues(alpha: 0.2),
+                        onChanged: (v) {
+                          setState(() =>
+                              _position = Duration(milliseconds: v.round()));
+                        },
+                        onChangeEnd: (v) =>
+                            _player.seek(Duration(milliseconds: v.round())),
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(_fmt(_position),
+                            style: GoogleFonts.notoSans(
+                                fontSize: 10, color: textColor)),
+                        Text(
+                            _duration > Duration.zero
+                                ? _fmt(_duration)
+                                : '--:--',
+                            style: GoogleFonts.notoSans(
+                                fontSize: 10, color: textColor)),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () => _seekRelative(-10),
+                          child: Icon(Icons.replay_10,
+                              color: AppColors.gold, size: 22),
+                        ),
+                        const SizedBox(width: 20),
+                        GestureDetector(
+                          onTap: () => _seekRelative(10),
+                          child: Icon(Icons.forward_10,
+                              color: AppColors.gold, size: 22),
+                        ),
+                        const SizedBox(width: 20),
+                        GestureDetector(
+                          onTap: _cycleSpeed,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.gold.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  color: AppColors.gold.withValues(alpha: 0.4)),
+                            ),
+                            child: Text(
+                              '${_speed == _speed.roundToDouble() ? _speed.toInt() : _speed}x',
+                              style: GoogleFonts.notoSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.gold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          Text('Sesli not',
-              style: GoogleFonts.notoSans(fontSize: 12, color: textColor)),
-          const Spacer(),
-          GestureDetector(
-            onTap: widget.onDelete,
-            child: const Icon(Icons.close, size: 16, color: Colors.red),
-          ),
-        ],
+        ),
       ),
     );
   }
