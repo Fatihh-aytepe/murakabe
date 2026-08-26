@@ -326,4 +326,36 @@ class UserRepository {
     final user = await getCurrentUser();
     return user?.missedQuranDays ?? [];
   }
+
+  /// Hesabı ve tüm verilerini KALICI olarak siler (Play Store hesap silme
+  /// politikası — Kullanıcı Verileri Politikası "Hesap Silme" gereksinimi):
+  /// 1) Şifre ile yeniden kimlik doğrulama (Firebase 'recent login' şartı)
+  /// 2) Firestore: ana kullanıcı dokümanı + tüm alt koleksiyonlar
+  /// 3) Firebase Storage: kullanıcının yüklediği dosyalar (not ekleri)
+  /// 4) Firebase Auth kullanıcısı
+  /// 5) Cihazdaki tüm yerel veri (SQLite + SharedPreferences)
+  ///
+  /// Sıra önemli: Auth kullanıcısı en son silinir, çünkü Firestore/Storage
+  /// silme işlemleri güvenlik kurallarında `request.auth.uid == userId`
+  /// kontrolüne dayanıyor — önce Auth'u silersek geri kalan adımlar
+  /// yetkisiz kalır.
+  Future<void> deleteAccountPermanently(String password) async {
+    final uid = _storage.userId;
+    if (uid == null || uid.isEmpty) {
+      throw Exception('Aktif oturum bulunamadı.');
+    }
+
+    // 1. Yeniden kimlik doğrulama
+    await _firebase.reauthenticateWithPassword(password);
+
+    // 2 + 3. Firestore + Storage verisi
+    await _firebase.deleteAccountData(uid);
+
+    // 4. Auth kullanıcısı
+    await _firebase.deleteAuthUser();
+
+    // 5. Yerel veri
+    await _db.wipeAllTables();
+    await _storage.clearAllForAccountDeletion();
+  }
 }

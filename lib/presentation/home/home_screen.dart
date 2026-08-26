@@ -29,18 +29,21 @@ import '../rewards/tebrik_karti_screen.dart';
 import '../../core/services/badge_service.dart';
 import '../../core/services/firestore_notification_service.dart';
 import '../../core/services/role_service.dart';
+import '../../core/services/widget_bridge_service.dart';
 import '../quran/quran_screen.dart';
 import '../tefsir/tefhimul_kuran_screen.dart';
 import '../riyazussalihin/riyazus_salihin_screen.dart';
 import '../../data/repositories/zikir_repository.dart';
 import 'widgets/zikir_home_card.dart';
 import '../zikir/zikir_sayac_screen.dart';
+import 'widgets/tasbih_icon.dart';
 import '../../data/local/local_storage.dart';
 import '../community/community_screen.dart';
 import 'widgets/community_activity_preview.dart';
 import '../../core/constants/nav_shortcuts.dart';
 import '../kible/kible_bulucu_screen.dart';
 import '../settings/settings_screen.dart';
+import '../onboarding/permission_onboarding_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -80,10 +83,28 @@ class _HomeScreenState extends State<HomeScreen> {
     _communitySectionHidden = LocalStorage().communitySectionHidden;
     FirestoreNotificationService().start();
     _loadContent().then((_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _checkRewards();
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        await _maybeShowPermissionOnboarding();
+        if (!mounted) return;
+        _checkRewards();
       });
     });
+  }
+
+  /// Kayıt/giriş sonrası HomeScreen'e ilk kez gelindiğinde (ve sadece o
+  /// zaman) bildirim + konum izin tanıtım ekranını gösterir. Tüm giriş
+  /// yolları (yeni kayıt, mevcut hesapla giriş, profil kurulumunu atla)
+  /// buradan geçtiği için izin akışı tek bir yerden yönetiliyor.
+  Future<void> _maybeShowPermissionOnboarding() async {
+    if (LocalStorage().permissionOnboardingDone) return;
+    if (!mounted) return;
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => PermissionOnboardingScreen(
+        onDone: () => Navigator.of(context).pop(),
+      ),
+      fullscreenDialog: true,
+    ));
   }
 
   Future<void> _checkRewards() async {
@@ -279,6 +300,10 @@ class _HomeScreenState extends State<HomeScreen> {
         _notificationsScheduled = true;
         _scheduleAllNotifications(esma, hadis, ayet);
       }
+
+      // Ana ekran widget'larını (namaz vakti/zikir/günlük içerik) tazele.
+      // Konum gerektirdiği için biraz sürebilir — home screen'i beklemesin.
+      WidgetBridgeService().refreshAll();
     }
   }
 
@@ -438,7 +463,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () => _goToTab(3),
                   ),
                   _buildDrawerItem(
-                    icon: Icons.self_improvement_outlined,
+                    iconWidget: TasbihIcon(
+                      color: Colors.white54,
+                      size: 20,
+                    ),
                     label: 'Zikir',
                     onTap: () => _goToPage(const ZikirSayacScreen()),
                   ),
@@ -607,12 +635,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDrawerItem({
-    required IconData icon,
+    IconData? icon,
+    Widget? iconWidget,
     required String label,
     required VoidCallback onTap,
     bool isActive = false,
     String? badge,
   }) {
+    assert(icon != null || iconWidget != null,
+        'icon veya iconWidget\'tan biri verilmeli');
+    final iconColor = isActive ? AppColors.gold : Colors.white54;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -632,8 +664,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon,
-                color: isActive ? AppColors.gold : Colors.white54, size: 20),
+            iconWidget ?? Icon(icon, color: iconColor, size: 20),
             const SizedBox(width: 14),
             Expanded(
               child: Text(

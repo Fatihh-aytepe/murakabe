@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/services/widget_bridge_service.dart';
 import '../../data/repositories/zikir_repository.dart';
 
 class ZikirSayacScreen extends StatefulWidget {
@@ -53,6 +54,8 @@ class _ZikirSayacScreenState extends State<ZikirSayacScreen>
         _count = _repo.currentCount;
         _isLoading = false;
       });
+      // Aktif zikir özelleştirilmiş/temizlenmiş olabilir — widget'ı tazele.
+      WidgetBridgeService().refreshZikirAndNotify();
     } catch (e) {
       debugPrint('❌ Zikir yüklenemedi: $e');
       if (!mounted) return;
@@ -289,6 +292,7 @@ class _ZikirSayacScreenState extends State<ZikirSayacScreen>
     final completed = await _repo.increment();
     if (!mounted) return;
     setState(() => _count = _repo.currentCount);
+    WidgetBridgeService().refreshZikirAndNotify();
 
     if (completed) {
       HapticFeedback.heavyImpact();
@@ -335,6 +339,7 @@ class _ZikirSayacScreenState extends State<ZikirSayacScreen>
       await _repo.resetCount();
       if (!mounted) return;
       setState(() => _count = 0);
+      WidgetBridgeService().refreshZikirAndNotify();
     }
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../models/user_model.dart';
 
 class FirebaseService {
@@ -82,6 +83,25 @@ class FirebaseService {
   /// Auth display name güncelle.
   Future<void> updateDisplayName(String name) async {
     await _auth.currentUser?.updateDisplayName(name);
+  }
+
+  /// Şifre ile yeniden kimlik doğrula — hesap silme gibi hassas işlemlerden
+  /// hemen önce Firebase'in zorunlu tuttuğu "recent login" kontrolü için.
+  Future<void> reauthenticateWithPassword(String password) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw Exception('Oturum bulunamadı.');
+    }
+    final credential =
+        EmailAuthProvider.credential(email: user.email!, password: password);
+    await user.reauthenticateWithCredential(credential);
+  }
+
+  /// Firebase Auth kullanıcısını kalıcı olarak siler. Çağrılmadan önce
+  /// [reauthenticateWithPassword] ile yeniden kimlik doğrulanmalı, aksi
+  /// halde Firebase 'requires-recent-login' hatası fırlatır.
+  Future<void> deleteAuthUser() async {
+    await _auth.currentUser?.delete();
   }
 
   // ─── USER ─────────────────────────────────────────────────────────────────
@@ -212,6 +232,60 @@ class FirebaseService {
   Future<Map<String, dynamic>?> getUserDetails(String uid) async {
     final doc = await _userCol().doc(uid).get();
     return doc.data() as Map<String, dynamic>?;
+  }
+
+  /// Play Store hesap silme politikası (bkz. Kullanıcı Verileri Politikası —
+  /// "Account Deletion") gereği: kullanıcının Firestore'daki TÜM verilerini
+  /// (ana doküman + alt koleksiyonlar) kalıcı olarak siler. Auth kullanıcısı
+  /// ayrıca [deleteAuthUser] ile silinmelidir.
+  Future<void> deleteAccountData(String uid) async {
+    const subcollections = [
+      'notes',
+      'saved',
+      'tasks',
+      'taskCompletions',
+      'rewards',
+      'quranTracking',
+      'tahajjudTracking',
+      'badges',
+      'reminders',
+    ];
+    for (final col in subcollections) {
+      await _deleteAllDocsIn(_sub(uid, col));
+    }
+    await _userCol().doc(uid).delete();
+    await _deleteStorageFolder('notes/$uid');
+  }
+
+  /// Storage'daki bir klasörü (ör. kullanıcının not eklerini) en iyi çaba
+  /// (best-effort) ile siler. Hata olursa hesap silme işlemini engellemez.
+  Future<void> _deleteStorageFolder(String path) async {
+    try {
+      final ref = FirebaseStorage.instance.ref(path);
+      final result = await ref.listAll();
+      for (final item in result.items) {
+        try {
+          await item.delete();
+        } catch (_) {}
+      }
+      for (final prefix in result.prefixes) {
+        await _deleteStorageFolder(prefix.fullPath);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _deleteAllDocsIn(CollectionReference col) async {
+    // Büyük koleksiyonlarda tek seferde silmemek için sayfalı siliyoruz.
+    while (true) {
+      final snap = await col.limit(200).get();
+      if (snap.docs.isEmpty) break;
+      final batch = _db.batch();
+      for (final d in snap.docs) {
+        batch.delete(d.reference);
+      }
+      await batch.commit();
+      if (snap.docs.length < 200) break;
+    }
   }
 
   /// Firestore'daki kullanıcıyı SQLite'a yazılabilir Map olarak döner.

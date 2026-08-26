@@ -3,7 +3,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart'
     show FlutterQuillLocalizations;
 import 'package:firebase_core/firebase_core.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'core/constants/app_theme.dart';
@@ -29,8 +28,13 @@ void main() async {
   await ConnectivityService().init();
   await ThemeService().init();
 
-  // Android 13+ bildirim izni
-  await _requestPermissions();
+  // NOT: Bildirim/konum/kamera/galeri izinleri artık burada TOPLU
+  // istenmiyor. Play Store politikası ve kullanıcı deneyimi gereği her
+  // izin, gerekçesiyle birlikte tam ihtiyaç duyulduğu anda isteniyor:
+  // bildirim + konum → kayıt/girişten hemen sonra PermissionOnboardingScreen
+  // (bkz. presentation/onboarding/permission_onboarding_screen.dart),
+  // kamera/galeri → kullanıcı profil fotoğrafı eklemeyi seçtiğinde
+  // (bkz. presentation/profile/profile_setup_screen.dart).
 
   runApp(
     ChangeNotifierProvider.value(
@@ -38,32 +42,6 @@ void main() async {
       child: const MurakabeApp(),
     ),
   );
-}
-
-Future<void> _requestPermissions() async {
-  // Bildirim izni (Android 13+)
-  final notifStatus = await Permission.notification.status;
-  if (notifStatus.isDenied) {
-    await Permission.notification.request();
-  }
-
-  // Konum izni (namaz vakitleri için)
-  final locationStatus = await Permission.location.status;
-  if (locationStatus.isDenied) {
-    await Permission.location.request();
-  }
-
-  // Tam ekranlı alarm izni (Android 12+)
-  final canSchedule = await NotificationService().checkExactAlarmPermission();
-  if (!canSchedule) {
-    await NotificationService().requestExactAlarmPermission();
-  }
-
-  // Pil optimizasyonu — alarm için kritik (Xiaomi/Samsung/Huawei)
-  final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
-  if (batteryStatus.isDenied) {
-    await Permission.ignoreBatteryOptimizations.request();
-  }
 }
 
 class MurakabeApp extends StatelessWidget {

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Düz beyaz dolgu — ImageView src olarak kullanılıp runtime'da
+     setColorFilter ile vurgu rengine boyanır (bkz. WidgetPrefs.accentColor). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FFFFFF" />
+</shape>

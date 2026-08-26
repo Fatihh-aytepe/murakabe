@@ -94,6 +94,27 @@ class LocalStorage {
   Future<void> setAlarmSoundId(String id) =>
       _prefs.setString('alarmSoundId', id);
 
+  // Kullanıcının yüklediği özel alarm sesleri — JSON liste olarak saklanır:
+  // [{"id": "...", "label": "...", "contentUri": "content://media/..."}]
+  // contentUri, native tarafta MediaStore'a (IS_NOTIFICATION=1 ile) eklenen
+  // dosyanın sistem çapında okunabilir URI'sidir — ses fiziksel olarak
+  // cihazın Bildirimler/Murakabe klasöründe, MediaStore üzerinden tutulur.
+  List<Map<String, String>> get customAlarmSounds {
+    final raw = _prefs.getString('customAlarmSounds');
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      final decoded = jsonDecode(raw) as List;
+      return decoded
+          .map((e) => Map<String, String>.from(e as Map))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> setCustomAlarmSounds(List<Map<String, String>> sounds) =>
+      _prefs.setString('customAlarmSounds', jsonEncode(sounds));
+
   // ── Firebase Auth migration ────────────────────────────────────────────────
   // Eski kullanıcılar Firebase Auth'a geçiş yaptı mı?
   bool get authMigrationDone => _prefs.getBool('authMigrationDone') ?? false;
@@ -104,6 +125,108 @@ class LocalStorage {
   int get alarmChannelVersion => _prefs.getInt('alarm_channel_version') ?? 0;
   Future<void> setAlarmChannelVersion(int v) =>
       _prefs.setInt('alarm_channel_version', v);
+
+  // ── Bildirim + konum izin akışı ──────────────────────────────────────────
+  // Kayıt/giriş sonrası izin tanıtım ekranı bir kez gösterildi mi?
+  // (Play Store: izinler kullanıcı akışının doğal bir parçası olarak,
+  // gerekçesiyle birlikte istenmeli — uygulama açılır açılmaz değil.)
+  bool get permissionOnboardingDone =>
+      _prefs.getBool('permissionOnboardingDone') ?? false;
+  Future<void> setPermissionOnboardingDone() =>
+      _prefs.setBool('permissionOnboardingDone', true);
+
+  // ── Ana ekran widget'ları ─────────────────────────────────────────────────
+  // Bu değerler native (Kotlin) widget kodu tarafından da OKUNUYOR — anahtar
+  // isimlerini değiştirirsen android/app/.../WidgetPrefs.kt içindeki KEY_*
+  // sabitlerini de güncellemen gerekir. shared_preferences eklentisi Android
+  // tarafında bu anahtarları "flutter.<key>" olarak saklar.
+
+  // Namaz vakitleri widget'ı — 6 vakit + hicri tarih. Vakit isimleri ve ISO
+  // zamanları paralel iki liste olarak virgülle ayrılmış tek string halinde
+  // tutulur (native tarafta basit split ile okunur).
+  String get widgetPrayerHijri => _prefs.getString('widget_prayer_hijri') ?? '';
+  Future<void> setWidgetPrayerHijri(String v) =>
+      _prefs.setString('widget_prayer_hijri', v);
+
+  String get widgetPrayerNames => _prefs.getString('widget_prayer_names') ?? '';
+  Future<void> setWidgetPrayerNames(String v) =>
+      _prefs.setString('widget_prayer_names', v);
+
+  String get widgetPrayerTimesIso =>
+      _prefs.getString('widget_prayer_times_iso') ?? '';
+  Future<void> setWidgetPrayerTimesIso(String v) =>
+      _prefs.setString('widget_prayer_times_iso', v);
+
+  // Zikir sayacı widget'ı — sayacın kendisi mevcut 'zikirCurrentCount'
+  // anahtarını paylaşır (widget'tan +1 dokunuşu doğrudan bu anahtarı
+  // günceller, uygulama açılınca ekstra senkron gerekmez).
+  int get widgetZikirTarget => _prefs.getInt('widget_zikir_target') ?? 33;
+  Future<void> setWidgetZikirTarget(int v) =>
+      _prefs.setInt('widget_zikir_target', v);
+
+  String get widgetZikirTurkish =>
+      _prefs.getString('widget_zikir_turkish') ?? '';
+  Future<void> setWidgetZikirTurkish(String v) =>
+      _prefs.setString('widget_zikir_turkish', v);
+
+  String get widgetZikirArabic => _prefs.getString('widget_zikir_arabic') ?? '';
+  Future<void> setWidgetZikirArabic(String v) =>
+      _prefs.setString('widget_zikir_arabic', v);
+
+  // Günlük içerik widget'ı — esmâ/âyet/hadis, ok ile aralarında gezinilir.
+  String get widgetEsmaTr => _prefs.getString('widget_esma_tr') ?? '';
+  Future<void> setWidgetEsmaTr(String v) => _prefs.setString('widget_esma_tr', v);
+  String get widgetEsmaAr => _prefs.getString('widget_esma_ar') ?? '';
+  Future<void> setWidgetEsmaAr(String v) => _prefs.setString('widget_esma_ar', v);
+  String get widgetEsmaMeaning => _prefs.getString('widget_esma_meaning') ?? '';
+  Future<void> setWidgetEsmaMeaning(String v) =>
+      _prefs.setString('widget_esma_meaning', v);
+
+  String get widgetAyetText => _prefs.getString('widget_ayet_text') ?? '';
+  Future<void> setWidgetAyetText(String v) =>
+      _prefs.setString('widget_ayet_text', v);
+  String get widgetAyetSource => _prefs.getString('widget_ayet_source') ?? '';
+  Future<void> setWidgetAyetSource(String v) =>
+      _prefs.setString('widget_ayet_source', v);
+
+  String get widgetHadisText => _prefs.getString('widget_hadis_text') ?? '';
+  Future<void> setWidgetHadisText(String v) =>
+      _prefs.setString('widget_hadis_text', v);
+  String get widgetHadisSource => _prefs.getString('widget_hadis_source') ?? '';
+  Future<void> setWidgetHadisSource(String v) =>
+      _prefs.setString('widget_hadis_source', v);
+
+  // 0=esmâ, 1=âyet, 2=hadis — widget üzerindeki ‹ › okları bu indeksi
+  // doğrudan native tarafta değiştirir; Dart tarafı sadece ilk değeri yazar.
+  int get widgetContentIndex => _prefs.getInt('widget_content_index') ?? 0;
+  Future<void> setWidgetContentIndex(int v) =>
+      _prefs.setInt('widget_content_index', v);
+
+  // ── Widget görünüm ayarları ──────────────────────────────────────────────
+  // 'signature' (uygulamanın imza teması — lacivert/altın/turkuaz, varsayılan),
+  // 'light' veya 'dark'.
+  String get widgetThemeMode =>
+      _prefs.getString('widget_theme_mode') ?? 'signature';
+  Future<void> setWidgetThemeMode(String v) =>
+      _prefs.setString('widget_theme_mode', v);
+
+  // Arka plan saydamlığı: 0 (tamamen saydam) – 100 (tamamen opak).
+  int get widgetBgOpacity => _prefs.getInt('widget_bg_opacity') ?? 100;
+  Future<void> setWidgetBgOpacity(int v) =>
+      _prefs.setInt('widget_bg_opacity', v);
+
+  // Vurgu rengi — '#' olmadan 6 haneli hex (ör. 'D4AF37').
+  String get widgetAccentHex =>
+      _prefs.getString('widget_accent_hex') ?? 'D4AF37';
+  Future<void> setWidgetAccentHex(String v) =>
+      _prefs.setString('widget_accent_hex', v);
+
+  // ── Hesap silme ──────────────────────────────────────────────────────────
+  /// Hesap kalıcı olarak silinirken tüm yerel tercih/ayar verisini temizler
+  /// (kayıtlı hesap listesi dahil). Cihazda bu kullanıcıya ait hiçbir iz
+  /// bırakmaz; bir sonraki açılışta uygulama sıfırdan kayıt/giriş ekranına
+  /// döner.
+  Future<void> clearAllForAccountDeletion() => _prefs.clear();
 
   // ── Çoklu hesap yönetimi ─────────────────────────────────────────────────
   // Her hesap: {uid, email, name, lastUsed}

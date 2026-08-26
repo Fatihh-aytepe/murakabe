@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Murakabe — Hesap Silme</title>
+<meta name="description" content="Murakabe uygulaması hesap ve veri silme talimatları / Account and data deletion instructions." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F8F4EE;
+    --surface: #FFFFFF;
+    --surface-2: #F1ECE1;
+    --border: rgba(44,44,44,0.10);
+    --text: #2C2C2C;
+    --text-dim: #5C5850;
+    --text-faint: #8A8478;
+    --gold: #A07820;
+    --gold-strong: #8A6415;
+    --turquoise: #207080;
+    --danger: #B23A3A;
+    --danger-bg: #FBEEEE;
+    --shadow: 0 1px 2px rgba(30,25,15,0.04), 0 8px 24px -12px rgba(30,25,15,0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1B2A;
+      --surface: #14243A;
+      --surface-2: #1B2A3B;
+      --border: rgba(255,255,255,0.09);
+      --text: #F2EEE3;
+      --text-dim: #B9C2CC;
+      --text-faint: #7C8A99;
+      --gold: #D4AF37;
+      --gold-strong: #F0D060;
+      --turquoise: #70D4E4;
+      --danger: #E38585;
+      --danger-bg: rgba(178,58,58,0.14);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -16px rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1B2A;
+    --surface: #14243A;
+    --surface-2: #1B2A3B;
+    --border: rgba(255,255,255,0.09);
+    --text: #F2EEE3;
+    --text-dim: #B9C2CC;
+    --text-faint: #7C8A99;
+    --gold: #D4AF37;
+    --gold-strong: #F0D060;
+    --turquoise: #70D4E4;
+    --danger: #E38585;
+    --danger-bg: rgba(178,58,58,0.14);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -16px rgba(0,0,0,0.55);
+  }
+
+  * { box-sizing: border-box; }
+  html { text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans', -apple-system, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  .wrap {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .mark {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    color: var(--gold);
+  }
+  .brand-text .name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--gold);
+    letter-spacing: 0.02em;
+  }
+  .brand-text .kicker {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(1.7rem, 4vw, 2.15rem);
+    line-height: 1.22;
+    text-wrap: balance;
+    margin: 0 0 10px;
+    color: var(--text);
+  }
+  .lede {
+    color: var(--text-dim);
+    font-size: 1.01rem;
+    max-width: 60ch;
+    margin: 0 0 44px;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
+    font-size: 1.28rem;
+    color: var(--text);
+    margin: 0 0 4px;
+  }
+  .section-note {
+    color: var(--text-faint);
+    font-size: 0.85rem;
+    margin: 0 0 18px;
+  }
+
+  section.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 28px 30px;
+    box-shadow: var(--shadow);
+    margin-bottom: 22px;
+  }
+
+  ol.steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: step;
+  }
+  ol.steps li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 14px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+  }
+  ol.steps li:first-child { border-top: none; padding-top: 2px; }
+  ol.steps li::before {
+    content: counter(step);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--gold-strong);
+    background: var(--surface-2);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  ol.steps .step-body b { color: var(--text); }
+  ol.steps .step-body { color: var(--text-dim); font-size: 0.95rem; }
+  ol.steps .step-body code {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1px 7px;
+    font-size: 0.86em;
+    color: var(--turquoise);
+    font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+  }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Noto Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 11px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--turquoise);
+    outline-offset: 2px;
+  }
+  .btn-primary {
+    background: var(--gold);
+    color: #201a08;
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+
+  dl.data-list {
+    margin: 0;
+    display: grid;
+    gap: 14px;
+  }
+  dl.data-list > div {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  dl.data-list > div:last-child { border-bottom: none; padding-bottom: 0; }
+  dl.data-list dt {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.92rem;
+  }
+  dl.data-list dd {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.92rem;
+  }
+
+  .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .badge {
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid transparent;
+  }
+
+  .divider-eng {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-faint);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 48px 0 20px;
+  }
+  .divider-eng::before, .divider-eng::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: var(--text-faint);
+    font-size: 0.82rem;
+  }
+  footer a { color: var(--text-faint); }
+
+  @media (max-width: 480px) {
+    dl.data-list > div { grid-template-columns: 1fr; gap: 4px; }
+    section.card { padding: 22px 18px 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <svg class="mark" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="22" cy="22" r="21" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M22 6 L26.5 17.5 L38 22 L26.5 26.5 L22 38 L17.5 26.5 L6 22 L17.5 17.5 Z"
+        stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+    </svg>
+    <div class="brand-text">
+      <div class="name">Murakabe</div>
+      <div class="kicker">Hesap &amp; Veri Silme</div>
+    </div>
+  </header>
+
+  <h1>Hesabını ve verilerini nasıl silersin</h1>
+  <p class="lede">
+    Bu sayfa, Murakabe hesabının ve hesabınla ilişkili tüm verilerin nasıl silineceğini açıklar —
+    uygulama yüklüyken de, uygulamayı kaldırdıktan sonra da.
+  </p>
+
+  <section class="card">
+    <h2>1. Uygulama içinden sil</h2>
+    <p class="section-note">En hızlı yol. İşlem anında başlar ve geri alınamaz.</p>
+    <ol class="steps">
+      <li>
+        <div class="step-body"><b>Murakabe</b>'yi aç ve sağ üstteki profil simgesinden
+        <code>Ayarlar</code> ekranına git.</div>
+      </li>
+      <li>
+        <div class="step-body">En altta yer alan <b>Tehlikeli Bölge</b> kartını bul.</div>
+      </li>
+      <li>
+        <div class="step-body"><code>Hesabımı Kalıcı Olarak Sil</code> butonuna dokun ve
+        şifreni girerek onayla.</div>
+      </li>
+      <li>
+        <div class="step-body">Onayladığın anda hesabın, profilin ve tüm verilerin kalıcı
+        olarak silinir; oturumun kapanır.</div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>2. Uygulamayı yüklemeden talep et</h2>
+    <p class="section-note">Telefonunda uygulama yoksa veya hesabına giriş yapamıyorsan.</p>
+    <p style="color:var(--text-dim); font-size:0.95rem; margin:0;">
+      Kayıtlı e-posta adresinden aşağıdaki adrese "Hesap Silme Talebi" konulu bir e-posta gönder.
+      Kimliğini doğruladıktan sonra hesabın <b>en geç 30 gün içinde</b> tamamen silinir ve sana
+      onay maili gönderilir.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary"
+         href="mailto:yavuzbera02@gmail.com?subject=Hesap%20Silme%20Talebi&body=Kay%C4%B1tl%C4%B1%20e-posta%20adresim%3A%20">
+        ✉️ yavuzbera02@gmail.com
+      </a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Ne siliniyor?</h2>
+    <p class="section-note">Silme işlemi hem bulut (Firebase) hem de cihazındaki tüm verileri kapsar.</p>
+    <dl class="data-list">
+      <div>
+        <dt>Profil bilgileri</dt>
+        <dd>Ad soyad, e-posta, telefon, biyografi, cinsiyet, profil fotoğrafı</dd>
+      </div>
+      <div>
+        <dt>İçerik &amp; notlar</dt>
+        <dd>Kişisel notların, ses/görsel ekleri, kaydettiğin (heybe) içerikler</dd>
+      </div>
+      <div>
+        <dt>İbadet istatistikleri</dt>
+        <dd>Kur'ân okuma serisi, zikir sayaçları, teheccüd takibi, rozetler</dd>
+      </div>
+      <div>
+        <dt>Görevler &amp; hatırlatıcılar</dt>
+        <dd>Kişisel görevlerin, tamamlama kayıtların, hatırlatıcıların</dd>
+      </div>
+      <div>
+        <dt>Hesap kaydı</dt>
+        <dd>Firebase Authentication oturumun kalıcı olarak silinir</dd>
+      </div>
+    </dl>
+    <div class="badge-row">
+      <span class="badge">Hiçbir veri saklanmaz</span>
+      <span class="badge">Geri alınamaz</span>
+    </div>
+  </section>
+
+  <div class="divider-eng">English summary</div>
+
+  <section class="card">
+    <h2 style="font-size:1.05rem;">Deleting your Murakabe account</h2>
+    <p style="color:var(--text-dim); font-size:0.92rem; margin:0 0 14px;">
+      In-app: open <b>Murakabe → Settings → Danger Zone → Delete My Account Permanently</b>,
+      confirm with your password. Deletion is immediate and irreversible.
+    </p>
+    <p style="color:var(--text-dim); font-size:0.92rem; margin:0;">
+      Without the app: email
+      <a href="mailto:yavuzbera02@gmail.com?subject=Account%20Deletion%20Request" style="color:var(--turquoise);">yavuzbera02@gmail.com</a>
+      from your registered address with the subject "Account Deletion Request". We verify your
+      identity and permanently delete your account and all associated data (profile, notes,
+      worship statistics, tasks, reminders) within 30 days, then confirm by email. No data is
+      retained after deletion.
+    </p>
+  </section>
+
+  <footer>
+    <span>Murakabe © 2026</span>
+    <span>Son güncelleme: Ağustos 2026</span>
+  </footer>
+
+</div>
+</body>
+</html>

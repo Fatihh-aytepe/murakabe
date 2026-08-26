@@ -285,4 +285,31 @@ class DatabaseHelper {
     final db = await database;
     return db.rawUpdate(sql, args);
   }
+
+  /// Hesap kalıcı olarak silinirken çağrılır: cihazdaki TÜM yerel verileri
+  /// (kullanıcı satırı, notlar, hatırlatıcılar, ödüller, rozetler, görevler,
+  /// takip kayıtları) siler. Yerel veritabanı tek aktif hesabı tuttuğundan
+  /// (bkz. tablo şemaları — çoğu tabloda userId kolonu yok) tam temizlik
+  /// güvenlidir ve hiçbir başka hesabın verisini etkilemez.
+  Future<void> wipeAllTables() async {
+    final db = await database;
+    const tables = [
+      'users',
+      'saved_content',
+      'notes',
+      'quran_tracking',
+      'tahajjud_tracking',
+      'reminders',
+      'daily_index',
+      'rewards',
+      'badges',
+      'custom_tasks',
+      'custom_task_completions',
+    ];
+    final batch = db.batch();
+    for (final t in tables) {
+      batch.delete(t);
+    }
+    await batch.commit(noResult: true);
+  }
 }

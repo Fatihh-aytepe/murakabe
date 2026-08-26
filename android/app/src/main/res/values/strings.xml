@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_prayer_label">Namaz Vakitleri</string>
+    <string name="widget_prayer_desc">Şimdiki, sonraki ve tüm namaz vakitlerini ana ekranda göster.</string>
+
+    <string name="widget_countdown_label">Namaz Vakti Sayacı</string>
+    <string name="widget_countdown_desc">Sıradaki namaz vaktine kalan süreyi dairesel bir gösterge ile ana ekranda takip et.</string>
+
+    <string name="widget_zikir_label">Zikir Sayacı</string>
+    <string name="widget_zikir_desc">Günün zikrini ana ekrandan, uygulamayı açmadan çek.</string>
+
+    <string name="widget_content_label">Günlük Esmâ / Âyet / Hadis</string>
+    <string name="widget_content_desc">Günün esmâsını, âyetini ve hadisini ana ekranda gör, ok ile aralarında gezin.</string>
+
+    <string name="widget_content_type_esma">ESMÂ\'ÜL HÜSNÂ</string>
+    <string name="widget_content_type_ayet">GÜNÜN ÂYETİ</string>
+    <string name="widget_content_type_hadis">GÜNÜN HADİSİ</string>
+</resources>

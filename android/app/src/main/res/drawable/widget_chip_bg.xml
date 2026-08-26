@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Düz beyaz, tam yuvarlak köşeli dolgu — ImageView src olarak kullanılıp
+     runtime'da setColorFilter ile (düşük alfalı) vurgu rengine boyanır.
+     Tip etiketi rozeti (ESMÂ/ÂYET/HADİS) ve ‹ › ok düğmelerinin arka
+     planı için ortak drawable. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFFFFF" />
+    <corners android:radius="999dp" />
+</shape>

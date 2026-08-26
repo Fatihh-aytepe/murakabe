@@ -1,15 +1,31 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../../data/local/local_storage.dart';
 import 'notification_service.dart';
 
 /// Kullanıcının seçebileceği alarm sesleri.
-/// [id]   → assets/sounds/ içindeki dosya adı (uzantısız) — Android raw resource
-/// [label] → UI'da gösterilecek isim
+/// Dahili (hazır) sesler için [id] → assets/sounds/ + android res/raw
+/// içindeki dosya adı (uzantısız). Kullanıcının yüklediği özel sesler için
+/// [contentUri] dolu olur — bu, native tarafta MediaStore'a eklenmiş
+/// dosyanın sistem çapında okunabilir content:// URI'sidir; [id] o zaman
+/// sadece seçim/kanal anahtarı olarak kullanılan benzersiz bir string'dir.
 class AlarmSound {
   final String id;
   final String label;
-  const AlarmSound({required this.id, required this.label});
+  final String? contentUri;
+  const AlarmSound({required this.id, required this.label, this.contentUri});
+
+  bool get isCustom => contentUri != null;
+}
+
+/// Kullanıcının cihazından ses dosyası seçmesi/silmesi sırasında oluşan,
+/// kullanıcıya doğrudan gösterilebilecek Türkçe hatalar.
+class AlarmSoundException implements Exception {
+  final String message;
+  AlarmSoundException(this.message);
+  @override
+  String toString() => message;
 }
 
 class AlarmService {
@@ -35,11 +51,26 @@ class AlarmService {
   static const AlarmSound defaultSound =
       AlarmSound(id: 'alarm_default', label: 'Varsayılan');
 
+  static const _audioChannel = MethodChannel('com.murakabe.app/audio');
+
+  // ── Kullanıcının yüklediği özel sesler ────────────────────────────────────
+  List<AlarmSound> get customSounds => LocalStorage()
+      .customAlarmSounds
+      .map((m) => AlarmSound(
+            id: m['id']!,
+            label: m['label']!,
+            contentUri: m['contentUri'],
+          ))
+      .toList();
+
+  /// Hazır + kullanıcının yüklediği tüm sesler (seçim ekranında gösterilir).
+  List<AlarmSound> get allSounds => [...availableSounds, ...customSounds];
+
   // ── Seçili ses — LocalStorage'dan okunur / yazılır ───────────────────────
   AlarmSound get selectedSound {
     final saved = LocalStorage().alarmSoundId;
     if (saved == null || saved.isEmpty) return defaultSound;
-    return availableSounds.firstWhere(
+    return allSounds.firstWhere(
       (s) => s.id == saved,
       orElse: () => defaultSound,
     );
@@ -47,6 +78,119 @@ class AlarmService {
 
   Future<void> setSelectedSound(AlarmSound sound) =>
       LocalStorage().setAlarmSoundId(sound.id);
+
+  // ── Kullanıcının kendi ses dosyasını yüklemesi ────────────────────────────
+  // Native taraf (MainActivity.kt) sistem dosya seçiciyi açar, seçilen sesi
+  // MediaStore'a IS_NOTIFICATION=1 ile ekler (Android 10+ scoped storage —
+  // ekstra depolama izni gerekmez) ve bize content:// URI'sini döner. Bu URI
+  // hem uygulama içi önizlemede hem de bildirim kanalının sesi olarak
+  // doğrudan kullanılabilir.
+  Future<AlarmSound?> pickAndAddCustomSound() async {
+    Map<Object?, Object?>? raw;
+    try {
+      raw = await _audioChannel.invokeMethod<Map<Object?, Object?>>(
+        'pickAndSaveAudio',
+      );
+    } on PlatformException catch (e) {
+      switch (e.code) {
+        case 'TOO_LARGE':
+          throw AlarmSoundException(
+              'Ses dosyası çok büyük (en fazla 8 MB olabilir).');
+        case 'UNSUPPORTED_VERSION':
+          throw AlarmSoundException(
+              'Bu Android sürümünde özel ses ekleme desteklenmiyor (Android 10+ gerekir).');
+        default:
+          throw AlarmSoundException('Ses dosyası eklenemedi.');
+      }
+    }
+    if (raw == null) return null; // Kullanıcı seçiciyi iptal etti.
+
+    final uri = raw['uri'] as String;
+    final rawName = (raw['name'] as String?) ?? 'Özel Ses';
+    final label =
+        rawName.contains('.') ? rawName.substring(0, rawName.lastIndexOf('.')) : rawName;
+
+    final sound = AlarmSound(
+      id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
+      label: label.isEmpty ? 'Özel Ses' : label,
+      contentUri: uri,
+    );
+
+    final updated = [
+      ...LocalStorage().customAlarmSounds,
+      {'id': sound.id, 'label': sound.label, 'contentUri': uri},
+    ];
+    await LocalStorage().setCustomAlarmSounds(updated);
+    await _createChannelForSound(sound);
+    return sound;
+  }
+
+  /// Bir özel sesi hem MediaStore'dan hem de kayıtlı listeden siler.
+  /// Silinen ses o an seçiliyse otomatik olarak varsayılana döner.
+  Future<void> removeCustomSound(AlarmSound sound) async {
+    if (!sound.isCustom) return;
+    try {
+      await _audioChannel
+          .invokeMethod('deleteCustomAudio', {'uri': sound.contentUri});
+    } catch (_) {
+      // MediaStore kaydı zaten silinmiş/erişilemez olabilir — yine de
+      // uygulama tarafındaki referansı temizlemeye devam ediyoruz.
+    }
+
+    final updated = LocalStorage()
+        .customAlarmSounds
+        .where((m) => m['id'] != sound.id)
+        .toList();
+    await LocalStorage().setCustomAlarmSounds(updated);
+
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.deleteNotificationChannel('tahajjud_${sound.id}');
+
+    if (LocalStorage().alarmSoundId == sound.id) {
+      await setSelectedSound(defaultSound);
+    }
+  }
+
+  // ── Uygulama içi önizleme (özel sesler için) ─────────────────────────────
+  // Hazır sesler settings ekranında AssetSource ile (audioplayers) çalınmaya
+  // devam ediyor; özel (content:// URI'li) sesler için native MediaPlayer
+  // kullanıyoruz çünkü content:// URI oynatma desteği paket sürümüne göre
+  // değişebiliyor — native tarafta garanti çalışan bir yol.
+  Future<void> previewCustomSound(AlarmSound sound) async {
+    if (!sound.isCustom) return;
+    await _audioChannel
+        .invokeMethod('previewAudio', {'uri': sound.contentUri});
+  }
+
+  Future<void> stopCustomPreview() async {
+    await _audioChannel.invokeMethod('stopPreviewAudio');
+  }
+
+  // ── Ortak: bir AlarmSound'a karşılık gelen bildirim sesi + kanal ────────
+  AndroidNotificationSound _androidSoundFor(AlarmSound sound) => sound.isCustom
+      ? UriAndroidNotificationSound(sound.contentUri!)
+      : RawResourceAndroidNotificationSound(sound.id);
+
+  /// Kullanıcı yeni bir özel ses eklediğinde hemen çağrılır — o sesin
+  /// teheccüd bildirim kanalını oluşturur (Android'de kanal oluşturulduktan
+  /// sonra sesi değiştirilemez, bu yüzden her ses kendi kanalını kullanır).
+  Future<void> _createChannelForSound(AlarmSound sound) async {
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    if (androidPlugin == null) return;
+    await androidPlugin.createNotificationChannel(
+      AndroidNotificationChannel(
+        'tahajjud_${sound.id}',
+        'Teheccüd — ${sound.label}',
+        description: 'Teheccüd alarmı (${sound.label})',
+        importance: Importance.max,
+        enableVibration: true,
+        playSound: true,
+        sound: _androidSoundFor(sound),
+      ),
+    );
+  }
 
   // ── Init ─────────────────────────────────────────────────────────────────
   Future<void> init() async {
@@ -83,7 +227,7 @@ class AlarmService {
           category: AndroidNotificationCategory.alarm,
           enableVibration: true,
           playSound: true,
-          sound: RawResourceAndroidNotificationSound(sound.id),
+          sound: _androidSoundFor(sound),
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.alarmClock,

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,7 +12,10 @@ import '../../data/local/local_storage.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/remote/firebase_service.dart';
+import '../auth/login_screen.dart';
+import 'alarm_sound_screen.dart';
 import 'nav_shortcuts_screen.dart';
+import 'widget_appearance_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -27,12 +29,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _alarmService = AlarmService();
   final _storage = LocalStorage();
   final _imagePicker = ImagePicker();
-  final _previewPlayer = AudioPlayer();
   final _notifService = NotificationService();
 
   UserModel? _user;
   String? _profilePhotoPath;
-  bool _isPreviewing = false;
   bool _isSaving = false;
   String? _saveError;
 
@@ -76,9 +76,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _kuranMinute = _storage.kuranNotifMinute;
     _zikirHour = _storage.zikirNotifHour;
     _zikirMinute = _storage.zikirNotifMinute;
-    _previewPlayer.onPlayerComplete.listen((_) {
-      if (mounted) setState(() => _isPreviewing = false);
-    });
     _loadUser();
   }
 
@@ -95,7 +92,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
-    _previewPlayer.dispose();
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
     super.dispose();
@@ -157,24 +153,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (picked == null) return;
     await _storage.setProfilePhotoPath(picked.path);
     if (mounted) setState(() => _profilePhotoPath = picked.path);
-  }
-
-  // ── Sound preview ─────────────────────────────────────────────────────────
-
-  Future<void> _toggleSoundPreview() async {
-    if (_isPreviewing) {
-      await _previewPlayer.stop();
-      if (mounted) setState(() => _isPreviewing = false);
-    } else {
-      if (mounted) setState(() => _isPreviewing = true);
-      try {
-        await _previewPlayer.play(
-          AssetSource('sounds/${_alarmService.selectedSound.id}.mp3'),
-        );
-      } catch (_) {
-        if (mounted) setState(() => _isPreviewing = false);
-      }
-    }
   }
 
   // ── Email change dialog ───────────────────────────────────────────────────
@@ -435,16 +413,214 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 16),
                 _buildShortcutsCard(isDark),
                 const SizedBox(height: 16),
+                _buildWidgetsCard(isDark),
+                const SizedBox(height: 16),
                 _buildThemeCard(isDark),
                 const SizedBox(height: 16),
                 _buildSoundCard(isDark),
                 const SizedBox(height: 16),
                 _buildNotifCard(isDark),
+                const SizedBox(height: 16),
+                _buildDangerZoneCard(isDark),
               ]),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  // ── Tehlikeli bölge: hesap silme ─────────────────────────────────────────
+  // Play Store, hesap oluşturmaya izin veren her uygulamadan uygulama içinde
+  // kolayca bulunabilir bir "hesabı ve verileri sil" seçeneği bekler
+  // (Kullanıcı Verileri Politikası — Hesap Silme). Bu kart o gereksinimi
+  // karşılar; ayrıca uygulamayı silmeden de erişilebilecek bir web sayfası
+  // gerekiyor (bkz. proje köküne eklenen hesap-silme.html).
+
+  Widget _buildDangerZoneCard(bool isDark) {
+    final cardColor = isDark ? const Color(0xFF2A1414) : const Color(0xFFFFF3F3);
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded,
+                  color: Colors.redAccent, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                'TEHLİKELİ BÖLGE',
+                style: GoogleFonts.notoSans(
+                  color: Colors.redAccent,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Hesabını sildiğinde profilin, notların, zikir/oruç/Kur\'ân '
+            'istatistiklerin, rozetlerin ve tüm kişisel verilerin sunucularımızdan '
+            've bu cihazdan kalıcı olarak silinir. Bu işlem geri alınamaz.',
+            style: GoogleFonts.notoSans(
+              color: isDark ? Colors.white70 : AppColors.textSecondary,
+              fontSize: 12.5,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _confirmDeleteAccount,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+                side: const BorderSide(color: Colors.redAccent),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.delete_forever_outlined, size: 18),
+              label: Text('Hesabımı Kalıcı Olarak Sil',
+                  style: GoogleFonts.notoSans(
+                      fontWeight: FontWeight.w600, fontSize: 13)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteAccount() async {
+    final passwordCtrl = TextEditingController();
+    String? errorText;
+    bool isDeleting = false;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          backgroundColor: const Color(0xFF1A2035),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Hesabını silmek üzeresin',
+            style: GoogleFonts.playfairDisplay(
+                color: Colors.redAccent,
+                fontSize: 17,
+                fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Bu işlem geri alınamaz. Devam etmek için şifreni gir.',
+                style: GoogleFonts.notoSans(
+                    color: Colors.white70, fontSize: 13, height: 1.4),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: passwordCtrl,
+                obscureText: true,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Şifre',
+                  labelStyle: const TextStyle(color: Colors.white38),
+                  errorText: errorText,
+                  prefixIcon:
+                      const Icon(Icons.lock_outline, color: Colors.redAccent, size: 18),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.redAccent),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isDeleting ? null : () => Navigator.pop(ctx, false),
+              child: Text('Vazgeç',
+                  style: GoogleFonts.notoSans(color: Colors.white38)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: isDeleting
+                  ? null
+                  : () async {
+                      if (passwordCtrl.text.isEmpty) {
+                        setDlg(() => errorText = 'Şifre gerekli');
+                        return;
+                      }
+                      setDlg(() {
+                        isDeleting = true;
+                        errorText = null;
+                      });
+                      try {
+                        await _userRepo
+                            .deleteAccountPermanently(passwordCtrl.text);
+                        if (ctx.mounted) Navigator.pop(ctx, true);
+                      } on FirebaseAuthException catch (e) {
+                        setDlg(() {
+                          isDeleting = false;
+                          errorText = e.code == 'wrong-password' ||
+                                  e.code == 'invalid-credential'
+                              ? 'Şifre hatalı'
+                              : 'Bir hata oluştu: ${e.message}';
+                        });
+                      } catch (e) {
+                        setDlg(() {
+                          isDeleting = false;
+                          errorText = 'Bir hata oluştu, tekrar dene';
+                        });
+                      }
+                    },
+              child: isDeleting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2),
+                    )
+                  : Text('Hesabımı Sil',
+                      style: GoogleFonts.notoSans(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    passwordCtrl.dispose();
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Hesabın ve tüm verilerin silindi.')),
+    );
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (_) => false,
     );
   }
 
@@ -729,6 +905,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+  // ── Ana ekran widget'ları ────────────────────────────────────────────────
+
+  Widget _buildWidgetsCard(bool isDark) {
+    return _buildCard(
+      title: 'Ana Ekran Widget\'ları',
+      icon: Icons.widgets_outlined,
+      isDark: isDark,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const WidgetAppearanceScreen()),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.format_paint_outlined,
+                  color: Colors.white60, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Widget Görünümünü Özelleştir',
+                      style: GoogleFonts.notoSans(
+                        color: isDark ? Colors.white : AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Tema, saydamlık ve vurgu rengi',
+                      style: GoogleFonts.notoSans(
+                        color: isDark ? Colors.white38 : AppColors.textLight,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.white38, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // ── Theme section ─────────────────────────────────────────────────────────
 
   Widget _buildThemeCard(bool isDark) {
@@ -773,7 +998,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSoundCard(bool isDark) {
     final current = _alarmService.selectedSound;
-    final textColor = isDark ? Colors.white : AppColors.textPrimary;
 
     return _buildCard(
       title: 'Alarm Sesi',
@@ -781,60 +1005,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
       isDark: isDark,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: Row(
-          children: [
-            Expanded(
-              child: DropdownButton<String>(
-                value: current.id,
-                isExpanded: true,
-                dropdownColor: isDark ? const Color(0xFF1A2035) : Colors.white,
-                underline: const SizedBox(),
-                style: GoogleFonts.notoSans(
-                  color: textColor,
-                  fontSize: 14,
-                ),
-                icon: const Icon(Icons.music_note,
-                    color: AppColors.gold, size: 20),
-                items: AlarmService.availableSounds
-                    .map((s) => DropdownMenuItem(
-                          value: s.id,
-                          child: Text(s.label),
-                        ))
-                    .toList(),
-                onChanged: (val) async {
-                  if (val == null) return;
-                  await _previewPlayer.stop();
-                  if (mounted) setState(() => _isPreviewing = false);
-                  final sound = AlarmService.availableSounds
-                      .firstWhere((s) => s.id == val);
-                  await _alarmService.setSelectedSound(sound);
-                  setState(() {});
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: _toggleSoundPreview,
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _isPreviewing
-                      ? Colors.red.withValues(alpha: 0.15)
-                      : AppColors.gold.withValues(alpha: 0.15),
-                  border: Border.all(
-                    color: _isPreviewing ? Colors.red : AppColors.gold,
-                  ),
-                ),
-                child: Icon(
-                  _isPreviewing ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                  color: _isPreviewing ? Colors.red : AppColors.gold,
-                  size: 18,
+        child: GestureDetector(
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AlarmSoundScreen()),
+            );
+            if (mounted) setState(() {});
+          },
+          child: Row(
+            children: [
+              const Icon(Icons.music_note, color: Colors.white60, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      current.label,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.notoSans(
+                        color: isDark ? Colors.white : AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Teheccüd alarmı için ses seç veya kendi sesini yükle',
+                      style: GoogleFonts.notoSans(
+                        color: isDark ? Colors.white38 : AppColors.textLight,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+              const Icon(Icons.chevron_right, color: Colors.white38, size: 18),
+            ],
+          ),
         ),
       ),
     );

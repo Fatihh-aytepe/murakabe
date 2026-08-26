@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+﻿import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -676,14 +677,18 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
   late List<String> _imagePaths;
   late List<String> _audioPaths;
   DateTime? _reminderAt;
-  // Resim/ses ekleri varsayılan olarak DARALTILMIŞ — metin yazma alanına
-  // (özellikle klavye açıkken) daha çok yer kalsın diye. Notta zaten
-  // ek varsa kullanıcı hemen görsün diye açık başlıyor.
+  // "Eklentiler" paneli (etiket + resim + ses) varsayılan olarak
+  // DARALTILMIŞ — dokunulmazsa gizli kalır. Notta zaten eklenti varsa
+  // (düzenlerken) kullanıcı hemen görsün diye açık başlıyor.
   late bool _attachmentsExpanded;
 
   final _picker = ImagePicker();
   final _recorder = AudioRecorder();
   bool _isRecording = false;
+  // Ses kaydı sırasında "Ses Ekle" butonunda yanıp sönen kırmızı nokta —
+  // kaydın gerçekten sürdüğünü görsel olarak belli etsin diye.
+  Timer? _recordingPulseTimer;
+  bool _recordingPulseOn = false;
 
   @override
   void initState() {
@@ -699,7 +704,19 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
     _imagePaths = List<String>.from(widget.note?.imagePaths ?? const []);
     _audioPaths = List<String>.from(widget.note?.audioPaths ?? const []);
     _reminderAt = widget.note?.reminderAt;
-    _attachmentsExpanded = _imagePaths.isNotEmpty || _audioPaths.isNotEmpty;
+    _attachmentsExpanded =
+        _tags.isNotEmpty || _imagePaths.isNotEmpty || _audioPaths.isNotEmpty;
+    // İçerik kutusu odaklanınca/odaktan çıkınca üst kısmı gizleyip
+    // gösterecek olan "odak modu" — bkz. _handleFocusChange.
+    _contentFocus.addListener(_handleFocusChange);
+  }
+
+  // İçerik kutusuna dokunup klavye açıldığında (veya kapandığında) yeniden
+  // çizilmesi için — build() içinde doğrudan _contentFocus.hasFocus okunuyor,
+  // ayrı bir bool state tutmaya gerek yok, bu sadece rebuild tetikliyor.
+  void _handleFocusChange() {
+    if (!mounted) return;
+    setState(() {});
   }
 
   // Notun içeriğini Quill dokümanına çevirir.
@@ -743,7 +760,9 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
     _titleCtrl.dispose();
     _tagInputCtrl.dispose();
     _quillController.dispose();
+    _contentFocus.removeListener(_handleFocusChange);
     _contentFocus.dispose();
+    _recordingPulseTimer?.cancel();
     _recorder.dispose();
     super.dispose();
   }
@@ -764,6 +783,208 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
 
   void _removeTag(String tag) {
     setState(() => _tags.remove(tag));
+  }
+
+  // "Etiket Ekle" butonuna basınca sayfanın üstünde açılan küçük pencere.
+  // Var olan etiket ekleme mantığına (_addTagFromInput/_removeTag) dokunmuyor
+  // — sadece giriş alanının göründüğü yeri değiştiriyor. Dialog kendi
+  // StatefulBuilder'ı ile anlık güncelleniyor, kapanınca dış state de
+  // (Eklentiler özeti) tazeleniyor.
+  void _showTagPopup(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final popupBg = isDark ? const Color(0xFF1A2035) : Colors.white;
+    final hintColor = isDark ? Colors.white38 : AppColors.textLight;
+    final titleColor = isDark ? Colors.white : AppColors.textPrimary;
+
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black45,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (dialogCtx, setDialogState) {
+            void addTag() {
+              _addTagFromInput();
+              setDialogState(() {});
+            }
+
+            void removeTag(String tag) {
+              _removeTag(tag);
+              setDialogState(() {});
+            }
+
+            return Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 90, left: 20, right: 20),
+                child: Material(
+                  color: popupBg,
+                  borderRadius: BorderRadius.circular(16),
+                  elevation: 8,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Etiket Ekle',
+                              style: GoogleFonts.notoSans(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: titleColor,
+                              ),
+                            ),
+                            const Spacer(),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(dialogCtx),
+                              child:
+                                  Icon(Icons.close, size: 18, color: hintColor),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _tagInputCtrl,
+                                autofocus: true,
+                                style: GoogleFonts.notoSans(
+                                    fontSize: 13, color: titleColor),
+                                textInputAction: TextInputAction.done,
+                                onSubmitted: (_) => addTag(),
+                                decoration: InputDecoration(
+                                  hintText: 'Etiket gir',
+                                  hintStyle: GoogleFonts.notoSans(
+                                      fontSize: 13, color: hintColor),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 10),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                        color:
+                                            hintColor.withValues(alpha: 0.4)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide:
+                                        const BorderSide(color: AppColors.gold),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: addTag,
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.gold,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.add,
+                                    color: Colors.white, size: 20),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_tags.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              for (final tag in _tags)
+                                Chip(
+                                  label: Text('#$tag',
+                                      style:
+                                          GoogleFonts.notoSans(fontSize: 11)),
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  deleteIcon: const Icon(Icons.close, size: 14),
+                                  onDeleted: () => removeTag(tag),
+                                  backgroundColor:
+                                      AppColors.gold.withValues(alpha: 0.12),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).then((_) {
+      // Popup kapanınca eklenen etiketler "Eklentiler" özetinde görünsün.
+      if (mounted) setState(() {});
+    });
+  }
+
+  // Görsel Ekle / Etiket Ekle / Ses Ekle satırındaki tek bir buton —
+  // ses kaydı sürerken "active" haliyle kırmızı zeminli, yanıp sönen bir
+  // noktayla gösterilir (bkz. _recordingPulseOn).
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required Color borderColor,
+    required Color textColor,
+    bool active = false,
+    bool pulse = false,
+  }) {
+    const activeColor = Colors.red;
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+          decoration: BoxDecoration(
+            color: active ? activeColor.withValues(alpha: 0.12) : null,
+            border: Border.all(
+              color: active ? activeColor.withValues(alpha: 0.6) : borderColor,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 17, color: active ? activeColor : textColor),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12.5,
+                    color: active ? activeColor : textColor,
+                    fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+              if (active) ...[
+                const SizedBox(width: 4),
+                AnimatedOpacity(
+                  opacity: pulse ? 1 : 0.25,
+                  duration: const Duration(milliseconds: 250),
+                  child: const Icon(Icons.fiber_manual_record,
+                      size: 9, color: Colors.red),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showImageSourceSheet(BuildContext context) {
@@ -816,9 +1037,18 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
   Future<void> _toggleRecording() async {
     if (_isRecording) {
       final path = await _recorder.stop();
-      setState(() => _isRecording = false);
+      _recordingPulseTimer?.cancel();
+      _recordingPulseTimer = null;
+      setState(() {
+        _isRecording = false;
+        _recordingPulseOn = false;
+      });
       if (path != null) {
-        setState(() => _audioPaths = [..._audioPaths, path]);
+        setState(() {
+          _audioPaths = [..._audioPaths, path];
+          // Yeni ses kaydedildi — kullanıcı hemen görsün diye ekler paneli aç.
+          _attachmentsExpanded = true;
+        });
       }
       return;
     }
@@ -833,6 +1063,12 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
     final targetPath = await NoteFileStorage.newAudioTargetPath();
     await _recorder.start(const RecordConfig(), path: targetPath);
     setState(() => _isRecording = true);
+    // "Ses Ekle" butonundaki kırmızı nokta yanıp söner — kayıt sürüyor hissi.
+    _recordingPulseTimer =
+        Timer.periodic(const Duration(milliseconds: 600), (_) {
+      if (!mounted) return;
+      setState(() => _recordingPulseOn = !_recordingPulseOn);
+    });
   }
 
   void _removeAudio(String path) {
@@ -889,6 +1125,10 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
     final bgColor = isDark ? const Color(0xFF1A2035) : Colors.white;
     final titleColor = isDark ? Colors.white : AppColors.textPrimary;
     final hintColor = isDark ? Colors.white38 : AppColors.textLight;
+    final borderColor = AppColors.textLight.withValues(alpha: 0.3);
+    // İçerik kutusu odaklanmışsa (klavye açık) — başlık/eklentiler alanı
+    // gizlenip yazma alanına yer açılır (bkz. o bölümdeki AnimatedSize).
+    final editorFocused = _contentFocus.hasFocus;
 
     return AnimatedPadding(
       // Klavye açılınca sheet yukarı kayar
@@ -922,14 +1162,28 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      widget.note != null ? 'Notu Düzenle' : 'Yeni Not',
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: titleColor,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.note != null ? 'Notu Düzenle' : 'Yeni Not',
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: titleColor,
+                          ),
+                        ),
+                        Text(
+                          'Notlarını düzenle, düşüncelerini kaydet.',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 11.5,
+                            color: hintColor,
+                          ),
+                        ),
+                      ],
                     ),
                     const Spacer(),
                     IconButton(
@@ -963,265 +1217,335 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
 
               Divider(color: AppColors.textLight.withValues(alpha: 0.2)),
 
-              // Başlık alanı
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  controller: _titleCtrl,
-                  textInputAction: TextInputAction.next,
-                  onSubmitted: (_) =>
-                      FocusScope.of(context).requestFocus(_contentFocus),
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: titleColor,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Başlık',
-                    hintStyle: GoogleFonts.playfairDisplay(
-                      color: hintColor,
-                      fontSize: 20,
-                    ),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-              Divider(
-                  height: 1, color: AppColors.textLight.withValues(alpha: 0.2)),
-
-              // NOT: Renk paleti + etiketler + resim/ses ekleri artık sabit
-              // (scroll'suz) bir Column içinde değil — sınırlı yükseklikli,
-              // kendi içinde kayan bir kutu içinde. Eskiden içerik çoğaldıkça
-              // (çok resim/ses/etiket eklenince) sheet'in geri kalanıyla
-              // yer çakışması "bottom overflowed by NNN pixels" hatasına
-              // yol açıyordu. Artık bu bölüm en fazla 260px yer kaplıyor,
-              // fazlası kendi içinde kayıyor — editör alanı asla sıkışmıyor.
-              Flexible(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 260),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_reminderAt != null)
+              // ── Başlık + Eklentiler + Görsel/Etiket/Ses Ekle ──────────────
+              // İçerik kutusu odaklanınca (klavye açılınca) bu bölüm tamamen
+              // gizlenir — yazma alanına yer açılır. Odak kaybolunca (geri
+              // tuşu / klavye kapanması) AnimatedSize ile geri gelir.
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                alignment: Alignment.topCenter,
+                child: editorFocused
+                    ? const SizedBox.shrink()
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Başlık alanı
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Chip(
-                                avatar: const Icon(Icons.alarm,
-                                    size: 16, color: AppColors.gold),
-                                label: Text(
-                                  DateFormat('d MMMM y, HH:mm', 'tr_TR')
-                                      .format(_reminderAt!),
-                                  style: GoogleFonts.notoSans(fontSize: 12),
+                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 14),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: borderColor),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: TextField(
+                                controller: _titleCtrl,
+                                textInputAction: TextInputAction.next,
+                                onSubmitted: (_) => FocusScope.of(context)
+                                    .requestFocus(_contentFocus),
+                                style: GoogleFonts.playfairDisplay(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: titleColor,
                                 ),
-                                deleteIcon: const Icon(Icons.close, size: 14),
-                                onDeleted: _clearReminder,
-                                backgroundColor:
-                                    AppColors.gold.withValues(alpha: 0.12),
-                                visualDensity: VisualDensity.compact,
+                                decoration: InputDecoration(
+                                  hintText: 'Başlık',
+                                  hintStyle: GoogleFonts.playfairDisplay(
+                                    color: hintColor,
+                                    fontSize: 18,
+                                  ),
+                                  border: InputBorder.none,
+                                ),
                               ),
                             ),
                           ),
 
-                        // Etiket girişi
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 6,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              for (final tag in _tags)
-                                Chip(
-                                  label: Text('#$tag',
-                                      style:
-                                          GoogleFonts.notoSans(fontSize: 11)),
-                                  visualDensity: VisualDensity.compact,
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  deleteIcon: const Icon(Icons.close, size: 14),
-                                  onDeleted: () => _removeTag(tag),
+                          if (_reminderAt != null)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Chip(
+                                  avatar: const Icon(Icons.alarm,
+                                      size: 16, color: AppColors.gold),
+                                  label: Text(
+                                    DateFormat('d MMMM y, HH:mm', 'tr_TR')
+                                        .format(_reminderAt!),
+                                    style: GoogleFonts.notoSans(fontSize: 12),
+                                  ),
+                                  deleteIcon:
+                                      const Icon(Icons.close, size: 14),
+                                  onDeleted: _clearReminder,
                                   backgroundColor:
                                       AppColors.gold.withValues(alpha: 0.12),
-                                ),
-                              SizedBox(
-                                width: 140,
-                                height: 32,
-                                child: TextField(
-                                  controller: _tagInputCtrl,
-                                  style: GoogleFonts.notoSans(fontSize: 12),
-                                  textInputAction: TextInputAction.done,
-                                  onSubmitted: (_) => _addTagFromInput(),
-                                  decoration: InputDecoration(
-                                    hintText: '#etiket ekle',
-                                    hintStyle: GoogleFonts.notoSans(
-                                        fontSize: 12, color: hintColor),
-                                    isDense: true,
-                                    border: InputBorder.none,
-                                    suffixIcon: GestureDetector(
-                                      onTap: _addTagFromInput,
-                                      child: Icon(Icons.add_circle_outline,
-                                          size: 16, color: hintColor),
-                                    ),
-                                  ),
+                                  visualDensity: VisualDensity.compact,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        Divider(
-                            height: 1,
-                            color: AppColors.textLight.withValues(alpha: 0.2)),
-
-                        // ── Ekler şeridi ─────────────────────────────────────────────
-                        // NOT: Eskiden resim/ses ekleri her zaman açık, sabit yer
-                        // kaplayan iki ayrı blok halindeydi — klavye açılınca metin
-                        // yazma alanını ciddi şekilde daraltıyordu. Artık tek satırlık
-                        // KOMPAKT bir şerit: hızlı ekleme ikonları + kaç ek olduğu +
-                        // detayları görmek için aç/kapa oku. Detaylar sadece kullanıcı
-                        // açtığında yer kaplıyor, yazarken hiç etkilemiyor.
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
-                          child: GestureDetector(
-                            onTap: () => setState(() =>
-                                _attachmentsExpanded = !_attachmentsExpanded),
-                            behavior: HitTestBehavior.opaque,
-                            child: Row(
-                              children: [
-                                IconButton(
-                                  onPressed: () =>
-                                      _showImageSourceSheet(context),
-                                  icon: Icon(Icons.add_photo_alternate_outlined,
-                                      color: hintColor, size: 20),
-                                  tooltip: 'Resim ekle',
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                                IconButton(
-                                  onPressed: _toggleRecording,
-                                  icon: Icon(
-                                    _isRecording
-                                        ? Icons.stop_circle
-                                        : Icons.mic_none,
-                                    color:
-                                        _isRecording ? Colors.red : hintColor,
-                                    size: 20,
-                                  ),
-                                  tooltip: 'Sesli not ekle',
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                                if (_imagePaths.isNotEmpty ||
-                                    _audioPaths.isNotEmpty)
-                                  Text(
-                                    '${_imagePaths.length + _audioPaths.length} ek',
-                                    style: GoogleFonts.notoSans(
-                                        fontSize: 11, color: hintColor),
-                                  ),
-                                const Spacer(),
-                                if (_imagePaths.isNotEmpty ||
-                                    _audioPaths.isNotEmpty)
-                                  Icon(
-                                    _attachmentsExpanded
-                                        ? Icons.expand_less
-                                        : Icons.expand_more,
-                                    color: hintColor,
-                                    size: 20,
-                                  ),
-                              ],
                             ),
-                          ),
-                        ),
-                        if (_attachmentsExpanded) ...[
-                          // Resim ekleri
-                          if (_imagePaths.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-                              child: SizedBox(
-                                height: 56,
-                                child: ListView(
-                                  scrollDirection: Axis.horizontal,
+
+                          // ── Eklentiler ───────────────────────────────────
+                          // Eskiden burada "#etiket ekle" kutusu dururdu.
+                          // Artık kayıtlı görsel/ses/etiketlerin özetlendiği
+                          // TEK bir panel — tıklanınca aşağı doğru açılır,
+                          // dokunulmazsa kapalı (gizli) kalır.
+                          Padding(
+                            padding:
+                                const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                            child: GestureDetector(
+                              onTap: () => setState(() =>
+                                  _attachmentsExpanded =
+                                      !_attachmentsExpanded),
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: borderColor),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
                                   children: [
-                                    for (final path in _imagePaths)
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 8),
-                                        child: Stack(
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () => openImageViewer(
-                                                  context, path),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                child: Image.file(
-                                                  File(path),
-                                                  width: 56,
-                                                  height: 56,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (_, __, ___) =>
-                                                      Container(
-                                                    width: 56,
-                                                    height: 56,
-                                                    color: Colors.black12,
-                                                    child: const Icon(
-                                                        Icons.broken_image,
-                                                        size: 18),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Positioned(
-                                              top: 2,
-                                              right: 2,
-                                              child: GestureDetector(
-                                                onTap: () => _removeImage(path),
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.all(2),
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                    color: Colors.black54,
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: const Icon(Icons.close,
-                                                      size: 11,
-                                                      color: Colors.white),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                    Icon(Icons.attach_file,
+                                        size: 17, color: hintColor),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Eklentiler',
+                                      style: GoogleFonts.notoSans(
+                                          fontSize: 13, color: hintColor),
+                                    ),
+                                    if (_tags.isNotEmpty ||
+                                        _imagePaths.isNotEmpty ||
+                                        _audioPaths.isNotEmpty) ...[
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '(${_tags.length + _imagePaths.length + _audioPaths.length})',
+                                        style: GoogleFonts.notoSans(
+                                            fontSize: 12, color: hintColor),
                                       ),
+                                    ],
+                                    const Spacer(),
+                                    Icon(
+                                      _attachmentsExpanded
+                                          ? Icons.expand_less
+                                          : Icons.expand_more,
+                                      color: hintColor,
+                                      size: 20,
+                                    ),
                                   ],
                                 ),
                               ),
                             ),
-                          // Ses ekleri
-                          if (_audioPaths.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-                              child: ConstrainedBox(
-                                constraints:
-                                    const BoxConstraints(maxHeight: 180),
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const ClampingScrollPhysics(),
-                                  itemCount: _audioPaths.length,
-                                  itemBuilder: (_, i) => _AudioTile(
-                                    path: _audioPaths[i],
-                                    onDelete: () =>
-                                        _removeAudio(_audioPaths[i]),
+                          ),
+                          if (_attachmentsExpanded)
+                            ConstrainedBox(
+                              constraints:
+                                  const BoxConstraints(maxHeight: 220),
+                              child: SingleChildScrollView(
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                      16, 8, 16, 0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (_tags.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8),
+                                          child: Wrap(
+                                            spacing: 6,
+                                            runSpacing: 6,
+                                            children: [
+                                              for (final tag in _tags)
+                                                Chip(
+                                                  label: Text('#$tag',
+                                                      style: GoogleFonts
+                                                          .notoSans(
+                                                              fontSize: 11)),
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                  materialTapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                  deleteIcon: const Icon(
+                                                      Icons.close, size: 14),
+                                                  onDeleted: () =>
+                                                      _removeTag(tag),
+                                                  backgroundColor: AppColors
+                                                      .gold
+                                                      .withValues(alpha: 0.12),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                      if (_imagePaths.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 4),
+                                          child: SizedBox(
+                                            height: 56,
+                                            child: ListView(
+                                              scrollDirection:
+                                                  Axis.horizontal,
+                                              children: [
+                                                for (final path
+                                                    in _imagePaths)
+                                                  Padding(
+                                                    padding: const EdgeInsets
+                                                        .only(right: 8),
+                                                    child: Stack(
+                                                      children: [
+                                                        GestureDetector(
+                                                          onTap: () =>
+                                                              openImageViewer(
+                                                                  context,
+                                                                  path),
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8),
+                                                            child: Image.file(
+                                                              File(path),
+                                                              width: 56,
+                                                              height: 56,
+                                                              fit: BoxFit
+                                                                  .cover,
+                                                              errorBuilder:
+                                                                  (_, __,
+                                                                          ___) =>
+                                                                      Container(
+                                                                width: 56,
+                                                                height: 56,
+                                                                color: Colors
+                                                                    .black12,
+                                                                child: const Icon(
+                                                                    Icons
+                                                                        .broken_image,
+                                                                    size: 18),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Positioned(
+                                                          top: 2,
+                                                          right: 2,
+                                                          child:
+                                                              GestureDetector(
+                                                            onTap: () =>
+                                                                _removeImage(
+                                                                    path),
+                                                            child: Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(2),
+                                                              decoration:
+                                                                  const BoxDecoration(
+                                                                color: Colors
+                                                                    .black54,
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                              ),
+                                                              child: const Icon(
+                                                                  Icons.close,
+                                                                  size: 11,
+                                                                  color: Colors
+                                                                      .white),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      if (_audioPaths.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 4),
+                                          child: ConstrainedBox(
+                                            constraints: const BoxConstraints(
+                                                maxHeight: 180),
+                                            child: ListView.builder(
+                                              shrinkWrap: true,
+                                              physics:
+                                                  const ClampingScrollPhysics(),
+                                              itemCount: _audioPaths.length,
+                                              itemBuilder: (_, i) =>
+                                                  _AudioTile(
+                                                path: _audioPaths[i],
+                                                onDelete: () => _removeAudio(
+                                                    _audioPaths[i]),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      if (_tags.isEmpty &&
+                                          _imagePaths.isEmpty &&
+                                          _audioPaths.isEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8),
+                                          child: Text(
+                                            'Henüz eklenti yok',
+                                            style: GoogleFonts.notoSans(
+                                                fontSize: 12,
+                                                color: hintColor),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
                               ),
                             ),
+
+                          // ── Görsel / Etiket / Ses Ekle ───────────────────
+                          Padding(
+                            padding:
+                                const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                            child: Row(
+                              children: [
+                                _buildActionButton(
+                                  icon: Icons.add_photo_alternate_outlined,
+                                  label: 'Görsel Ekle',
+                                  onTap: () =>
+                                      _showImageSourceSheet(context),
+                                  borderColor: borderColor,
+                                  textColor: hintColor,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildActionButton(
+                                  icon: Icons.local_offer_outlined,
+                                  label: 'Etiket Ekle',
+                                  onTap: () => _showTagPopup(context),
+                                  borderColor: borderColor,
+                                  textColor: hintColor,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildActionButton(
+                                  icon: _isRecording
+                                      ? Icons.stop_circle
+                                      : Icons.mic_none,
+                                  label: _isRecording
+                                      ? 'Kaydediliyor'
+                                      : 'Ses Ekle',
+                                  onTap: _toggleRecording,
+                                  borderColor: borderColor,
+                                  textColor: hintColor,
+                                  active: _isRecording,
+                                  pulse: _recordingPulseOn,
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
-                      ],
-                    ),
-                  ),
-                ),
+                      ),
               ),
               const SizedBox(height: 4),
 

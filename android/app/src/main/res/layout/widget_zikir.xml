@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg_signature"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="14dp">
+
+    <!-- Sol: zikir metni + sayaç -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_zikir_ar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textColor="#FFFFFF"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:gravity="end"
+            android:text="سُبْحَانَ اللَّهِ" />
+
+        <TextView
+            android:id="@+id/tv_zikir_tr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="3dp"
+            android:textSize="15sp"
+            android:textColor="#B9C2CC"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text="Sübhanallah" />
+
+        <TextView
+            android:id="@+id/tv_zikir_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="12dp"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:textColor="#D4AF37"
+            android:text="0 / 33" />
+    </LinearLayout>
+
+    <!-- Sağ: +1 dokunma alanı -->
+    <FrameLayout
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginStart="12dp">
+
+        <ImageView
+            android:id="@+id/btn_zikir_plus_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/widget_circle_solid" />
+
+        <TextView
+            android:id="@+id/btn_zikir_plus_label"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:textColor="#1C3050"
+            android:text="+1" />
+
+        <!-- Tıklama hedefi tüm alanı kaplar; iki üstteki görsel katman. -->
+        <ImageView
+            android:id="@+id/btn_zikir_plus"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:scaleType="center" />
+    </FrameLayout>
+</LinearLayout>

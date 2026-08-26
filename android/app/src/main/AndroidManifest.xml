@@ -1,5 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.murakabe.app">
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         İZİNLER — Play Store "Hassas İzinler" beyanıyla birebir eşleşmeli.
+         Her izin sadece runtime'da, kullanıcıya gerekçesi gösterildikten
+         SONRA istenir (bkz. PermissionOnboardingScreen, profile setup).
+         ═══════════════════════════════════════════════════════════════════ -->
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
@@ -12,6 +19,29 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+
+    <!-- Konum: SADECE ön planda (namaz vakti/kıble hesaplama). Arka plan
+         konum izni (ACCESS_BACKGROUND_LOCATION) BİLİNÇLİ OLARAK istenmiyor
+         ve hiçbir bağımlılığın manifestinden sızmasın diye açıkça
+         kaldırılıyor — geolocator gibi eklentiler ileride kendi
+         manifestlerine ekleyecek olursa merge sırasında bu satır iptal eder. -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"
+        tools:node="remove"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- Kamera/galeri: yalnızca kullanıcı profil fotoğrafı eklemeyi
+         seçtiğinde image_picker tarafından tetiklenir. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Android 12 ve altı için galeri erişimi; 13+ üzerinde Photo Picker
+         izin gerektirmediğinden maxSdkVersion ile sınırlandırıldı. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+
+    <!-- Notlar ekranında sesli not kaydı için; yalnızca kullanıcı kayda
+         bastığında istenir. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
     <application
         android:label="Murakabe"
@@ -59,6 +89,67 @@
             android:exported="false"
             android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver"/>
 
+        <!-- ═══════════════════════════════════════════════════════════════
+             ANA EKRAN WİDGET'LARI — namaz vakitleri, zikir sayacı, günlük
+             esmâ/âyet/hadis. Veri Flutter'dan SharedPreferences ile gelir,
+             ‹›/+1 dokunuşları tamamen native tarafta işlenir (bkz. ilgili
+             *WidgetProvider.kt dosyaları). exported="true" zorunlu: sistem
+             (AppWidgetManager) güncelleme broadcast'lerini bu şekilde
+             iletebiliyor (Android 12+ tüm receiver'larda exported şart).
+             ═══════════════════════════════════════════════════════════════ -->
+
+        <receiver
+            android:name=".PrayerTimesWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_prayer_times_info"/>
+        </receiver>
+
+        <receiver
+            android:name=".ZikirWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="com.murakabe.app.widget.ZIKIR_INCREMENT"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_zikir_info"/>
+        </receiver>
+
+        <receiver
+            android:name=".DailyContentWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="com.murakabe.app.widget.CONTENT_PREV"/>
+                <action android:name="com.murakabe.app.widget.CONTENT_NEXT"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_daily_content_info"/>
+        </receiver>
+
+        <!-- Namaz vakti "sayaç halkası" — Alternatif 1 (bkz.
+             PrayerCountdownWidgetProvider.kt). Tıklamayla sadece uygulamayı
+             açar; yatay/dikey düzen arasında geçiş tamamen native tarafta,
+             onAppWidgetOptionsChanged ile widget'ın yerleştirildiği boyuta
+             göre otomatik yapılır. -->
+        <receiver
+            android:name=".PrayerCountdownWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_prayer_countdown_info"/>
+        </receiver>
+
     </application>
 
     <queries>
@@ -75,12 +166,5 @@
             <data android:scheme="http"/>
         </intent>
     </queries>
-
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
 
 </manifest>

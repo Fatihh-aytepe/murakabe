@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sayaç halkası widget'ı — YATAY düzen: solda 6 vaktin kompakt listesi
+     (aktif vakit renkli kart zeminiyle öne çıkar), sağda sıradaki vaktin
+     adını ve geri sayımını gösteren dairesel halka. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg_signature"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:weightSum="6">
+
+        <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="2dp">
+            <ImageView android:id="@+id/card_bg_0" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
+                <TextView android:id="@+id/tv_name_0" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="İmsak" />
+                <TextView android:id="@+id/tv_time_0" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
+            <ImageView android:id="@+id/card_bg_1" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
+                <TextView android:id="@+id/tv_name_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="Güneş" />
+                <TextView android:id="@+id/tv_time_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
+            <ImageView android:id="@+id/card_bg_2" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
+                <TextView android:id="@+id/tv_name_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="Öğle" />
+                <TextView android:id="@+id/tv_time_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
+            <ImageView android:id="@+id/card_bg_3" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
+                <TextView android:id="@+id/tv_name_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="İkindi" />
+                <TextView android:id="@+id/tv_time_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
+            <ImageView android:id="@+id/card_bg_4" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
+                <TextView android:id="@+id/tv_name_4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="Akşam" />
+                <TextView android:id="@+id/tv_time_4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp">
+            <ImageView android:id="@+id/card_bg_5" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
+                <TextView android:id="@+id/tv_name_5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="Yatsı" />
+                <TextView android:id="@+id/tv_time_5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
+            </LinearLayout>
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- Sağ: dairesel gösterge — sadece sıradaki vaktin adı + geri sayım -->
+    <FrameLayout
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginStart="14dp">
+
+        <ImageView
+            android:id="@+id/ring_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/ring_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#D4AF37"
+                android:maxLines="1"
+                android:text="Öğle" />
+
+            <TextView
+                android:id="@+id/ring_countdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="9sp"
+                android:textColor="#FFFFFF"
+                android:maxLines="1"
+                android:paddingTop="1dp"
+                android:text="1s 20dk" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg_signature"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- Üst satır: ‹ tip rozeti › -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <FrameLayout
+            android:layout_width="34dp"
+            android:layout_height="34dp">
+            <ImageView
+                android:id="@+id/btn_content_prev_bg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/widget_chip_bg" />
+            <ImageView
+                android:id="@+id/btn_content_prev"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:src="@drawable/ic_chevron_left" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp">
+            <ImageView
+                android:id="@+id/chip_content_type_bg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/widget_chip_bg" />
+            <TextView
+                android:id="@+id/tv_content_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp"
+                android:gravity="center"
+                android:textSize="12.5sp"
+                android:textStyle="bold"
+                android:textColor="#D4AF37"
+                android:letterSpacing="0.08"
+                android:text="ESMÂ'ÜL HÜSNÂ" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="34dp"
+            android:layout_height="34dp">
+            <ImageView
+                android:id="@+id/btn_content_next_bg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/widget_chip_bg" />
+            <ImageView
+                android:id="@+id/btn_content_next"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:src="@drawable/ic_chevron_right" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Gövde: esmâ (Arapça sağ / Türkçe sol / altında anlam) YA DA
+         âyet-hadis (tek gövde metni) — sadece biri her an görünür. -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/esma_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingTop="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tv_esma_tr"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:text="EL-MUKÎT" />
+
+                <TextView
+                    android:id="@+id/tv_esma_ar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textSize="24sp"
+                    android:textColor="#FFFFFF"
+                    android:gravity="end"
+                    android:text="الْمُقِيتُ" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_esma_meaning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="7dp"
+                android:textSize="13sp"
+                android:textColor="#B9C2CC"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:text="Her canlının rızkını veren" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_content_primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingTop="6dp"
+            android:textSize="16.5sp"
+            android:textColor="#FFFFFF"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:text="" />
+    </FrameLayout>
+
+    <!-- Alt satır: kaynak (yalnızca âyet/hadis'te görünür) -->
+    <TextView
+        android:id="@+id/tv_content_secondary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:textSize="12sp"
+        android:textColor="#B9C2CC"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="" />
+</LinearLayout>

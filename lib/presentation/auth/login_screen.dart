@@ -13,7 +13,6 @@ import '../home/home_screen.dart';
 import '../admin/admin_panel_screen.dart' show OwnerPanelScreen;
 import '../community/admin_dashboard_screen.dart';
 import '../profile/profile_setup_screen.dart';
-import '../../core/utils/permission_helper.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -66,7 +65,9 @@ class _LoginScreenState extends State<LoginScreen>
         _tabController.animateTo(1);
       });
     }
-    PermissionHelper.requestAllPermissions();
+    // NOT: İzinler burada artık istenmiyor — bkz. main.dart notu ve
+    // PermissionOnboardingScreen. Kullanıcı henüz kayıt/giriş bile
+    // yapmadan izin diyaloğu göstermek Play Store politikasına aykırı.
   }
 
   @override
