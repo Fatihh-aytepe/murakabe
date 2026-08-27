@@ -551,7 +551,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     onTap: () => _goToTab(3),
                   ),
                   _buildDrawerItem(
-                    iconWidget: TasbihIcon(
+                    iconWidget: const TasbihIcon(
                       color: Colors.white54,
                       size: 20,
                     ),
@@ -920,8 +920,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               try {
                                 await _taskRepo.markTaskCompleted(task.id);
                                 final tasks = await _taskRepo.getActiveTasks();
-                                if (mounted)
+                                if (mounted) {
                                   setState(() => _activeTasks = tasks);
+                                }
                               } catch (_) {}
                             },
                           ),

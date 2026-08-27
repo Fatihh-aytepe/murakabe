@@ -729,9 +729,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Container(
                     width: 72,
                     height: 72,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [AppColors.gold, AppColors.turquoise],
                       ),
                     ),

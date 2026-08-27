@@ -567,7 +567,7 @@ class NotesScreenState extends State<NotesScreen> {
                       ),
                       if (note.reminderAt != null) ...[
                         const SizedBox(width: 8),
-                        Icon(Icons.alarm, size: 12, color: AppColors.gold),
+                        const Icon(Icons.alarm, size: 12, color: AppColors.gold),
                         const SizedBox(width: 2),
                         Text(
                           DateFormat('d MMM, HH:mm', 'tr_TR')
@@ -1293,29 +1293,52 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
                             ),
                           ),
 
-                          if (_reminderAt != null)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Chip(
-                                  avatar: const Icon(Icons.alarm,
-                                      size: 16, color: AppColors.gold),
-                                  label: Text(
-                                    DateFormat('d MMMM y, HH:mm', 'tr_TR')
-                                        .format(_reminderAt!),
-                                    style: GoogleFonts.notoSans(fontSize: 12),
-                                  ),
-                                  deleteIcon:
-                                      const Icon(Icons.close, size: 14),
-                                  onDeleted: _clearReminder,
-                                  backgroundColor:
-                                      AppColors.gold.withValues(alpha: 0.12),
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                              ),
+                          // DÜZELTME: "Hatırlatıcı ekle" düğmesi üst
+                          // satırdan (dar ekranlarda sığmadığı için)
+                          // kaldırıldıktan sonra, YENİ bir not için
+                          // hatırlatıcı ekleyecek hiçbir yol kalmamıştı —
+                          // yalnızca ZATEN kurulu bir hatırlatıcı burada
+                          // etiket olarak gösteriliyor, _pickReminder() ise
+                          // hiçbir yerden çağrılamıyordu (flutter analyze:
+                          // unused_element). Hatırlatıcı yoksa artık burada
+                          // kompakt bir "Hatırlatıcı ekle" çipi gösterilip
+                          // dokununca _pickReminder() açılıyor.
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: _reminderAt != null
+                                  ? Chip(
+                                      avatar: const Icon(Icons.alarm,
+                                          size: 16, color: AppColors.gold),
+                                      label: Text(
+                                        DateFormat('d MMMM y, HH:mm', 'tr_TR')
+                                            .format(_reminderAt!),
+                                        style:
+                                            GoogleFonts.notoSans(fontSize: 12),
+                                      ),
+                                      deleteIcon:
+                                          const Icon(Icons.close, size: 14),
+                                      onDeleted: _clearReminder,
+                                      backgroundColor: AppColors.gold
+                                          .withValues(alpha: 0.12),
+                                      visualDensity: VisualDensity.compact,
+                                    )
+                                  : ActionChip(
+                                      avatar: Icon(Icons.alarm_add,
+                                          size: 16, color: hintColor),
+                                      label: Text(
+                                        'Hatırlatıcı ekle',
+                                        style: GoogleFonts.notoSans(
+                                            fontSize: 12, color: hintColor),
+                                      ),
+                                      onPressed: _pickReminder,
+                                      backgroundColor: AppColors.textLight
+                                          .withValues(alpha: 0.1),
+                                      visualDensity: VisualDensity.compact,
+                                    ),
                             ),
+                          ),
 
                           // ── Eklentiler ───────────────────────────────────
                           // Eskiden burada "#etiket ekle" kutusu dururdu.
@@ -1651,7 +1674,7 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
                     controller: _quillController,
                     focusNode: _contentFocus,
                     scrollController: ScrollController(),
-                    config: quill.QuillEditorConfig(
+                    config: const quill.QuillEditorConfig(
                       placeholder: 'Notunu buraya yaz...',
                       padding: EdgeInsets.zero,
                       expands: true,
@@ -1874,13 +1897,13 @@ class _AudioTileState extends State<_AudioTile> {
                       children: [
                         GestureDetector(
                           onTap: () => _seekRelative(-10),
-                          child: Icon(Icons.replay_10,
+                          child: const Icon(Icons.replay_10,
                               color: AppColors.gold, size: 22),
                         ),
                         const SizedBox(width: 20),
                         GestureDetector(
                           onTap: () => _seekRelative(10),
-                          child: Icon(Icons.forward_10,
+                          child: const Icon(Icons.forward_10,
                               color: AppColors.gold, size: 22),
                         ),
                         const SizedBox(width: 20),

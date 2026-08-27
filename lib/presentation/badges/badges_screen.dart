@@ -122,7 +122,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
 
   List<Widget> _buildCategorySections(bool isDark) {
     final sections = [
-      _BadgeSection(
+      const _BadgeSection(
         title: 'Kur\'ân Serileri',
         icon: '📖',
         badges: [
@@ -132,7 +132,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
           kBadgeKuranYil1,
         ],
       ),
-      _BadgeSection(
+      const _BadgeSection(
         title: 'Esmâ-ül Hüsnâ Serileri',
         icon: '✨',
         badges: [
@@ -142,7 +142,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
           kBadgeEsmaYil1,
         ],
       ),
-      _BadgeSection(
+      const _BadgeSection(
         title: 'Hadis Serileri',
         icon: '📜',
         badges: [
@@ -152,7 +152,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
           kBadgeHadisYil1,
         ],
       ),
-      _BadgeSection(
+      const _BadgeSection(
         title: 'Kombine Okuma',
         icon: '🌟',
         badges: [
@@ -162,7 +162,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
           kBadgeKombineYil1,
         ],
       ),
-      _BadgeSection(
+      const _BadgeSection(
         title: 'Teheccüd',
         icon: '🌙',
         badges: [
@@ -173,7 +173,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
           kBadgeTahajjud99,
         ],
       ),
-      _BadgeSection(
+      const _BadgeSection(
         title: 'Özel',
         icon: '🎖️',
         badges: [kBadgeVeteran1Yil],

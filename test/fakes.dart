@@ -10,57 +10,90 @@ import 'package:murakabe/data/repositories/reward_repository.dart';
 
 class FakeLocalStorage extends Fake implements LocalStorage {
   // Kuran ödül streak izleyici
+  @override
   int lastRewardedStreak = 0;
+  @override
   Future<void> setLastRewardedStreak(int v) async => lastRewardedStreak = v;
 
   // Esmâ serisi
+  @override
   int esmaStreak = 0;
+  @override
   Future<void> setEsmaStreak(int v) async => esmaStreak = v;
+  @override
   String? lastEsmaDate;
+  @override
   Future<void> setLastEsmaDate(String d) async => lastEsmaDate = d;
+  @override
   int lastRewardedEsmaStreak = 0;
+  @override
   Future<void> setLastRewardedEsmaStreak(int v) async =>
       lastRewardedEsmaStreak = v;
+  @override
   Future<void> incrementEsmaCount() async {}
 
   // Hadis serisi
+  @override
   int hadisStreak = 0;
+  @override
   Future<void> setHadisStreak(int v) async => hadisStreak = v;
+  @override
   String? lastHadisDate;
+  @override
   Future<void> setLastHadisDate(String d) async => lastHadisDate = d;
+  @override
   int lastRewardedHadisStreak = 0;
+  @override
   Future<void> setLastRewardedHadisStreak(int v) async =>
       lastRewardedHadisStreak = v;
+  @override
   Future<void> incrementHadisCount() async {}
 
   // Teheccüd koşulları
+  @override
   bool tahajjudEnabled = false;
+  @override
   String? tahajjudAlarmDate;
 
   // Rozet milestone izleyiciler
+  @override
   int lastRewardedKuranBadge = 0;
+  @override
   Future<void> setLastRewardedKuranBadge(int v) async =>
       lastRewardedKuranBadge = v;
+  @override
   int lastRewardedEsmaBadge = 0;
+  @override
   Future<void> setLastRewardedEsmaBadge(int v) async =>
       lastRewardedEsmaBadge = v;
+  @override
   int lastRewardedHadisBadge = 0;
+  @override
   Future<void> setLastRewardedHadisBadge(int v) async =>
       lastRewardedHadisBadge = v;
+  @override
   int lastRewardedKombineBadge = 0;
+  @override
   Future<void> setLastRewardedKombineBadge(int v) async =>
       lastRewardedKombineBadge = v;
+  @override
   int lastRewardedTahajjudBadge = 0;
+  @override
   Future<void> setLastRewardedTahajjudBadge(int v) async =>
       lastRewardedTahajjudBadge = v;
 
   // Veteran rozeti
+  @override
   bool veteranBadgeAwarded = false;
+  @override
   Future<void> setVeteranBadgeAwarded() async => veteranBadgeAwarded = true;
+  @override
   Future<void> setGoldenFrameUnlocked() async {}
 
   // Teheccüd aylık kart
+  @override
   String? lastTahajjudMonthlyCard;
+  @override
   Future<void> setLastTahajjudMonthlyCard(String ym) async =>
       lastTahajjudMonthlyCard = ym;
 }
