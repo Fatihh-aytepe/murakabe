@@ -82,8 +82,18 @@ service cloud.firestore {
 
     match /roles/{docId} {
       allow read: if isAuth();
-      // owner belgesi buradaki genel write kuralı kapsamı dışında; sadece /roles/owner kuralları geçerli
-      allow write: if isOwner() && docId != 'owner';
+      // owner belgesi buradaki genel kural kapsamı dışında; sadece /roles/owner kuralları geçerli
+      allow create, update: if isOwner() && docId != 'owner';
+      // DÜZELTME: önceden yalnızca owner silebiliyordu — bir admin kendi
+      // hesabını silerken (bkz. UserRepository.deleteAccountPermanently →
+      // FirebaseService.deleteRoleRecordIfAny) KENDİ roles/{uid} belgesini
+      // temizleyemiyor, PERMISSION_DENIED alıyordu; belge kalıcı bir
+      // "hayalet" admin kaydı olarak duruyordu. Artık bir kullanıcı SADECE
+      // kendi (owner olmayan) rol belgesini silebiliyor; owner belgesi bu
+      // kuralın dışında tutulmaya devam ediyor (yalnızca /roles/owner'daki
+      // isOwner() koşuluyla silinebilir).
+      allow delete: if docId != 'owner' &&
+        (isOwner() || (isAuth() && request.auth.uid == docId));
     }
 
     // ── Admin/Sahip Başvuruları ──────────────────────────────────────────────

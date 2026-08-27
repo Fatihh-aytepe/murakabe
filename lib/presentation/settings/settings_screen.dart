@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/alarm_service.dart';
+import '../../core/services/firestore_notification_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/theme_service.dart';
 import '../../data/local/local_storage.dart';
@@ -576,11 +577,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         isDeleting = true;
                         errorText = null;
                       });
+                      // DÜZELTME: silme sırasında Firestore bildirim/sohbet
+                      // dinleyicileri (FirestoreNotificationService) hâlâ
+                      // çalışıyordu — tam da veriler siliniyorken topluluk
+                      // tarafından tetiklenen bir olay yerel bir bildirim
+                      // gösterebiliyordu. Logout'ta zaten uygulanan aynı
+                      // desen (bkz. profile_screen.dart _logout): silmeden
+                      // önce durdur, başarısız olursa (kullanıcı hâlâ
+                      // oturumda kaldığı için) tekrar başlat.
+                      FirestoreNotificationService().stop();
                       try {
                         await _userRepo
                             .deleteAccountPermanently(passwordCtrl.text);
                         if (ctx.mounted) Navigator.pop(ctx, true);
                       } on FirebaseAuthException catch (e) {
+                        FirestoreNotificationService().start();
                         setDlg(() {
                           isDeleting = false;
                           errorText = e.code == 'wrong-password' ||
@@ -589,6 +600,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               : 'Bir hata oluştu: ${e.message}';
                         });
                       } catch (e) {
+                        FirestoreNotificationService().start();
                         setDlg(() {
                           isDeleting = false;
                           errorText = 'Bir hata oluştu, tekrar dene';

@@ -505,15 +505,17 @@ class UserRepository {
   /// Hesabı ve tüm verilerini KALICI olarak siler (Play Store hesap silme
   /// politikası — Kullanıcı Verileri Politikası "Hesap Silme" gereksinimi):
   /// 1) Şifre ile yeniden kimlik doğrulama (Firebase 'recent login' şartı)
-  /// 2) Firestore: ana kullanıcı dokümanı + tüm alt koleksiyonlar
-  /// 3) Firebase Storage: kullanıcının yüklediği dosyalar (not ekleri)
-  /// 4) Firebase Auth kullanıcısı
-  /// 5) Cihazdaki tüm yerel veri (SQLite + SharedPreferences)
+  /// 2) Topluluk üyelikleri + admin/owner rol kaydı (varsa)
+  /// 3) Firestore: ana kullanıcı dokümanı + tüm alt koleksiyonlar
+  /// 4) Firebase Storage: kullanıcının yüklediği dosyalar (not ekleri)
+  /// 5) Firebase Auth kullanıcısı
+  /// 6) Cihazdaki tüm yerel veri (SQLite + SharedPreferences + not
+  ///    resim/ses dosyaları)
   ///
   /// Sıra önemli: Auth kullanıcısı en son silinir, çünkü Firestore/Storage
-  /// silme işlemleri güvenlik kurallarında `request.auth.uid == userId`
-  /// kontrolüne dayanıyor — önce Auth'u silersek geri kalan adımlar
-  /// yetkisiz kalır.
+  /// silme işlemleri (rol kaydı dahil) güvenlik kurallarında
+  /// `request.auth.uid == userId` kontrolüne dayanıyor — önce Auth'u
+  /// silersek geri kalan adımlar yetkisiz kalır.
   Future<void> deleteAccountPermanently(String password) async {
     final uid = _storage.userId;
     if (uid == null || uid.isEmpty) {
@@ -540,6 +542,15 @@ class UserRepository {
     // aldığı bildirimler) — bkz. FirebaseService.deletePersonalRecordsOutsideUserDoc.
     await _firebase.deletePersonalRecordsOutsideUserDoc(uid);
 
+    // 3b. Admin/owner rol kaydı varsa temizle (bkz. FirebaseService.
+    // deleteRoleRecordIfAny — önceden bu hiç yapılmıyordu, owner hesabını
+    // silen kimse kalırsa roles/owner sonsuza dek ele geçirilemez kalırdı).
+    try {
+      await _firebase.deleteRoleRecordIfAny(uid);
+    } catch (e) {
+      debugPrint('[UserRepo] Rol kaydı temizlenemedi: $e');
+    }
+
     // 4 + 5. Firestore (ana doküman + alt koleksiyonlar, quranProgress dahil) + Storage verisi
     await _firebase.deleteAccountData(uid);
 
@@ -551,5 +562,10 @@ class UserRepository {
     // yalnızca silinen hesap listeden çıkarılır (bkz. LocalStorage.clearAllForAccountDeletion).
     await _db.wipeAllTables();
     await _storage.clearAllForAccountDeletion(uid);
+
+    // 8. Notlara eklenen yerel resim/ses dosyaları (bkz. NoteFileStorage.
+    // deleteAllLocalFiles — önceden yalnızca SQLite satırları siliniyordu,
+    // gerçek dosyalar diskte öksüz kalıyordu).
+    await NoteFileStorage.deleteAllLocalFiles();
   }
 }

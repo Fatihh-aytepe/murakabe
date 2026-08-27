@@ -275,6 +275,34 @@ class FirebaseService {
     await _deleteStorageFolder('notes/$uid');
   }
 
+  /// Hesap silinirken çağrılır: kullanıcı admin veya owner ise `roles`
+  /// koleksiyonundaki kaydını da temizler. DÜZELTME: önceden bu hiç
+  /// yapılmıyordu. Bir admin hesabını silince `roles/{uid}` belgesi kalıcı
+  /// bir "hayalet" kayıt olarak kalıyordu (zararsız ama gereksiz); daha
+  /// önemlisi OWNER hesabını silerse `roles/owner` belgesi ARTIK VAR
+  /// OLMAYAN bir UID'yi göstermeye devam ediyordu — bu da
+  /// RoleService.isOwnerConfigured() sonsuza dek `true` döndüğünden,
+  /// hiç kimsenin bir daha asla sahipliği talep edememesine yol açardı
+  /// (bkz. login_screen.dart'taki owner ilk kurulum kilidi düzeltmesi).
+  /// Best-effort — hata hesap silme akışını engellemez.
+  Future<void> deleteRoleRecordIfAny(String uid) async {
+    try {
+      final ownerRef = _db.collection('roles').doc('owner');
+      final ownerDoc = await ownerRef.get();
+      if (ownerDoc.exists && ownerDoc.data()?['uid'] == uid) {
+        await ownerRef.delete();
+        return; // owner belgesi silindiyse ayrıca bir admin belgesi olamaz
+      }
+    } catch (e) {
+      debugPrint('[FirebaseService] roles/owner silinemedi: $e');
+    }
+    try {
+      await _db.collection('roles').doc(uid).delete();
+    } catch (e) {
+      debugPrint('[FirebaseService] roles/$uid silinemedi: $e');
+    }
+  }
+
   /// `users/{uid}` alt koleksiyonlarının DIŞINDA kalan, kullanıcıyla
   /// ilişkili kişisel kayıtları temizler: admin başvurusu ve gönderdiği/
   /// aldığı bildirimler (bkz. firestore.rules — bu iki koleksiyonda artık

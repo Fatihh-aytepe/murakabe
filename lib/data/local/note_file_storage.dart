@@ -55,6 +55,28 @@ class NoteFileStorage {
     } catch (_) {}
   }
 
+  /// Hesap silinirken çağrılır: yerel `note_images/` ve `note_audio/`
+  /// dizinlerinin TAMAMINI kaldırır. DÜZELTME: `UserRepository.
+  /// deleteAccountPermanently` önceden yalnızca SQLite satırlarını
+  /// (`wipeAllTables`) siliyordu — notlara eklenen resim/ses dosyaları
+  /// (bu sınıfın `persistImage`/`persistAudio`/`newAudioTargetPath` ile
+  /// kopyaladığı gerçek dosyalar) diskte öksüz olarak kalıcı biçimde
+  /// birikmeye devam ediyordu. Firebase Storage'daki bulut kopyaları zaten
+  /// `FirebaseService._deleteStorageFolder('notes/\$uid')` ile siliniyor;
+  /// bu metod yalnızca CİHAZDAKİ kopyaları temizler. Best-effort — hata
+  /// hesap silme akışını engellemez.
+  static Future<void> deleteAllLocalFiles() async {
+    try {
+      final base = await getApplicationDocumentsDirectory();
+      for (final subDir in [_imagesDir, _audioDir]) {
+        final dir = Directory(p.join(base.path, subDir));
+        if (await dir.exists()) {
+          await dir.delete(recursive: true);
+        }
+      }
+    } catch (_) {}
+  }
+
   // ── Firebase Storage yedekleme ──────────────────────────────────────────
   // Notlara eklenen resim/ses dosyaları sadece cihazda tutulduğu için
   // uygulama silinip yeniden yüklendiğinde kaybolur. Bu metodlar dosyayı
