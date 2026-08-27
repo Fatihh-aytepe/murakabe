@@ -1,9 +1,10 @@
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart'
     show FlutterQuillLocalizations;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'core/constants/app_theme.dart';
@@ -45,6 +46,38 @@ void main() async {
   await _safeInit(
     'Firebase.initializeApp',
     () => Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+  );
+  // App Check: her Firestore/Storage/Auth isteğine, isteğin gerçekten bu
+  // uygulamadan ve kurcalanmamış gerçek bir cihazdan geldiğini kanıtlayan
+  // bir token ekler (ChatGPT incelemesi — bulk bildirim gönderiminde App
+  // Check/hız sınırlaması eksikliği notu). Android'de gerçek derlemede
+  // Play Integrity, debug derlemede (emulator/yerel test) her zaman
+  // başarısız olacak Play Integrity yerine debug provider kullanılır —
+  // debug token'ı ilk çalıştırmada konsola yazdırılır, Firebase Console →
+  // App Check → Apps → "Manage debug tokens" kısmına EL İLE eklenmesi
+  // gerekir, aksi halde debug derlemesinde App Check istekleri reddedilir
+  // (ama enforce KAPALI olduğu sürece bu reddedilme gerçek isteği
+  // ENGELLEMEZ, yalnızca App Check metriklerinde "geçersiz" sayılır).
+  //
+  // ÖNEMLİ — ZORLAMA (enforce) SIRASI: Bu satır App Check'i yalnızca
+  // İSTEMCİ tarafında etkinleştirir; Firebase Console'da Firestore/
+  // Storage/Auth için "Enforce" AÇILMADIĞI sürece hiçbir isteği
+  // ENGELLEMEZ. Enforce'u bu güncelleme mağazaya çıkıp kullanıcıların
+  // büyük kısmı güncellemeden ÖNCE açmayın — aksi halde App Check'i henüz
+  // içermeyen eski sürümü kullanan TÜM kullanıcıların istekleri
+  // reddedilir. Sırasıyla: (1) bu kodu yayınla, (2) Console → App Check →
+  // Apps'te Android uygulamasını Play Integrity ile kaydet, (3) birkaç
+  // gün/hafta bekleyip Console'daki "İstek metrikleri" grafiğinde geçerli
+  // token oranının yükseldiğini doğrula, (4) ancak o zaman Firestore/
+  // Storage/Auth için Enforce'u aç.
+  await _safeInit(
+    'FirebaseAppCheck.activate',
+    () => FirebaseAppCheck.instance.activate(
+      androidProvider:
+          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      appleProvider:
+          kDebugMode ? AppleProvider.debug : AppleProvider.appAttest,
+    ),
   );
   await _safeInit('LocalStorage.init', () => LocalStorage().init());
   await _safeInit('NotificationService.init', () => NotificationService().init());

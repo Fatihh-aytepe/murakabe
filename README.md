@@ -63,6 +63,28 @@ firebase deploy --only firestore:rules,firestore:indexes,storage
 projenize deploy etmeniz gerekir (aksi halde bileşik sorgular
 `FAILED_PRECONDITION` hatası verir).
 
+### App Check (kötüye kullanım/bulk istek koruması)
+
+`lib/main.dart`, `FirebaseAppCheck.instance.activate()` çağırır — bu,
+istemci kodunu içerir ama tek başına HİÇBİR isteği engellemez; Firebase
+Console tarafında ayrıca kurulum gerekir:
+
+1. [Firebase Console](https://console.firebase.google.com) → projeniz →
+   **App Check** sekmesi → Android uygulamasını **Play Integrity**
+   sağlayıcısıyla kaydedin.
+2. Debug/emulator derlemesinde `AndroidProvider.debug` kullanılır; ilk
+   çalıştırmada konsola (`adb logcat` veya `flutter run` çıktısı) bir debug
+   token yazdırılır — bunu App Check → Apps → "Manage debug tokens"
+   kısmına ekleyin, aksi halde debug derlemesinin istekleri App Check
+   metriklerinde "geçersiz" görünür (enforce kapalıyken bu isteği
+   ENGELLEMEZ).
+3. **Enforce'u (Firestore/Storage/Auth için) bu güncelleme Play Store'a
+   çıkıp kullanıcıların büyük kısmı güncellemeden ÖNCE AÇMAYIN** — aksi
+   halde App Check'i içermeyen eski sürümü kullanan tüm kullanıcıların
+   istekleri reddedilir. Önce Console'daki "İstek metrikleri" grafiğinde
+   geçerli token oranının yükseldiğini doğrulayın, ancak sonra
+   Enforce'u açın.
+
 ## 3. Android imzalama (yalnızca release build için)
 
 `android/app/build.gradle.kts`, `android/key.properties` dosyası yoksa

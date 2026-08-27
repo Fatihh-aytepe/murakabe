@@ -20,6 +20,11 @@ dependencies:
   firebase_auth: ^6.5.0
   cloud_firestore: ^6.4.0
   firebase_remote_config: ^6.5.0
+  # App Check: her isteğin gerçek uygulamamızdan (ve gerçek bir cihazdan)
+  # geldiğini doğrular — bkz. main.dart'taki activate() çağrısı. Zorlama
+  # (enforce) Firebase Console'dan AYRI olarak açılır, bkz. o çağrının
+  # yanındaki yorum.
+  firebase_app_check: ^0.4.7
 
   # Update
   package_info_plus: ^8.0.0
