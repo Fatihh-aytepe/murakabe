@@ -25,15 +25,34 @@ object WidgetPrefs {
     fun getString(context: Context, key: String, default: String = ""): String =
         prefs(context).getString(KEY_PREFIX + key, default) ?: default
 
-    fun getInt(context: Context, key: String, default: Int = 0): Int =
-        try {
-            prefs(context).getInt(KEY_PREFIX + key, default)
-        } catch (_: ClassCastException) {
-            default
+    // DÜZELTME (kritik — widget senkron sorunlarının önemli kısmı buydu):
+    // Flutter'ın shared_preferences Android eklentisi, Dart'ın setInt()
+    // çağrısındaki değeri SharedPreferences'a `putLong` ile yazar — Dart'ın
+    // `int` tipi 64-bit'tir, 32-bit `putInt` kullanılırsa büyük değerlerde
+    // sessiz taşma olurdu (bkz. shared_preferences_android eklentisinin
+    // kendi kaynağı). SharedPreferences.getInt() ise dosyadaki değerin GERÇEK
+    // saklama tipiyle (Long) eşleşmediğinde ClassCastException fırlatır; eski
+    // kod bunu yakalayıp SESSİZCE varsayılan değere düşüyordu — bu yüzden
+    // zikir sayısı/hedefi, widget saydamlığı ve içerik indeksi native tarafta
+    // bazen "sıfırlanmış/değişmemiş" görünüyordu. Çözüm: ham değeri tip
+    // ayrımı yapmadan `Number` olarak okuyup `toInt()` ile dönüştürmek —
+    // hem Int hem Long (hatta Float/Double) olarak saklanmış eski/yeni
+    // verilerle uyumlu.
+    fun getInt(context: Context, key: String, default: Int = 0): Int {
+        val raw = prefs(context).all[KEY_PREFIX + key]
+        return when (raw) {
+            is Number -> raw.toInt()
+            else -> default
         }
+    }
 
+    // Yazarken de Flutter ile AYNI temsili (Long) kullanıyoruz — böylece
+    // native tarafın yazdığı bir değer daha sonra Dart tarafından okunursa
+    // (shared_preferences paketi zaten Number bazlı okuduğundan) ya da bu
+    // dosyanın putInt'i üzerine yazdığı bir anahtar tekrar Dart'ın getInt'i
+    // ile okunursa tip tutarsızlığı oluşmaz.
     fun putInt(context: Context, key: String, value: Int) {
-        prefs(context).edit().putInt(KEY_PREFIX + key, value).apply()
+        prefs(context).edit().putLong(KEY_PREFIX + key, value.toLong()).apply()
     }
 
     fun getBoolean(context: Context, key: String, default: Boolean = false): Boolean =

@@ -282,8 +282,23 @@ class _LoginScreenState extends State<LoginScreen>
           email: _ownerEmailController.text.trim(),
           password: _ownerPassController.text,
         );
-        final role = await RoleService().getCurrentRole();
+        final authUser = FirebaseService().currentAuthUser;
+        // DÜZELTME: getCurrentRole() ağ/izin hatalarını yutup UserRole.user
+        // döndürüyordu; bu yüzden geçici bir ağ sorununda bile gerçek bir
+        // sahip/admin oturumu "kayıt bulunamadı" denip signOut ediliyordu.
+        // getCurrentRoleOrNull hata durumunda null döner — bu durumda
+        // signOut YAPMIYORUZ, kullanıcı tekrar deneyebilsin diye uyarı
+        // gösterip çıkıyoruz.
+        final role = await RoleService().getCurrentRoleOrNull();
         if (!mounted) return;
+        if (role == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    'Rol bilgisi alınamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.')),
+          );
+          return;
+        }
         switch (role) {
           case UserRole.owner:
             Navigator.pushReplacement(
@@ -298,6 +313,25 @@ class _LoginScreenState extends State<LoginScreen>
             );
             break;
           case UserRole.user:
+            // DÜZELTME (kilitlenme): roles/owner belgesi hiç
+            // oluşturulmamışsa (ilk kurulum) rol sorgusu da UserRole.user
+            // döner. Önceden bu durumda hesap doğrudan signOut ediliyordu —
+            // ama sahibi ilk kez atayan kurulum ekranı (OwnerPanelScreen /
+            // CommunityOwnerPanelScreen) SADECE zaten sahip olan bir
+            // hesapla açılabiliyordu, yani sahiplik hiçbir zaman
+            // kurulamıyordu. Giriş yapan e-posta sabit sahip e-postasıyla
+            // birebir aynıysa signOut etmek yerine OwnerPanelScreen'e
+            // yönlendiriyoruz; o ekran zaten isOwner/notConfigured
+            // durumunu kendi içinde ayırt edip kurulum butonunu gösteriyor,
+            // ve nihai yetki kontrolü yine Firestore kuralında
+            // (email + email_verified) yapılıyor.
+            if (authUser?.email == AppStrings.adminEmail) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const OwnerPanelScreen()),
+              );
+              break;
+            }
             await FirebaseService().signOut();
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -394,6 +428,20 @@ class _LoginScreenState extends State<LoginScreen>
       // 1. Yerel SQLite'da kullanıcı var mı? (normal açılış)
       final existing = await UserRepository().getCurrentUser();
       if (existing != null) {
+        // DÜZELTME: önceden bu dalda Firestore'a HİÇ bakılmıyordu — aynı
+        // hesap başka bir cihazda kullanılıp streak/rozet/tercih ilerlemesi
+        // orada güncellenmişse, BU cihaza (yereldeki eski satır hâlâ
+        // duruyor diye) hiçbir zaman yansımıyordu. Not/görev İÇERİĞİNİ
+        // buradan çekmiyoruz (henüz Firestore'a yazılmamış yerel bir
+        // değişikliği ezme riski olurdu — tam bir senkron protokolü bu
+        // oturumun kapsamı dışında, bkz. UpdateStreak yorumu), ama
+        // restoreFromMap zaten yalnızca "yereldekinden BÜYÜK/daha yeni"
+        // değerleri uyguladığından (bkz. LocalStorage.restoreFromMap)
+        // streak/rozet/tercih verisini buradan güvenle birleştirebiliriz.
+        try {
+          final prefs = await FirebaseService().getUserPrefs(authUser.uid);
+          if (prefs != null) await LocalStorage().restoreFromMap(prefs);
+        } catch (_) {}
         // İsmi SQLite'dan al — displayName null olsa bile doğru isim görünür
         await LocalStorage().saveAccount(
           uid: authUser.uid,
@@ -439,6 +487,25 @@ class _LoginScreenState extends State<LoginScreen>
               ? const OwnerPanelScreen()
               : const HomeScreen(),
         ));
+        return;
+      }
+
+      // DÜZELTME: restoreFromFirestore false döndüğünde önceden koşulsuzca
+      // "gerçekten yeni kullanıcı" sayılıp ProfileSetupScreen'e
+      // gidiliyordu — ama bu, hem "belge gerçekten yok" hem de "sorgu ağ/
+      // Firestore hatasıyla başarısız oldu" durumlarında AYNI şekilde false
+      // dönüyordu (bkz. FirebaseService.getUserForSQLite). Geçici bir ağ
+      // sorununda bile MEVCUT bir kullanıcı yeni kullanıcı sanılıp profil
+      // kurulumuna yönlendirilebiliyor, bu da Firestore'daki gerçek
+      // profille çakışan ikinci bir kayda yol açabiliyordu. userDocExists
+      // ile "belge kesin yok" (false) ile "durum bilinmiyor" (null) ayrımı
+      // yapılıyor; yalnızca kesin yok ise yeni kullanıcı akışına geçiliyor.
+      final docExists = await FirebaseService().userDocExists(authUser.uid);
+      if (docExists != false) {
+        if (!mounted) return;
+        _showErrorDialog(
+          'Hesap bilgileriniz yüklenemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.',
+        );
         return;
       }
 
@@ -810,7 +877,14 @@ class _LoginScreenState extends State<LoginScreen>
                         'Şifre sıfırlama maili gönderildi.\nGelen kutunuzu kontrol edin.',
                         isSuccess: true,
                       );
-                    } catch (_) {}
+                    } catch (e) {
+                      // DÜZELTME: hata önceden tamamen yutuluyordu —
+                      // kullanıcı hiçbir geri bildirim almadan diyalog
+                      // sessizce kapanıyor, mail gönderilip
+                      // gönderilmediğini asla öğrenemiyordu.
+                      if (!mounted) return;
+                      _showErrorDialog(_parseFirebaseError(e.toString()));
+                    }
                   },
             child: Text(
               'Şifremi Unuttum',
@@ -1105,6 +1179,15 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   bool _isChecking = false;
   bool _resent = false;
   Timer? _pollTimer;
+  // DÜZELTME (yarış durumu): _isChecking önceden yalnızca ELLE kontrol
+  // (_checkVerified) sırasında true yapılıyordu; 4 saniyelik otomatik
+  // _autoCheck ise bu bayrağı hiç ayarlamıyordu. Böylece bir önceki
+  // syncEmailVerified() çağrısı 4 saniyeden uzun sürerse ÜST ÜSTE iki
+  // otomatik kontrol (veya elle butona basma + otomatik kontrol) aynı anda
+  // çalışabiliyor, ikisi de "verified" dönerse _navigateAfterVerification()
+  // iki kez tetiklenip çifte push/pop hatasına yol açabiliyordu. Artık her
+  // iki yol da aynı dahili bayrağı kullanıyor.
+  bool _verifying = false;
 
   @override
   void initState() {
@@ -1122,17 +1205,23 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   }
 
   Future<void> _autoCheck() async {
-    if (_isChecking) return;
+    if (_verifying) return;
+    _verifying = true;
     try {
       final verified = await UserRepository().syncEmailVerified();
       if (verified && mounted) {
         _pollTimer?.cancel();
         _navigateAfterVerification();
       }
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      _verifying = false;
+    }
   }
 
   Future<void> _checkVerified() async {
+    if (_verifying) return;
+    _verifying = true;
     setState(() => _isChecking = true);
     try {
       final verified = await UserRepository().syncEmailVerified();
@@ -1148,6 +1237,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         );
       }
     } finally {
+      _verifying = false;
       if (mounted) setState(() => _isChecking = false);
     }
   }

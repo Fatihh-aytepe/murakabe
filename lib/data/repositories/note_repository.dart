@@ -6,6 +6,7 @@ import '../local/note_file_storage.dart';
 import '../models/note_model.dart';
 import '../remote/firebase_service.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/utils/stable_hash.dart';
 
 class NoteRepository {
   final _db = DatabaseHelper();
@@ -16,8 +17,12 @@ class NoteRepository {
 
   // Not hatırlatıcıları için ayrılmış bildirim ID aralığı: 30000–49999.
   // Mevcut bildirim ID'leriyle (bkz. NotificationService) çakışmaz.
+  // DÜZELTME: önceden Dart'ın yerleşik String.hashCode'u kullanılıyordu —
+  // bunun SDK sürümleri arasında sabit kalacağı garanti değildir (bkz.
+  // stable_hash.dart'taki açıklama). stableStringHash SDK'dan bağımsız,
+  // kendi uyguladığımız sabit bir algoritma kullanır.
   int _reminderNotifId(String noteId) =>
-      30000 + (noteId.hashCode.abs() % 20000);
+      30000 + (stableStringHash(noteId) % 20000);
 
   /// Bir not düzenlenirken çağrılmalı: [oldPaths]/[oldUrls] notun ÖNCEKİ
   /// (kaydedilmiş) resim/ses yol+URL listeleri, [newPaths] düzenleme

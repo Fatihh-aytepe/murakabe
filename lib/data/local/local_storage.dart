@@ -31,6 +31,17 @@ class LocalStorage {
   String? get userId => _prefs.getString('userId');
   Future<void> setUserId(String id) => _prefs.setString('userId', id);
 
+  /// DÜZELTME: çıkış yaparken önceden `setUserId('')` çağrılıyordu —
+  /// bu, anahtarı BOŞ STRING ile bırakır, SİLMEZ. `userId` getter'ı bu
+  /// durumda `null` değil `''` döner; kod tabanındaki yaygın
+  /// `if (uid != null) { ... _firebase.saveX(uid!, ...) }` deseni bu
+  /// kontrolü GEÇER ve boş bir UID ile Firestore çağrıları yapılmaya
+  /// çalışılabilirdi (çoğu zaten try/catch içinde olduğundan sessizce
+  /// yutuluyordu, ama bu yine de yanlış ve kırılgan bir durumdu). Bu
+  /// metod anahtarı gerçekten KALDIRIR, `userId` sonrasında gerçek
+  /// `null` döner.
+  Future<void> clearUserId() => _prefs.remove('userId');
+
   // Admin kontrolü
   bool get isAdmin => _prefs.getBool('isAdmin') ?? false;
   Future<void> setAdmin(bool value) => _prefs.setBool('isAdmin', value);
@@ -314,6 +325,32 @@ class LocalStorage {
     final accounts = getSavedAccounts();
     accounts.removeWhere((a) => a['uid'] == uid);
     await _prefs.setString('savedAccounts', jsonEncode(accounts));
+  }
+
+  /// UserRepository.restoreFromFirestore'un alt koleksiyonları (notlar,
+  /// görevler, ödüller vb.) TAM olarak geri yükleyemediği durumlarda o
+  /// hesabın uid'sini burada tutar — HomeScreen açılışında best-effort
+  /// olarak retryPendingSubcollectionRestore ile tekrar denenir.
+  String? get pendingSubcollectionRestoreUid =>
+      _prefs.getString('pendingSubcollectionRestoreUid');
+  Future<void> setPendingSubcollectionRestore(String uid) =>
+      _prefs.setString('pendingSubcollectionRestoreUid', uid);
+  Future<void> clearPendingSubcollectionRestore() =>
+      _prefs.remove('pendingSubcollectionRestoreUid');
+
+  /// Kayıtlı hesap kartındaki e-postayı günceller — bkz. UserRepository.
+  /// syncEmailFromAuth: kullanıcı e-posta değiştirip Firebase'in gönderdiği
+  /// doğrulama linkine tıkladığında, Auth'taki e-posta arka planda
+  /// değişiyor; bu güncelleme yapılmazsa "kayıtlı hesaplar" listesindeki
+  /// kart eski e-postayı göstermeye devam eder ve kullanıcı o karta
+  /// dokununca artık geçersiz olan eski e-postayla giriş denemesi yapılır.
+  Future<void> updateAccountEmail(String uid, String newEmail) async {
+    final accounts = getSavedAccounts();
+    final idx = accounts.indexWhere((a) => a['uid'] == uid);
+    if (idx >= 0 && accounts[idx]['email'] != newEmail) {
+      accounts[idx] = {...accounts[idx], 'email': newEmail};
+      await _prefs.setString('savedAccounts', jsonEncode(accounts));
+    }
   }
 
   // ── Esmâ okuma serisi ─────────────────────────────────────────────────────

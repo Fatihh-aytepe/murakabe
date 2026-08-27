@@ -75,8 +75,20 @@ class _SplashScreenState extends State<SplashScreen>
     final authUser = FirebaseAuth.instance.currentUser;
     if (authUser != null) {
       final storedId = storage.userId;
-      if (storedId != authUser.uid) {
-        // Yeni cihaz / yeniden yükleme — verileri Firestore'dan çek
+      // DÜZELTME: önceden yalnızca storedId != authUser.uid iken (yeni
+      // cihaz/yeniden yükleme) restore yapılıyordu. UID AYNI olsa bile
+      // yerel `users` tablosunda bu uid için satır YOKSA (ör. yarım kalmış
+      // bir restore, bozulmuş/silinmiş SQLite dosyası, ya da bu oturumun
+      // erken kısmında eklenen hesap-değiştirme "wipe" akışının ardından
+      // bir şekilde yeniden aynı UID'ye dönülmüş olması) HomeScreen sessizce
+      // boş/eksik bir profille açılıyordu. `needsRestore` bu iki durumu da
+      // kapsayacak şekilde genişletildi.
+      final hasLocalRow =
+          storedId == authUser.uid && await UserRepository().getCurrentUser() != null;
+      final needsRestore = storedId != authUser.uid || !hasLocalRow;
+      if (needsRestore) {
+        // Yeni cihaz / yeniden yükleme / eksik yerel satır — verileri
+        // Firestore'dan çek
         await storage.setUserId(authUser.uid);
         await storage.setUserRegistered(true);
         await storage.setAuthMigrationDone();
@@ -126,21 +138,24 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    // ── 2. Auth oturumu yok → kayıt kontrolü ──────────────────────────────
-    if (!storage.isUserRegistered) {
-      _go(const LoginScreen());
-      return;
-    }
-
+    // ── 2. Auth oturumu yok ────────────────────────────────────────────────
+    // DÜZELTME (kritik): `isUserRegistered`/`authMigrationDone` SADECE
+    // SharedPreferences bayraklarıdır — KİMLİK DOĞRULAMASI YERİNE
+    // GEÇMEZLER. Önceden ikisi de true ise (authUser == null olsa BİLE,
+    // yani gerçek bir Firebase Auth oturumu YOKKEN) doğrudan HomeScreen'e
+    // gidiliyordu. Bu durum, ör. Firebase Auth oturumu bir şekilde temizlenmiş
+    // (token iptal edilmiş, uygulama verisi kısmen silinmiş, paylaşılan/
+    // ödünç bir cihaz vb.) ama SharedPreferences hâlâ duruyorsa, önceki
+    // kullanıcının TÜM yerel önbelleğine (notlar, ödüller, profil) HİÇBİR
+    // KİMLİK DOĞRULAMASI OLMADAN erişilebilmesi anlamına geliyordu. Auth
+    // oturumu yoksa artık HER ZAMAN LoginScreen'e gidiyoruz; kullanıcı aynı
+    // hesapla tekrar giriş yaptığında yerel veri zaten yerinde kalacağı
+    // için deneyim kaybı minimaldir (bkz. login_screen.dart'ın restore akışı).
     if (!storage.authMigrationDone) {
       await storage.setAuthMigrationDone();
-      _go(const LoginScreen());
-      return;
     }
-
-    // ── 4. Her şey yerli yerinde → HomeScreen ─────────────────────────────
     if (!mounted) return;
-    _go(const HomeScreen());
+    _go(const LoginScreen());
   }
 
   void _go(Widget screen) {

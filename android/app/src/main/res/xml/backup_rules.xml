@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 11 ve altı için eski tam-yedekleme (fullBackupContent) API'si —
+  yukarıdaki data_extraction_rules.xml (Android 12+) ile aynı istisnalar.
+  Bkz. o dosyadaki DÜZELTME notu.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" />
+    <exclude domain="database" />
+</full-backup-content>

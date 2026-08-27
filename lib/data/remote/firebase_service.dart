@@ -110,6 +110,14 @@ class FirebaseService {
     await _userCol().doc(user.id).set(user.toFirestoreMap(), SetOptions(merge: true));
   }
 
+  /// Yalnızca `email` alanını günceller — bkz. UserRepository.
+  /// syncEmailFromAuth. Tüm UserModel'i yeniden yazmak yerine tek alanlık
+  /// bir merge ile, o anda elde olmayabilecek diğer alanları riske atmadan
+  /// günceller.
+  Future<void> updateUserEmail(String uid, String newEmail) async {
+    await _userCol().doc(uid).set({'email': newEmail}, SetOptions(merge: true));
+  }
+
   // ─── NOTES ────────────────────────────────────────────────────────────────
   Future<void> saveNote(String uid, Map<String, dynamic> note) async {
     await _sub(uid, 'notes').doc(note['id'] as String).set(note);
@@ -332,6 +340,26 @@ class FirebaseService {
       }
       await batch.commit();
       if (snap.docs.length < 200) break;
+    }
+  }
+
+  /// Bir kullanıcı dokümanının Firestore'da GERÇEKTEN var olup olmadığını,
+  /// ağ/izin hatasıyla karıştırmadan sorgular.
+  /// DÜZELTME: getUserForSQLite (ve dolayısıyla restoreFromFirestore) hem
+  /// "belge yok" hem de "sorgu hata verdi" durumlarında aynı şekilde
+  /// null/false dönüyordu. login_screen.dart bu ikisini ayırt edemediği
+  /// için, geçici bir ağ hatasında bile gerçek/mevcut bir kullanıcıyı
+  /// "tamamen yeni kullanıcı" sayıp ProfileSetupScreen'e yönlendiriyor,
+  /// bu da Firestore'daki mevcut profille çakışan/onu ezen ikinci bir
+  /// kurulum akışına yol açabiliyordu. Dönüş: true/false = kesin sonuç,
+  /// null = sorgu başarısız oldu (durum bilinmiyor).
+  Future<bool?> userDocExists(String uid) async {
+    try {
+      final doc = await _userCol().doc(uid).get();
+      return doc.exists;
+    } catch (e) {
+      debugPrint('[FirebaseService] userDocExists hata: $e');
+      return null;
     }
   }
 

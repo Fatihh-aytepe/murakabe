@@ -62,9 +62,20 @@ service cloud.firestore {
     match /roles/owner {
       allow read: if isAuth();
       // Sadece yetkili e-posta ilk kez oluşturabilir; sonrasında yalnızca mevcut owner güncelleyebilir
+      // DÜZELTME (kritik): email_verified kontrolü YOKTU. Firebase Auth
+      // token'ındaki `email` alanı, kullanıcının o adresi GERÇEKTEN sahiplendiğini
+      // KANITLAMAZ — createUserWithEmailAndPassword herhangi bir e-posta
+      // dizesiyle (henüz kayıtlı değilse) hesap açılmasına izin verir,
+      // doğrulama linki tıklanana kadar `email_verified` false kalır. Owner
+      // e-postası bu dosyada (ve muhtemelen uygulama kodunda) AÇIK metin
+      // olduğundan, bir saldırgan gerçek sahibi Firebase'de hesap açmadan
+      // ÖNCE aynı e-postayla doğrulanmamış bir hesap oluşturup owner
+      // belgesini ele geçirebilirdi. email_verified==true şartı, saldırganın
+      // o gerçek e-posta kutusuna erişimi olmadıkça bunu imkansız kılar.
       allow create: if isAuth()
         && !exists(/databases/$(database)/documents/roles/owner)
-        && request.auth.token.email == 'yavuzbera02@gmail.com';
+        && request.auth.token.email == 'yavuzbera02@gmail.com'
+        && request.auth.token.email_verified == true;
       allow update: if isOwner();
       allow delete: if isOwner();
     }

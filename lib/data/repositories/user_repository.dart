@@ -44,6 +44,51 @@ class UserRepository {
     await _storage.clearForAccountSwitch();
   }
 
+  /// E-posta değişikliğini Firebase Auth ile senkronize eder.
+  ///
+  /// NEDEN: FirebaseService.updateEmail, `verifyBeforeUpdateEmail` kullanır
+  /// — bu, Auth'taki e-postayı HEMEN değiştirmez; kullanıcı yeni adresine
+  /// gelen doğrulama linkine tıkladığında (uygulama kapalıyken bile
+  /// olabilir, dakikalar/günler sonra) Firebase tarafında arka planda
+  /// gerçekleşir. Önceden bu değişikliği hiçbir yer izlemiyordu: SQLite'taki
+  /// `users` satırı, Firestore kullanıcı belgesi ve `savedAccounts`
+  /// listesindeki kayıtlı hesap kartı hep ESKİ e-postada kalıyordu — kayıtlı
+  /// hesap kartına dokunup tekrar giriş denemek artık geçersiz olan eski
+  /// e-postayla başarısız oluyordu.
+  ///
+  /// Sunucu taraflı bir tetikleyici (Cloud Function) olmadığı için tam
+  /// gerçek-zamanlı bir çözüm yok; bunun yerine `reload()` sonrası Auth'taki
+  /// güncel e-posta ile yereldeki kaydı KARŞILAŞTIRIP farklıysa üç yeri de
+  /// (SQLite, Firestore, savedAccounts) senkronize ediyoruz. Uygulama her
+  /// açılışında/öne döndüğünde çağrılmalı (bkz. HomeScreen).
+  Future<void> syncEmailFromAuth() async {
+    try {
+      await _firebase.reloadAndCheckVerified();
+      final authEmail = _firebase.currentAuthUser?.email;
+      final uid = _storage.userId;
+      if (authEmail == null || authEmail.isEmpty || uid == null) return;
+
+      final local = await getCurrentUser();
+      if (local == null || local.email == authEmail) return;
+
+      await _db.update(
+        'users',
+        {'email': authEmail},
+        where: 'id = ?',
+        whereArgs: [uid],
+      );
+      try {
+        await _firebase.updateUserEmail(uid, authEmail);
+      } catch (_) {}
+      try {
+        await _storage.updateAccountEmail(uid, authEmail);
+      } catch (_) {}
+    } catch (_) {
+      // En kötü ihtimalle bir sonraki açılışta/resume'da tekrar denenir —
+      // uygulama akışını asla engellemesin.
+    }
+  }
+
   Future<UserModel?> getCurrentUser() async {
     final userId = _storage.userId;
     if (userId == null) return null;
@@ -110,6 +155,18 @@ class UserRepository {
 
   /// Uygulama yeniden yüklendiğinde Firestore'dan SQLite'a kullanıcıyı geri yükler.
   /// Ana kullanıcı dokümanının yanı sıra tüm subcollection'lar da geri yüklenir.
+  ///
+  /// DÜZELTME: önceden `_restoreSubcollections` içindeki HERHANGİ bir hata
+  /// (ör. tek bir alt koleksiyonun `getSubcollection` çağrısı ağ hatasıyla
+  /// patlarsa) tek bir dıştaki try/catch'e düşüyor, o noktadan SONRAKİ TÜM
+  /// alt koleksiyonların denenmesini engelliyor, ve yine de bu fonksiyon
+  /// `true` (başarılı) dönüyordu — kullanıcı profili yüklenmiş ama notları/
+  /// görevleri/ödülleri hiç gelmemiş olabiliyordu, hem de bir daha
+  /// denenmeden. Şimdi her alt koleksiyon KENDİ try/catch'i içinde
+  /// deneniyor (biri patlarsa diğerleri yine de denenir) ve tümü başarılı
+  /// olmazsa `LocalStorage`'a bir "yeniden dene" bayrağı bırakılıyor —
+  /// bkz. retryPendingSubcollectionRestore, HomeScreen'den best-effort
+  /// çağrılır.
   Future<bool> restoreFromFirestore(String uid) async {
     try {
       final raw = await _firebase.getUserForSQLite(uid);
@@ -136,12 +193,20 @@ class UserRepository {
       } else {
         await _db.insert('users', map);
       }
-      try {
-        await _restoreSubcollections(uid);
-      } catch (e) {
-        debugPrint('[UserRepo] Subcollection restore hatası: $e');
+
+      final allSubcollectionsOk = await _restoreSubcollections(uid);
+      if (allSubcollectionsOk) {
+        await _storage.clearPendingSubcollectionRestore();
+        debugPrint('[UserRepo] Firestore restore başarılı: $uid');
+      } else {
+        await _storage.setPendingSubcollectionRestore(uid);
+        debugPrint(
+            '[UserRepo] Firestore restore KISMEN başarılı (bazı koleksiyonlar başarısız): $uid');
       }
-      debugPrint('[UserRepo] Firestore restore başarılı: $uid');
+      // Profil dokümanı başarıyla yüklendiği için true dönüyoruz — eksik
+      // kalan alt koleksiyonlar retryPendingSubcollectionRestore ile ayrıca
+      // tamamlanmaya çalışılacak; çağıran kod bunu ayrı bir sinyal
+      // (getPendingSubcollectionRestoreUid) ile ayırt edebilir.
       return true;
     } catch (e) {
       debugPrint('[UserRepo] restoreFromFirestore hatası: $e');
@@ -149,84 +214,143 @@ class UserRepository {
     }
   }
 
-  Future<void> _restoreSubcollections(String uid) async {
+  /// HomeScreen açılışında best-effort çağrılmalı: önceki bir restore'da
+  /// eksik kalan alt koleksiyonları varsa yeniden dener. Buradaki insert'ler
+  /// zaten kendi try/catch'leri içinde olduğundan, önceden başarıyla
+  /// eklenmiş satırların yeniden denenmesi (UNIQUE ihlali) sessizce yutulur
+  /// — yani bu işlem doğal olarak tekrar çalıştırmaya (idempotent) güvenlidir.
+  Future<void> retryPendingSubcollectionRestore() async {
+    final uid = _storage.pendingSubcollectionRestoreUid;
+    if (uid == null || uid.isEmpty || uid != _storage.userId) return;
+    final ok = await _restoreSubcollections(uid);
+    if (ok) await _storage.clearPendingSubcollectionRestore();
+  }
+
+  /// Her alt koleksiyonu KENDİ try/catch'i içinde dener — biri (ör. ağ
+  /// hatasıyla) başarısız olsa da diğerleri yine de denenir. Tümü
+  /// başarılıysa true döner.
+  Future<bool> _restoreSubcollections(String uid) async {
+    var allOk = true;
+
     // Notlar
-    final notes = await _firebase.getSubcollection(uid, 'notes');
-    for (final n in notes) {
-      try {
-        final row = Map<String, dynamic>.from(n)..remove('_docId');
-        await _db.insert('notes', row);
-        await _restoreNoteAttachments(row);
-      } catch (_) {}
+    try {
+      final notes = await _firebase.getSubcollection(uid, 'notes');
+      for (final n in notes) {
+        try {
+          final row = Map<String, dynamic>.from(n)..remove('_docId');
+          await _db.insert('notes', row);
+          await _restoreNoteAttachments(row);
+        } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('[UserRepo] notes restore hatası: $e');
+      allOk = false;
     }
 
     // Kaydedilenler (heybe)
-    final saved = await _firebase.getSubcollection(uid, 'saved');
-    for (final s in saved) {
-      try {
-        await _db.insert('saved_content', s..remove('_docId'));
-      } catch (_) {}
+    try {
+      final saved = await _firebase.getSubcollection(uid, 'saved');
+      for (final s in saved) {
+        try {
+          await _db.insert('saved_content', s..remove('_docId'));
+        } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('[UserRepo] saved restore hatası: $e');
+      allOk = false;
     }
 
     // Kişisel görevler
-    final tasks = await _firebase.getSubcollection(uid, 'tasks');
-    for (final t in tasks) {
-      try {
-        final taskMap = Map<String, dynamic>.from(t)..remove('_docId');
-        taskMap['userId'] = uid;
-        await _db.insert('custom_tasks', taskMap);
-      } catch (_) {}
+    try {
+      final tasks = await _firebase.getSubcollection(uid, 'tasks');
+      for (final t in tasks) {
+        try {
+          final taskMap = Map<String, dynamic>.from(t)..remove('_docId');
+          taskMap['userId'] = uid;
+          await _db.insert('custom_tasks', taskMap);
+        } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('[UserRepo] tasks restore hatası: $e');
+      allOk = false;
     }
 
     // Görev tamamlamaları
-    final completions =
-        await _firebase.getSubcollection(uid, 'taskCompletions');
-    for (final c in completions) {
-      try {
-        await _db.insert('custom_task_completions', c..remove('_docId'));
-      } catch (_) {}
+    try {
+      final completions =
+          await _firebase.getSubcollection(uid, 'taskCompletions');
+      for (final c in completions) {
+        try {
+          await _db.insert('custom_task_completions', c..remove('_docId'));
+        } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('[UserRepo] taskCompletions restore hatası: $e');
+      allOk = false;
     }
 
     // Ödüller
-    final rewards = await _firebase.getSubcollection(uid, 'rewards');
-    for (final r in rewards) {
-      try {
-        await _db.insert('rewards', r..remove('_docId'));
-      } catch (_) {}
+    try {
+      final rewards = await _firebase.getSubcollection(uid, 'rewards');
+      for (final r in rewards) {
+        try {
+          await _db.insert('rewards', r..remove('_docId'));
+        } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('[UserRepo] rewards restore hatası: $e');
+      allOk = false;
     }
 
     // Kur'ân okuma takibi (Firestore doc ID = tarih string'i)
-    final quranDocs = await _firebase.getSubcollection(uid, 'quranTracking');
-    for (final q in quranDocs) {
-      try {
-        final date = q['_docId'] as String?;
-        if (date == null) continue;
-        await _db.insert('quran_tracking', {
-          'date': date,
-          'isRead': q['isRead'] == true ? 1 : 0,
-          'readAt':
-              q['readAt']?.toString() ?? DateTime.now().toIso8601String(),
-        });
-      } catch (_) {}
+    try {
+      final quranDocs = await _firebase.getSubcollection(uid, 'quranTracking');
+      for (final q in quranDocs) {
+        try {
+          final date = q['_docId'] as String?;
+          if (date == null) continue;
+          await _db.insert('quran_tracking', {
+            'date': date,
+            'isRead': q['isRead'] == true ? 1 : 0,
+            'readAt':
+                q['readAt']?.toString() ?? DateTime.now().toIso8601String(),
+          });
+        } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('[UserRepo] quranTracking restore hatası: $e');
+      allOk = false;
     }
 
     // Rozetler
-    final badges = await _firebase.getSubcollection(uid, 'badges');
-    for (final b in badges) {
-      try {
-        final row = Map<String, dynamic>.from(b)..remove('_docId');
-        row.putIfAbsent('isDisplayed', () => 0);
-        await _db.insert('badges', row);
-      } catch (_) {}
+    try {
+      final badges = await _firebase.getSubcollection(uid, 'badges');
+      for (final b in badges) {
+        try {
+          final row = Map<String, dynamic>.from(b)..remove('_docId');
+          row.putIfAbsent('isDisplayed', () => 0);
+          await _db.insert('badges', row);
+        } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('[UserRepo] badges restore hatası: $e');
+      allOk = false;
     }
 
     // Hatırlatıcılar
-    final reminders = await _firebase.getSubcollection(uid, 'reminders');
-    for (final r in reminders) {
-      try {
-        await _db.insert('reminders', r..remove('_docId'));
-      } catch (_) {}
+    try {
+      final reminders = await _firebase.getSubcollection(uid, 'reminders');
+      for (final r in reminders) {
+        try {
+          await _db.insert('reminders', r..remove('_docId'));
+        } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('[UserRepo] reminders restore hatası: $e');
+      allOk = false;
     }
+
+    return allOk;
   }
 
   /// Firestore'dan geri yüklenen bir not satırındaki resim/ses dosyaları

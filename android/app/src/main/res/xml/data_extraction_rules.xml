@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DÜZELTME (gizlilik): Android'in Otomatik Yedekleme özelliği varsayılan
+  olarak TÜM uygulama verisini (SharedPreferences dahil — kayıtlı hesap
+  e-postaları, giriş/onboarding bayrakları; SQLite veritabanı dahil —
+  notlar, görevler, ödüller) kullanıcının bulut hesabına (Android 12+:
+  Google hesabıyla şifrelenmiş bulut yedeği) ve cihazdan cihaza aktarıma
+  dahil eder. allowBackup/dataExtractionRules hiç ayarlanmamış olması bu
+  hassas verilerin kontrolsüzce yedeklenmesine yol açıyordu. Bu dosya
+  shared_prefs ve veritabanı alanlarını hem bulut yedeklemesinden hem
+  cihaz aktarımından hariç tutar.
+
+  Not: Hesabı olan kullanıcılar için bu veriler zaten Firestore'da
+  (UserRepository/FirebaseService) senkronize tutuluyor ve yeni cihazda
+  girişte restoreFromFirestore ile geri yükleniyor — bu yüzden yedeklemeden
+  hariç tutmak veri kaybına yol açmaz, yalnızca kontrolsüz bulut kopyasını
+  önler.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" />
+        <exclude domain="database" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" />
+        <exclude domain="database" />
+    </device-transfer>
+</data-extraction-rules>

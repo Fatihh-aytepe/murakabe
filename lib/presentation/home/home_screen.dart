@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -83,6 +84,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _tasksSectionHidden = LocalStorage().tasksSectionHidden;
     _communitySectionHidden = LocalStorage().communitySectionHidden;
     FirestoreNotificationService().start();
+    // E-posta değişikliği doğrulanmışsa (bkz. UserRepository.
+    // syncEmailFromAuth) SQLite/Firestore/savedAccounts'u senkronize et —
+    // best-effort, açılışı asla bloklamaz.
+    unawaited(_userRepo.syncEmailFromAuth());
+    // Önceki bir restore'da eksik kalan not/görev/ödül gibi alt
+    // koleksiyonlar varsa tekrar dene — bkz. UserRepository.
+    // retryPendingSubcollectionRestore.
+    unawaited(_userRepo.retryPendingSubcollectionRestore());
     _loadContent().then((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
@@ -112,6 +121,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // uygulama öne dönene kadar görmüyor — bu yüzden burada zorla reload.
     if (state == AppLifecycleState.resumed) {
       LocalStorage().reload().then((_) => _refreshZikirCount());
+      // Kullanıcı ayarlar dışına çıkıp e-posta doğrulama linkine tıkladıktan
+      // sonra uygulamaya geri dönebilir — bkz. initState'teki açıklama.
+      unawaited(_userRepo.syncEmailFromAuth());
     }
   }
 

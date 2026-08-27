@@ -13,6 +13,16 @@ import '../community/admin_dashboard_screen.dart';
 
 /// Güncelleme sonrası eski kullanıcıları Firebase Auth'a bağlayan ekran.
 /// Bir kez gösterilir, tamamlanınca bir daha açılmaz.
+///
+/// NOT: Kod tabanında bu ekrana yönlendiren TEK bir çağrı bile yok —
+/// splash_screen.dart, migration'ı doğrudan "tamamlandı" işaretleyip
+/// LoginScreen'e yönlendiriyor (bkz. oradaki yorum). Bu ekran şu anda
+/// pratikte HİÇBİR kullanıcı tarafından açılamıyor (muhtemelen artık
+/// tamamlanmış bir geçmiş migrasyonun kalıntısı). Silinip silinmeyeceğine
+/// veya yeniden bağlanıp bağlanmayacağına ürün sahibi karar vermeli —
+/// burada yalnızca içindeki yanlış `isEmailVerified: true` iddiası
+/// düzeltildi (bkz. aşağıda), ekran yeniden bağlanırsa bu yanlış veri
+/// Firestore'a yazılmasın diye.
 class AuthMigrationScreen extends StatefulWidget {
   final String oldUserId;
   const AuthMigrationScreen({super.key, required this.oldUserId});
@@ -123,6 +133,15 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
 
       final newUid = credential.user!.uid;
 
+      // DÜZELTME: createUserWithEmailAndPassword e-postayı DOĞRULAMAZ —
+      // aşağıda isEmailVerified alanı önceden hep `true` yazılıyordu, bu
+      // gerçek dışıydı (doğrulama linkine hiç tıklanmadı). Gerçek bir
+      // doğrulama maili gönderiyoruz; alan de gerçek durumu yansıtacak
+      // şekilde false yazılıyor.
+      try {
+        await credential.user!.sendEmailVerification();
+      } catch (_) {}
+
       // 2. SQLite'da kullanıcı ID'sini güncelle
       await _db.update(
         'users',
@@ -152,7 +171,7 @@ class _AuthMigrationScreenState extends State<AuthMigrationScreen> {
           bio: _existingUser!.bio,
           gender: _existingUser!.gender,
           photoUrl: _existingUser!.photoUrl,
-          isEmailVerified: true,
+          isEmailVerified: false,
         );
         await _firebase.saveUser(updatedUser);
       }

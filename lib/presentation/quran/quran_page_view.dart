@@ -66,8 +66,19 @@ class _QuranPageViewState extends State<QuranPageView> {
         _pageCache[page] = ayahs;
         _loadingPages.remove(page);
       });
-      // İlerleme kaydet
-      if (ayahs.isNotEmpty) {
+      // DÜZELTME (yarış durumu): kullanıcı hızlıca birden fazla sayfa
+      // arasında geçiş yaparsa (ör. 5 → 6 → 7), her sayfa için ayrı bir
+      // ağ isteği (getAyahsByPage) eşzamanlı olarak başlıyor. Bu isteklerin
+      // hangi sırayla YANITLANACAĞININ hiçbir garantisi yok — ör. sayfa
+      // 5'in isteği ağda daha yavaş olup sayfa 7'nin yanıtından SONRA
+      // dönebilir. Önceden burada, yanıt hangi sayfaya ait olursa olsun
+      // koşulsuzca ilerleme kaydediliyordu; bu da kullanıcı zaten 7.
+      // sayfadayken ilerlemenin 5. sayfaya geri düşmesine (Firestore'a da
+      // öyle yazılmasına) yol açabiliyordu. Artık yalnızca yanıt hâlâ
+      // kullanıcının O AN gerçekten görüntülediği sayfaya aitse ilerleme
+      // güncelleniyor; eski/gecikmiş bir yanıt sessizce önbelleğe alınır
+      // (sayfa içeriği yine gösterilir) ama ilerlemeyi geri almaz.
+      if (ayahs.isNotEmpty && page == _currentPage) {
         widget.onProgressChanged(
             page, ayahs.first.surahNumber, ayahs.first.number);
       }

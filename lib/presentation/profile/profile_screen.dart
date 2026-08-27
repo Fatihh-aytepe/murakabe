@@ -1,13 +1,16 @@
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_strings.dart';
 import '../../core/services/alarm_service.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/services/firestore_notification_service.dart';
 import '../../data/local/local_storage.dart';
 import '../../data/models/esma_model.dart';
 import '../../data/models/hadis_model.dart';
@@ -1902,6 +1905,32 @@ class ProfileScreenState extends State<ProfileScreen>
                                         email: email, password: passCtrl.text);
                                     final authUser =
                                         FirebaseService().currentAuthUser!;
+
+                                    // DÜZELTME: login_screen.dart'taki normal
+                                    // giriş akışının aksine burada e-posta
+                                    // doğrulama kontrolü HİÇ yapılmıyordu —
+                                    // doğrulanmamış bir hesaba bu dialogdan
+                                    // doğrudan HomeScreen'e geçilebiliyordu.
+                                    // Sahip hesabı istisnası (bkz.
+                                    // splash_screen.dart) burada da korunur.
+                                    if (authUser.email != AppStrings.adminEmail) {
+                                      try {
+                                        await authUser.reload();
+                                      } catch (_) {}
+                                      final refreshed =
+                                          FirebaseService().currentAuthUser;
+                                      if (refreshed == null ||
+                                          !refreshed.emailVerified) {
+                                        await FirebaseService().signOut();
+                                        setDlg(() {
+                                          isSaving = false;
+                                          errorMsg =
+                                              'Bu hesabın e-postası doğrulanmamış. Önce giriş ekranından doğrulamayı tamamlayın.';
+                                        });
+                                        return;
+                                      }
+                                    }
+
                                     // Bkz. UserRepository.prepareLocalDataForUid:
                                     // yerel SQLite tabloları userId'ye göre
                                     // ayrılmadığından, geçilen hesap eskisinin
@@ -1918,11 +1947,32 @@ class ProfileScreenState extends State<ProfileScreen>
                                       name: acc['name'] as String? ?? email,
                                     );
                                     // Yerel veri yoksa Firestore'dan geri yükle
+                                    // DÜZELTME: dönüş değeri (restore
+                                    // başarılı mı) önceden hiç kontrol
+                                    // edilmiyordu — prepareLocalDataForUid
+                                    // önceki hesabın verisini ZATEN sildiği
+                                    // için, restore de başarısız olursa
+                                    // kullanıcı boş/eksik bir profille
+                                    // HomeScreen'e düşüyordu ve bunu bir daha
+                                    // fark etmesi zordu. Şimdi başarısızsa
+                                    // HomeScreen'e HİÇ geçilmiyor; kullanıcı
+                                    // (hâlâ oturumu açıkken) tekrar
+                                    // deneyebiliyor — bir sonraki başarılı
+                                    // denemede prepareLocalDataForUid zaten
+                                    // no-op olur (uid aynı kaldığı için).
                                     final existing =
                                         await _userRepo.getCurrentUser();
                                     if (existing == null) {
-                                      await UserRepository()
+                                      final restored = await UserRepository()
                                           .restoreFromFirestore(authUser.uid);
+                                      if (!restored) {
+                                        setDlg(() {
+                                          isSaving = false;
+                                          errorMsg =
+                                              'Hesap verileri yüklenemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.';
+                                        });
+                                        return;
+                                      }
                                     }
                                     if (ctx.mounted) Navigator.pop(ctx);
                                     if (mounted) {
@@ -1933,10 +1983,32 @@ class ProfileScreenState extends State<ProfileScreen>
                                         (_) => false,
                                       );
                                     }
-                                  } catch (_) {
+                                  } on FirebaseAuthException catch (e) {
+                                    // DÜZELTME: önceden HER hata (ağ hatası
+                                    // dahil) "Şifre hatalı" olarak
+                                    // gösteriliyordu. Auth hatalarını kendi
+                                    // koduna göre, diğerlerini (aşağıdaki
+                                    // genel catch) ayrı mesajla gösteriyoruz.
                                     setDlg(() {
                                       isSaving = false;
-                                      errorMsg = 'Şifre hatalı.';
+                                      errorMsg = switch (e.code) {
+                                        'wrong-password' ||
+                                        'invalid-credential' =>
+                                          'Şifre hatalı.',
+                                        'user-not-found' =>
+                                          'Bu hesap bulunamadı.',
+                                        'network-request-failed' =>
+                                          'İnternet bağlantısı yok.',
+                                        'too-many-requests' =>
+                                          'Çok fazla deneme yapıldı. Lütfen bekleyin.',
+                                        _ => 'Giriş başarısız: ${e.code}',
+                                      };
+                                    });
+                                  } catch (e) {
+                                    setDlg(() {
+                                      isSaving = false;
+                                      errorMsg =
+                                          'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
                                     });
                                   }
                                 },
@@ -1993,10 +2065,27 @@ class ProfileScreenState extends State<ProfileScreen>
     if (confirmed != true) return;
     final uid = LocalStorage().userId ?? '';
     await FirebaseService().signOut();
+    // DÜZELTME: önceden burada hiçbir bildirim/dinleyici temizliği
+    // yapılmıyordu — Firestore bildirim/sohbet dinleyicileri (bir sonraki
+    // hesap açılana kadar) çalışmaya devam edebiliyor, planlanmış yerel
+    // bildirimler (namaz vakti/görev/hatırlatıcı) de bu hesaba ait içerikle
+    // gösterilmeye devam edebiliyordu. HomeScreen.dispose zaten dinleyicileri
+    // durduruyor (bkz. oradaki düzeltme) ama burada da AÇIKÇA durduruyoruz —
+    // hem daha erken etkili olur hem de HomeScreen dışındaki bir yerden
+    // (ör. ayarlar) çıkış yapılırsa bile garanti eder. cancelAll(), bir
+    // sonraki HomeScreen açılışında zaten yeniden kurulan namaz vakti/görev/
+    // günlük içerik bildirimlerini (bkz. _scheduleAllNotifications) etkilemez.
+    FirestoreNotificationService().stop();
+    try {
+      await NotificationService().cancelAll();
+    } catch (_) {}
     // Hesabı listeden silme — Instagram gibi hatırla, sadece oturum kapalı işaretle
     if (uid.isNotEmpty) await LocalStorage().markAccountLoggedOut(uid);
     await LocalStorage().setUserRegistered(false);
-    await LocalStorage().setUserId('');
+    // DÜZELTME: setUserId('') yerine clearUserId() — boş string bırakmak
+    // "!= null" kontrollerini yanıltıyordu (bkz. LocalStorage.clearUserId
+    // açıklaması).
+    await LocalStorage().clearUserId();
     if (mounted) {
       Navigator.pushAndRemoveUntil(
         context,

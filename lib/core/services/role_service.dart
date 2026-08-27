@@ -34,6 +34,32 @@ class RoleService {
     return UserRole.user;
   }
 
+  // ── Rolü hataları "user" ile karıştırmadan sorgula ────────────────────────
+  // DÜZELTME: getCurrentRole() ağ/izin hatalarını yutup UserRole.user
+  // döndürüyor — bu, "gerçekten sahip/admin değil" ile "sorgu başarısız
+  // oldu" durumlarını ayırt edilemez kılıyor. Özellikle sahip/admin girişi
+  // gibi hataya göre signOut çağıran akışlarda, geçici bir ağ sorunu yüzünden
+  // gerçek bir sahip/admin oturumdan atılabiliyordu. Bu metod hata durumunda
+  // null döner; çağıran taraf null'ı "rol bilinmiyor, tekrar dene" olarak
+  // ele almalı, ASLA "user" ile aynı şekilde işlememelidir.
+  Future<UserRole?> getCurrentRoleOrNull() async {
+    if (_uid == null) return UserRole.user;
+    try {
+      final ownerDoc = await _db.collection('roles').doc('owner').get();
+      if (ownerDoc.exists && ownerDoc.data()?['uid'] == _uid) {
+        return UserRole.owner;
+      }
+      final adminDoc = await _db.collection('roles').doc(_uid).get();
+      if (adminDoc.exists && adminDoc.data()?['role'] == 'admin') {
+        return UserRole.admin;
+      }
+      return UserRole.user;
+    } catch (e) {
+      debugPrint('[RoleService] getCurrentRoleOrNull hata: $e');
+      return null;
+    }
+  }
+
   // ── Sahip dokümanı var mı kontrol et ─────────────────────────────────────
   Future<bool> isOwnerConfigured() async {
     try {
@@ -92,6 +118,18 @@ class RoleService {
           await _db.collection('adminRequests').doc(_uid).get();
       if (existing.exists && existing.data()?['status'] == 'pending') {
         throw Exception('Zaten bekleyen bir başvurunuz var');
+      }
+      // DÜZELTME: reddedilmiş (veya onaylanmış) bir başvuru belgesi zaten
+      // varsa aşağıdaki .set() Firestore güvenlik kurallarınca "update"
+      // sayılır (create yalnızca belge hiç mevcut değilken geçerlidir) —
+      // adminRequests için update sadece sahibe açık, başvuru sahibine
+      // değil. Sonuç: reddedilen bir kullanıcı bir daha ASLA başvuramıyor,
+      // istek sessizce PERMISSION_DENIED ile başarısız oluyordu. Kendi
+      // başvurusunu silme hakkı zaten var (bkz. firestore.rules delete
+      // kuralı); yeniden başvurabilmesi için önce eski belgeyi silip
+      // ardından temiz bir create ile yeniden oluşturuyoruz.
+      if (existing.exists) {
+        await _db.collection('adminRequests').doc(_uid).delete();
       }
     } on Exception {
       rethrow;
@@ -189,28 +227,49 @@ class RoleService {
       'createdAt': FieldValue.serverTimestamp(),
     });
 
-    final batch = _db.batch();
+    try {
+      final batch = _db.batch();
 
-    // Davet kodunu kısıtlı alt-koleksiyona kaydet
-    batch.set(ref.collection('private').doc('config'), {
-      'inviteCode': code,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+      // Davet kodunu kısıtlı alt-koleksiyona kaydet
+      batch.set(ref.collection('private').doc('config'), {
+        'inviteCode': code,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
-    // Arama tablosuna ekle (katılım doğrulaması için)
-    batch.set(_db.collection('inviteLookup').doc(code), {
-      'communityId': ref.id,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+      // Arama tablosuna ekle (katılım doğrulaması için)
+      batch.set(_db.collection('inviteLookup').doc(code), {
+        'communityId': ref.id,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
-    // Admini üye olarak ekle
-    batch.set(ref.collection('members').doc(_uid), {
-      'uid': _uid,
-      'role': 'admin',
-      'joinedAt': FieldValue.serverTimestamp(),
-    });
+      // Admini üye olarak ekle
+      batch.set(ref.collection('members').doc(_uid), {
+        'uid': _uid,
+        'role': 'admin',
+        'joinedAt': FieldValue.serverTimestamp(),
+      });
 
-    await batch.commit();
+      await batch.commit();
+    } catch (e) {
+      // DÜZELTME (atomicity): topluluk belgesi yukarıda ZATEN
+      // oluşturulduktan sonra bu batch (davet kodu/arama kaydı/admin
+      // üyeliği) başarısız olursa, önceden ortada config'i, davet kodu ve
+      // admin üyeliği OLMAYAN "yarım" bir topluluk kalıyordu — admin
+      // daveti paylaşamıyor, hatta bazı ekranlarda kendi topluluğuna bile
+      // erişemiyordu (üyelik kaydı yok). Not: topluluk oluşturmayı ve bu
+      // batch'i TEK bir batch'te birleştirmek mümkün değil — members
+      // create kuralı admin dalı topluluğun ÖNCEDEN var olduğunu `get()`
+      // ile doğruluyor ve aynı batch içindeki henüz commit edilmemiş
+      // yazımlar `get()` ile görünmüyor (yalnızca `getAfter()` ile
+      // görünür), bu yüzden ikisi tek batch'e konursa kural değerlendirmesi
+      // başarısız olur. Bunun yerine hata durumunda topluluk belgesini
+      // geri alıyoruz (best-effort) ki en azından yarım bir topluluk
+      // kalıcı olmasın.
+      try {
+        await ref.delete();
+      } catch (_) {}
+      rethrow;
+    }
 
     return ref.id;
   }
@@ -342,21 +401,15 @@ class RoleService {
           .doc(communityId)
           .collection('members')
           .get();
-      final batch = _db.batch();
-      for (final doc in members.docs) {
-        final memberUid = doc.data()['uid'] as String?;
-        if (memberUid == null || memberUid == _uid) continue;
-        final ref = _db.collection('notifications').doc();
-        batch.set(ref, {
-          'type': 'task_assigned',
-          'targetUid': memberUid,
-          'title': title,
-          'communityId': communityId,
-          'createdAt': FieldValue.serverTimestamp(),
-          'read': false,
-        });
-      }
-      await batch.commit();
+      final targets = _memberUidsExcludingSelf(members.docs);
+      await _sendNotificationsChunked(targets, (memberUid) => {
+            'type': 'task_assigned',
+            'targetUid': memberUid,
+            'title': title,
+            'communityId': communityId,
+            'createdAt': FieldValue.serverTimestamp(),
+            'read': false,
+          });
     } catch (_) {}
   }
 
@@ -384,22 +437,51 @@ class RoleService {
           .doc(communityId)
           .collection('members')
           .get();
+      final targets = _memberUidsExcludingSelf(members.docs);
+      await _sendNotificationsChunked(targets, (memberUid) => {
+            'type': isWarning ? 'announcement_warning' : 'announcement',
+            'targetUid': memberUid,
+            'message': message,
+            'communityId': communityId,
+            'createdAt': FieldValue.serverTimestamp(),
+            'read': false,
+          });
+    } catch (_) {}
+  }
+
+  // ── Yardımcı: kendisi hariç üye UID listesi ──────────────────────────────
+  List<String> _memberUidsExcludingSelf(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+    return docs
+        .map((d) => d.data()['uid'] as String?)
+        .where((uid) => uid != null && uid != _uid)
+        .cast<String>()
+        .toList();
+  }
+
+  // ── Yardımcı: bildirim yazımlarını Firestore'un 500 işlem/batch
+  // limitine takılmadan parçalar halinde gönder ─────────────────────────────
+  // DÜZELTME: önceden tüm üyelere TEK bir batch'te bildirim yazılıyordu.
+  // Üye sayısı 500'ü (batch başına yazma limiti) geçen büyük topluluklarda
+  // bu batch TAMAMEN "invalid-argument" hatasıyla başarısız oluyordu — yani
+  // limiti aşan bir toplulukta duyuru/görev bildirimleri HİÇBİR üyeye
+  // ulaşmıyordu (çağıran taraf hatayı sessizce yutuyordu). Şimdi 450'lik
+  // parçalar halinde ayrı batch'lere bölünüyor.
+  Future<void> _sendNotificationsChunked(
+    List<String> targetUids,
+    Map<String, dynamic> Function(String memberUid) buildData,
+  ) async {
+    const chunkSize = 450;
+    for (var i = 0; i < targetUids.length; i += chunkSize) {
+      final end =
+          (i + chunkSize < targetUids.length) ? i + chunkSize : targetUids.length;
       final batch = _db.batch();
-      for (final doc in members.docs) {
-        final memberUid = doc.data()['uid'] as String?;
-        if (memberUid == null || memberUid == _uid) continue;
+      for (final memberUid in targetUids.sublist(i, end)) {
         final ref = _db.collection('notifications').doc();
-        batch.set(ref, {
-          'type': isWarning ? 'announcement_warning' : 'announcement',
-          'targetUid': memberUid,
-          'message': message,
-          'communityId': communityId,
-          'createdAt': FieldValue.serverTimestamp(),
-          'read': false,
-        });
+        batch.set(ref, buildData(memberUid));
       }
       await batch.commit();
-    } catch (_) {}
+    }
   }
 
   // ── Admin: Üyeyi topluluktan at ───────────────────────────────────────────

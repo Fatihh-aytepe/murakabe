@@ -3,7 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/local/database_helper.dart';
+import '../../data/local/local_storage.dart';
+import '../../data/remote/firebase_service.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/utils/stable_hash.dart';
 
 class ReminderModel {
   final String id;
@@ -47,6 +50,8 @@ class RemindersScreen extends StatefulWidget {
 
 class _RemindersScreenState extends State<RemindersScreen> {
   final _db = DatabaseHelper();
+  final _firebase = FirebaseService();
+  String? get _uid => LocalStorage().userId;
   List<ReminderModel> _reminders = [];
 
   @override
@@ -57,10 +62,26 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
   Future<void> _loadReminders() async {
     final rows = await _db.query('reminders', orderBy: 'reminderTime ASC');
+    final reminders = rows.map((r) => ReminderModel.fromMap(r)).toList();
     if (mounted) {
       setState(() {
-        _reminders = rows.map((r) => ReminderModel.fromMap(r)).toList();
+        _reminders = reminders;
       });
+    }
+    // DÜZELTME: aktif ve zamanı henüz geçmemiş hatırlatıcıları ekran her
+    // açıldığında yeniden planlıyoruz (scheduleCustomReminder aynı ID ile
+    // çağrılınca var olanın üzerine yazar — tekrar çağırmak zararsız). Bu,
+    // hem OS'un bir şekilde iptal ettiği bir alarmı kendiliğinden onarır,
+    // hem de çıkış yapıp AYNI hesaba tekrar giren bir kullanıcı için
+    // (bkz. profile_screen.dart _logout — artık NotificationService().
+    // cancelAll() çağırıyor) bu ekran tekrar açıldığında hatırlatıcıların
+    // sessizce kaybolmuş gibi kalmamasını sağlar.
+    for (final r in reminders) {
+      if (r.isActive && r.reminderTime.isAfter(DateTime.now())) {
+        try {
+          await _scheduleReminderNotification(r);
+        } catch (_) {}
+      }
     }
   }
 
@@ -366,6 +387,19 @@ class _RemindersScreenState extends State<RemindersScreen> {
                         isActive: true,
                       );
                       await _db.insert('reminders', reminder.toMap());
+                      // DÜZELTME: önceden hatırlatıcılar SADECE SQLite'a
+                      // yazılıyordu — FirebaseService.saveReminder hiç
+                      // çağrılmıyordu (UserRepository.restoreFromFirestore
+                      // 'reminders' alt koleksiyonunu zaten okuyordu, ama o
+                      // koleksiyon hiç dolmuyordu). Uygulama silinip tekrar
+                      // kurulursa veya hesap başka cihazda açılırsa tüm
+                      // hatırlatıcılar kaybolurdu.
+                      if (_uid != null) {
+                        try {
+                          await _firebase.saveReminder(
+                              _uid!, reminder.toMap());
+                        } catch (_) {}
+                      }
                       // Bildirim planla
                       await _scheduleReminderNotification(reminder);
                       if (!ctx.mounted) return;
@@ -383,10 +417,17 @@ class _RemindersScreenState extends State<RemindersScreen> {
     );
   }
 
+  // DÜZELTME: önceden Dart'ın yerleşik String.hashCode'u kullanılıyordu —
+  // SDK sürümleri arasında sabit kalması garanti değil (bkz.
+  // stable_hash.dart). stableStringHash kendi sabit algoritmamızı kullanır,
+  // böylece ekleme sırasında planlanan bildirim, silme sırasında AYNI ID
+  // ile güvenle iptal edilebiliyor — hatta uygulama SDK sürümü güncellense
+  // bile.
+  int _notifIdFor(String reminderId) => stableStringHash(reminderId) % 1000 + 1000;
+
   Future<void> _scheduleReminderNotification(ReminderModel reminder) async {
-    final notifId = reminder.id.hashCode.abs() % 1000 + 1000;
     await NotificationService().scheduleCustomReminder(
-      notifId,
+      _notifIdFor(reminder.id),
       reminder.title,
       reminder.content.isNotEmpty ? reminder.content : reminder.title,
       reminder.reminderTime,
@@ -394,7 +435,17 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Future<void> _deleteReminder(ReminderModel reminder) async {
+    // DÜZELTME: önceden yalnızca SQLite kaydı siliniyordu — Android'de
+    // planlanmış bildirim iptal EDİLMİYORDU, kullanıcı sildiği bir
+    // hatırlatıcı için yine de bildirim alabiliyordu. Aynı formülle
+    // hesaplanan ID ile bildirimi de iptal ediyoruz.
+    await NotificationService().cancelNotification(_notifIdFor(reminder.id));
     await _db.delete('reminders', where: 'id = ?', whereArgs: [reminder.id]);
+    if (_uid != null) {
+      try {
+        await _firebase.deleteReminder(_uid!, reminder.id);
+      } catch (_) {}
+    }
     await _loadReminders();
   }
 

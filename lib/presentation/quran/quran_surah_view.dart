@@ -69,7 +69,15 @@ class _QuranSurahViewState extends State<QuranSurahView> {
         _ayahs = ayahs;
         _loadingAyahs = false;
       });
-      if (ayahs.isNotEmpty) {
+      // DÜZELTME (yarış durumu): kullanıcı hızlıca birden fazla sure
+      // arasında geçiş yaparsa, her biri için ayrı bir ağ isteği
+      // (getAyahsBySurah) eşzamanlı başlıyor ve yanıtların hangi sırayla
+      // döneceğinin garantisi yok. Önceden yanıt hangi sureye ait olursa
+      // olsun koşulsuzca ilerleme kaydediliyordu — eski/yavaş bir sure
+      // isteği, kullanıcı çoktan başka bir sureye geçtikten SONRA dönerse
+      // ilerlemeyi geri alabiliyordu. Artık yalnızca yanıt hâlâ kullanıcının
+      // O AN seçili olan suresine aitse ilerleme güncelleniyor.
+      if (ayahs.isNotEmpty && _selectedSurah == surahNumber) {
         widget.onProgressChanged(
             ayahs.first.page, surahNumber, ayahs.first.number);
       }

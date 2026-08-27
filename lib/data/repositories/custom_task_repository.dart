@@ -4,6 +4,7 @@ import '../local/local_storage.dart';
 import '../models/custom_task_model.dart';
 import '../remote/firebase_service.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/utils/stable_hash.dart';
 
 class CustomTaskRepository {
   final _db = DatabaseHelper();
@@ -14,7 +15,10 @@ class CustomTaskRepository {
 
   // ── Tek merkezi ID hesabı — hem burada hem home_screen bu metodu kullanır ──
   // Aralık: 3000–3999 (home_screen'deki 5000+ ve eski 2000+ ile çakışmaz)
-  static int taskNotifId(String taskId) => 3000 + taskId.hashCode.abs() % 1000;
+  // DÜZELTME: önceden Dart'ın yerleşik String.hashCode'u kullanılıyordu —
+  // SDK sürümleri arasında sabit kalması garanti değil (bkz.
+  // stable_hash.dart). stableStringHash kendi sabit algoritmamızı kullanır.
+  static int taskNotifId(String taskId) => 3000 + stableStringHash(taskId) % 1000;
 
   // ── Okuma ────────────────────────────────────────────────────────────────
 
