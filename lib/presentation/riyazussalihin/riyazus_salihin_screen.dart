@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../../../core/constants/app_colors.dart';
@@ -27,10 +30,45 @@ class _RiyazusSalihinScreenState extends State<RiyazusSalihinScreen> {
   static const String _prefKeyBookmarks = 'riyazus_salihin_bookmarks';
   static const String _assetPath = 'assets/riyazusalihin/riyazusalihin.pdf';
 
+  String? _localPdfPath;
+  String? _loadError;
+
   @override
   void initState() {
     super.initState();
     _loadSavedState();
+    _ensureLocalPdf();
+  }
+
+  /// PDF asset'ini önce uygulamanın belge klasörüne kopyalar, sonra oradan
+  /// açar. `SfPdfViewer.asset(...)` bazı cihazlarda büyük PDF'lerde
+  /// "yüklenemedi" hatası veriyordu (bkz. tefhimul_kuran_screen.dart'taki
+  /// aynı, kanıtlanmış çözüm) — dosyadan (`SfPdfViewer.file`) açmak bu
+  /// sorunu ortadan kaldırıyor.
+  Future<void> _ensureLocalPdf() async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/riyazusalihin.pdf');
+      final bytes = await rootBundle.load(_assetPath);
+      final expectedLength = bytes.lengthInBytes;
+      // Sadece "dosya var mı" diye bakmak yetmiyor: uygulama daha önce
+      // (ör. bozuk bir asset'ten) eksik/hatalı bir kopya yazmışsa, o bozuk
+      // kopya burada sonsuza kadar yeniden kullanılırdı. Asset güncellenip
+      // (mesela bozuk PDF sağlamıyla değiştirilip) yeni bir sürüm yayınca
+      // eski cihazlarda da doğru kopyanın yazılması için, bellekteki
+      // asset'in boyutuyla diskteki kopyanın boyutunu karşılaştırıp
+      // uyuşmuyorsa yeniden yazıyoruz.
+      final needsCopy =
+          !await file.exists() || await file.length() != expectedLength;
+      if (needsCopy) {
+        await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+      }
+      if (!mounted) return;
+      setState(() => _localPdfPath = file.path);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loadError = 'PDF hazırlanamadı: $e');
+    }
   }
 
   @override
@@ -431,32 +469,69 @@ class _RiyazusSalihinScreenState extends State<RiyazusSalihinScreen> {
           Expanded(
             child: GestureDetector(
               onTap: () => setState(() => _showToolbar = !_showToolbar),
-              child: SfPdfViewer.asset(
-                _assetPath,
-                key: _pdfKey,
-                controller: _pdfController,
-                initialPageNumber: _currentPage,
-                onDocumentLoaded: (details) {
-                  setState(() {
-                    _totalPages = details.document.pages.count;
-                  });
-                  if (_currentPage > 1) {
-                    _pdfController.jumpToPage(_currentPage);
-                  }
-                },
-                onPageChanged: (details) {
-                  setState(() => _currentPage = details.newPageNumber);
-                  _saveCurrentPage(details.newPageNumber);
-                },
-                onDocumentLoadFailed: (details) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('PDF yüklenemedi: ${details.description}'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                },
-              ),
+              child: _loadError != null
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: Colors.redAccent, size: 48),
+                            const SizedBox(height: 16),
+                            Text(
+                              _loadError!,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.notoSans(
+                                  color: Colors.white70, fontSize: 14),
+                            ),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() => _loadError = null);
+                                _ensureLocalPdf();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.gold,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: Text('Tekrar Dene',
+                                  style: GoogleFonts.notoSans(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : _localPdfPath == null
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                              color: AppColors.gold),
+                        )
+                      : SfPdfViewer.file(
+                          File(_localPdfPath!),
+                          key: _pdfKey,
+                          controller: _pdfController,
+                          initialPageNumber: _currentPage,
+                          onDocumentLoaded: (details) {
+                            setState(() {
+                              _totalPages = details.document.pages.count;
+                            });
+                            if (_currentPage > 1) {
+                              _pdfController.jumpToPage(_currentPage);
+                            }
+                          },
+                          onPageChanged: (details) {
+                            setState(() => _currentPage = details.newPageNumber);
+                            _saveCurrentPage(details.newPageNumber);
+                          },
+                          onDocumentLoadFailed: (details) {
+                            setState(() =>
+                                _loadError = 'PDF yüklenemedi: ${details.description}');
+                          },
+                        ),
             ),
           ),
 

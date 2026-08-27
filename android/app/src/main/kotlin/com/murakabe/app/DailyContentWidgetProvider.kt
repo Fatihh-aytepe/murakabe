@@ -66,7 +66,16 @@ class DailyContentWidgetProvider : AppWidgetProvider() {
         // Rozet/düğme zeminleri: hangi vurgu rengi seçilirse seçilsin göze
         // batmayacak, sabit düşük alfalı bir dolgu — "dengeyi koru" isteği.
         val chipFill = WidgetPrefs.withAlpha(accent, 38)
-        val navFill = WidgetPrefs.withAlpha(dim, 46)
+        // ‹ › ok butonlarının ARKA PLAN halkası tamamen saydam olmalı —
+        // kullanıcı isteği: "arkaplanı şeffaflaştır, buton (ok ikonu) görünür
+        // kalsın". Önceki denemede yanlışlıkla okun kendisi soluklaşmıştı;
+        // bu yüzden burada SADECE zemin (…_bg) için alfa düşürülüyor, ok
+        // ikonu aşağıda ayrıca ve her zaman TAM OPAK bırakılıyor.
+        val navFill = WidgetPrefs.withAlpha(dim, 0)
+        // Ok ikonlarının rengi — alfa kanalı ne olursa olsun (primary rengin
+        // kendisi widget saydamlık ayarından etkilenmiş olabilir) 255'e
+        // sabitleniyor, böylece ok her zaman net görünür.
+        val navIconColor = WidgetPrefs.withAlpha(primary, 255)
 
         views.setInt(R.id.chip_content_type_bg, "setColorFilter", chipFill)
         views.setTextColor(R.id.tv_content_type, accent)
@@ -76,12 +85,15 @@ class DailyContentWidgetProvider : AppWidgetProvider() {
         views.setTextColor(R.id.tv_esma_ar, primary)
         views.setTextColor(R.id.tv_esma_meaning, dim)
 
-        // ‹ › ok butonları artık dairesel, hafif tonlu bir zemin üzerinde —
-        // hem daha "buton" gibi görünüyor hem de dokunma alanı büyüdü.
+        // Zemin (arka plan halkası) tamamen saydam; ok ikonunun kendisi tam
+        // opak ve setImageAlpha ile de garanti altına alınıyor — sadece
+        // arka plan şeffaflaşsın, buton (ok) her zaman görünür kalsın.
         views.setInt(R.id.btn_content_prev_bg, "setColorFilter", navFill)
         views.setInt(R.id.btn_content_next_bg, "setColorFilter", navFill)
-        views.setInt(R.id.btn_content_prev, "setColorFilter", primary)
-        views.setInt(R.id.btn_content_next, "setColorFilter", primary)
+        views.setInt(R.id.btn_content_prev, "setColorFilter", navIconColor)
+        views.setInt(R.id.btn_content_next, "setColorFilter", navIconColor)
+        views.setInt(R.id.btn_content_prev, "setImageAlpha", 255)
+        views.setInt(R.id.btn_content_next, "setImageAlpha", 255)
 
         val index = ((WidgetPrefs.getInt(context, "widget_content_index") % TYPE_COUNT) + TYPE_COUNT) % TYPE_COUNT
 

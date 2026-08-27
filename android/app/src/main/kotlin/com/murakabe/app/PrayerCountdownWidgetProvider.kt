@@ -39,6 +39,27 @@ class PrayerCountdownWidgetProvider : AppWidgetProvider() {
         for (id in appWidgetIds) {
             updateWidget(context, appWidgetManager, id)
         }
+        // Widget eklendi/sistem güncelledi — "kalan vakit" artık dakikada bir
+        // tazelensin diye periyodik tick'i (yeniden) kur. Zaten kuruluysa
+        // zararsız — üst üste birikmez, sadece aynı alarm'ı günceller.
+        WidgetRefresher.scheduleMinuteTick(context)
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == WidgetRefresher.ACTION_PRAYER_TICK) {
+            // Dakikalık "kalan vakit" tazeleme sinyali — sadece namaz vakti
+            // widget'larını yeniden çiz, diğerlerine dokunma.
+            WidgetRefresher.refreshPrayerWidgets(context)
+            return
+        }
+        super.onReceive(context, intent)
+    }
+
+    override fun onDisabled(context: Context) {
+        super.onDisabled(context)
+        // Bu türden son widget de kaldırıldıysa (ve diğer namaz vakti
+        // widget'ından da örnek kalmadıysa) dakikalık alarm'ı durdur.
+        WidgetRefresher.cancelMinuteTickIfNoPrayerWidgetsLeft(context)
     }
 
     override fun onAppWidgetOptionsChanged(
@@ -90,10 +111,13 @@ class PrayerCountdownWidgetProvider : AppWidgetProvider() {
             for (i in 0 until 6) {
                 views.setTextViewText(nameIds[i], names[i])
                 views.setTextViewText(timeIds[i], parsed[i].format(timeFormatter))
-                val isNext = window != null && i == window.nextIdx
-                views.setTextColor(nameIds[i], if (isNext) accent else dim)
-                views.setTextColor(timeIds[i], if (isNext) accent else primary)
-                if (isNext) {
+                // Kutucuk, SIRADAKİ değil İÇİNDE BULUNULAN vakti vurgulamalı —
+                // yani zaten başlamış (bir önceki eşik geçilmiş) vakti; bu da
+                // PrayerCalc.Window.prevIdx ile birebir aynı anlama gelir.
+                val isCurrent = window != null && i == window.prevIdx
+                views.setTextColor(nameIds[i], if (isCurrent) accent else dim)
+                views.setTextColor(timeIds[i], if (isCurrent) accent else primary)
+                if (isCurrent) {
                     views.setInt(cardBgIds[i], "setColorFilter", cardFill)
                     views.setViewVisibility(cardBgIds[i], View.VISIBLE)
                 } else {

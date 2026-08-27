@@ -9,17 +9,42 @@ import android.content.Intent
 import android.graphics.Color
 import android.view.View
 import android.widget.RemoteViews
+import java.time.LocalDate
 
 /**
  * Zikir sayacı widget'ı. "+1" dokunuşu TAMAMEN native tarafta işlenir —
  * Dart'a hiç gidilmez; paylaşılan 'zikirCurrentCount' anahtarı doğrudan
  * artırılır (ZikirSayacScreen ekranı da aynı anahtarı okuduğu için
  * uygulama açıldığında iki taraf otomatik senkron olur).
+ *
+ * ÖNEMLİ (senkron hatası düzeltmesi): Dart tarafı (ZikirRepository) her
+ * gün İLK increment/okuma çağrısında sayacı 0'a sıfırlayan bir "günlük
+ * rollover" mantığı çalıştırıyor ve bunun için 'zikirProgressDate'
+ * anahtarını günceliyor. Native taraf bu tarihi hiç güncellemediği için,
+ * kullanıcı gün içinde SADECE widget'tan sayaç arttırırsa, uygulamayı ilk
+ * açtığı an (zikirProgressDate hâlâ dünkü/eski tarih olduğundan) Dart
+ * tarafı sayacı sessizce 0'a sıfırlıyor ve bu sıfırlama hemen widget'a da
+ * yansıyordu — "uygulama içinden bir şey değişince widget sıfırlanıyor"
+ * şikâyetinin gerçek sebebi buydu. Çözüm: aynı günlük-sıfırlama kontrolünü
+ * burada da (aynı tarih formatı ve anahtarla) yapıp iki tarafın da
+ * 'zikirProgressDate'i güncel tutmasını sağlamak — hangi taraf güne ilk
+ * dokunursa sıfırlamayı O yapar, diğeri artık tekrar sıfırlamaz.
  */
 class ZikirWidgetProvider : AppWidgetProvider() {
 
     companion object {
         const val ACTION_INCREMENT = "com.murakabe.app.widget.ZIKIR_INCREMENT"
+    }
+
+    /** Dart'taki ZikirRepository._checkProgressRollover ile birebir aynı
+     * mantık/anahtarlar — gün değiştiyse sayacı sıfırlar ve tarihi günceller. */
+    private fun rolloverIfNewDay(context: Context) {
+        val today = LocalDate.now().toString() // "yyyy-MM-dd" — Dart'taki substring(0,10) ile aynı biçim
+        val stored = WidgetPrefs.getString(context, "zikirProgressDate")
+        if (stored == today) return
+        WidgetPrefs.putInt(context, "zikirCurrentCount", 0)
+        WidgetPrefs.putBoolean(context, "zikirCelebrationShown", false)
+        WidgetPrefs.putString(context, "zikirProgressDate", today)
     }
 
     override fun onUpdate(
@@ -36,11 +61,22 @@ class ZikirWidgetProvider : AppWidgetProvider() {
         super.onReceive(context, intent)
         if (intent.action != ACTION_INCREMENT) return
 
-        // Hedefe ulaşınca (in-app davranışla birebir aynı) sayaç sıfırlanır.
+        rolloverIfNewDay(context)
+
+        // DÜZELTME: burada eskiden hedefe ulaşınca sayaç 0'a sıfırlanıyordu —
+        // yorum "in-app davranışla birebir aynı" diyordu ama Dart tarafı
+        // (ZikirRepository.increment) hedefe ulaşınca SIFIRLAMIYOR, sadece
+        // "kutlama gösterildi" bayrağını işaretleyip saymaya devam ediyor.
+        // İki taraf farklı davranınca widget'tan hedefe ulaşmak, uygulamanın
+        // göreceği sayıyla uyuşmayan bir sıfırlanma gibi görünüyordu — şimdi
+        // native de Dart ile birebir aynı davranıyor.
         val target = WidgetPrefs.getInt(context, "widget_zikir_target", 33).coerceAtLeast(1)
         val current = WidgetPrefs.getInt(context, "zikirCurrentCount")
-        val next = if (current + 1 >= target) 0 else current + 1
+        val next = current + 1
         WidgetPrefs.putInt(context, "zikirCurrentCount", next)
+        if (next >= target && !WidgetPrefs.getBoolean(context, "zikirCelebrationShown")) {
+            WidgetPrefs.putBoolean(context, "zikirCelebrationShown", true)
+        }
 
         val manager = AppWidgetManager.getInstance(context)
         val ids = manager.getAppWidgetIds(ComponentName(context, ZikirWidgetProvider::class.java))
@@ -50,6 +86,11 @@ class ZikirWidgetProvider : AppWidgetProvider() {
     }
 
     private fun buildViews(context: Context, widgetId: Int): RemoteViews {
+        // Widget yeniden çizilirken de (sadece +1 dokunuşunda değil) gün
+        // değişikliğini yakala — gece yarısını geçtikten sonra widget hâlâ
+        // dünün sayısını göstermeye devam etmesin.
+        rolloverIfNewDay(context)
+
         val views = RemoteViews(context.packageName, R.layout.widget_zikir)
 
         views.setInt(R.id.widget_root, "setBackgroundResource", WidgetPrefs.backgroundDrawableRes(context))

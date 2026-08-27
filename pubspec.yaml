@@ -68,7 +68,16 @@ dependencies:
 
 # Pusula (Kıble Bulucu için)
   flutter_compass: ^0.8.1
+  # Kıble Bulucu'da kullanıcının konumunu "Şehir, Ülke" biçiminde göstermek
+  # için (reverse geocoding). Konum izni zaten alınıyor, ek izin gerekmez.
+  geocoding: ^5.0.0
   firebase_storage: ^13.4.5
+
+  # Arka planda namaz vakti/zikir/günlük içerik widget verisini tazelemek
+  # için (WorkManager sarmalayıcısı) — Android'in pil tasarrufu/Doze
+  # kurallarına tabidir, gerçek periyodik iş sistemin kendisi tarafından
+  # (JobScheduler/WorkManager) zamanlanır, biz sadece iş tanımlıyoruz.
+  workmanager: ^0.10.9
 
 path_provider: ^2.1.4
 

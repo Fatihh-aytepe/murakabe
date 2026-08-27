@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/widget_bridge_service.dart';
+import '../../data/local/local_storage.dart';
 import '../../data/repositories/zikir_repository.dart';
 
 class ZikirSayacScreen extends StatefulWidget {
@@ -15,7 +16,7 @@ class ZikirSayacScreen extends StatefulWidget {
 }
 
 class _ZikirSayacScreenState extends State<ZikirSayacScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final _repo = ZikirRepository();
 
   ActiveZikir? _active;
@@ -29,6 +30,7 @@ class _ZikirSayacScreenState extends State<ZikirSayacScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 110),
@@ -41,12 +43,24 @@ class _ZikirSayacScreenState extends State<ZikirSayacScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pulseController.dispose();
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Widget'tan yapılan +1 dokunuşu SharedPreferences dosyasına doğrudan
+    // native tarafta yazılıyor; Flutter'ın bellekteki önbelleği bunu
+    // uygulama öne dönene kadar görmüyor — bu yüzden burada zorla reload.
+    if (state == AppLifecycleState.resumed) {
+      _load();
+    }
+  }
+
   Future<void> _load() async {
     try {
+      await LocalStorage().reload();
       final active = await _repo.getActiveZikir();
       if (!mounted) return;
       setState(() {

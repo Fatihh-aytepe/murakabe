@@ -605,8 +605,20 @@ class NotesScreenState extends State<NotesScreen> {
       ),
     );
     if (confirm == true) {
-      await _repo.deleteNote(note.id);
-      await _loadNotes();
+      try {
+        await _repo.deleteNote(note.id);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Not silinemedi: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) await _loadNotes();
+      }
     }
   }
 
@@ -1186,26 +1198,13 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
                       ],
                     ),
                     const Spacer(),
-                    IconButton(
-                      onPressed: _pickReminder,
-                      icon: Icon(
-                        _reminderAt != null
-                            ? Icons.alarm_on
-                            : Icons.alarm_add_outlined,
-                        color: _reminderAt != null ? AppColors.gold : hintColor,
-                        size: 20,
-                      ),
-                      tooltip: 'Hatırlatıcı ekle',
-                    ),
-                    IconButton(
-                      onPressed: () => setState(() => _isPinned = !_isPinned),
-                      icon: Icon(
-                        _isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                        color: _isPinned ? AppColors.gold : hintColor,
-                        size: 20,
-                      ),
-                      tooltip: 'Başa sabitle',
-                    ),
+                    // NOT: "Hatırlatıcı ekle" ve "Başa sabitle" düğmeleri
+                    // buradan kaldırıldı — dar ekranlarda Kaydet düğmesiyle
+                    // birlikte satıra sığmıyor, Kaydet'e dokunmayı
+                    // zorlaştırıyordu. Sabitleme zaten not listesinden
+                    // (uzun basma/ikon) yapılabiliyor; zaten kurulu bir
+                    // hatırlatıcı varsa aşağıdaki etiket olarak gösterilmeye
+                    // devam ediyor.
                     TextButton(
                       onPressed: _handleSave,
                       child: const Text('Kaydet',

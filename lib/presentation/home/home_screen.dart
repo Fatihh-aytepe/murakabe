@@ -52,7 +52,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final _contentRepo = ContentRepository();
   final _userRepo = UserRepository();
   final _taskRepo = CustomTaskRepository();
@@ -79,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _tasksSectionHidden = LocalStorage().tasksSectionHidden;
     _communitySectionHidden = LocalStorage().communitySectionHidden;
     FirestoreNotificationService().start();
@@ -90,6 +91,22 @@ class _HomeScreenState extends State<HomeScreen> {
         _checkRewards();
       });
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Zikir widget'ından yapılan +1 native tarafta SharedPreferences
+    // dosyasına doğrudan yazılıyor; Flutter'ın bellekteki önbelleği bunu
+    // uygulama öne dönene kadar görmüyor — bu yüzden burada zorla reload.
+    if (state == AppLifecycleState.resumed) {
+      LocalStorage().reload().then((_) => _refreshZikirCount());
+    }
   }
 
   /// Kayıt/giriş sonrası HomeScreen'e ilk kez gelindiğinde (ve sadece o
@@ -323,6 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refreshZikirCount() async {
+    await LocalStorage().reload();
     final repo = ZikirRepository();
     final zikir = await repo.getActiveZikir();
     final count = repo.currentCount;

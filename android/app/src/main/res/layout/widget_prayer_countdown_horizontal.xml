@@ -19,7 +19,7 @@
         android:weightSum="6">
 
         <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="2dp">
-            <ImageView android:id="@+id/card_bg_0" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <ImageView android:id="@+id/card_bg_0" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg_rect" android:layout_margin="2dp" android:visibility="invisible" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
                 <TextView android:id="@+id/tv_name_0" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="İmsak" />
                 <TextView android:id="@+id/tv_time_0" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
@@ -27,7 +27,7 @@
         </FrameLayout>
 
         <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
-            <ImageView android:id="@+id/card_bg_1" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <ImageView android:id="@+id/card_bg_1" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg_rect" android:layout_margin="2dp" android:visibility="invisible" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
                 <TextView android:id="@+id/tv_name_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="Güneş" />
                 <TextView android:id="@+id/tv_time_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
@@ -35,7 +35,7 @@
         </FrameLayout>
 
         <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
-            <ImageView android:id="@+id/card_bg_2" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <ImageView android:id="@+id/card_bg_2" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg_rect" android:layout_margin="2dp" android:visibility="invisible" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
                 <TextView android:id="@+id/tv_name_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="Öğle" />
                 <TextView android:id="@+id/tv_time_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
@@ -43,7 +43,7 @@
         </FrameLayout>
 
         <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
-            <ImageView android:id="@+id/card_bg_3" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <ImageView android:id="@+id/card_bg_3" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg_rect" android:layout_margin="2dp" android:visibility="invisible" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
                 <TextView android:id="@+id/tv_name_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="İkindi" />
                 <TextView android:id="@+id/tv_time_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
@@ -51,7 +51,7 @@
         </FrameLayout>
 
         <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
-            <ImageView android:id="@+id/card_bg_4" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <ImageView android:id="@+id/card_bg_4" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg_rect" android:layout_margin="2dp" android:visibility="invisible" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
                 <TextView android:id="@+id/tv_name_4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="Akşam" />
                 <TextView android:id="@+id/tv_time_4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />
@@ -59,7 +59,7 @@
         </FrameLayout>
 
         <FrameLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="2dp">
-            <ImageView android:id="@+id/card_bg_5" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg" android:visibility="invisible" />
+            <ImageView android:id="@+id/card_bg_5" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/widget_chip_bg_rect" android:layout_margin="2dp" android:visibility="invisible" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center" android:paddingTop="5dp" android:paddingBottom="5dp">
                 <TextView android:id="@+id/tv_name_5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="9sp" android:textColor="#B9C2CC" android:maxLines="1" android:text="Yatsı" />
                 <TextView android:id="@+id/tv_time_5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="2dp" android:text="--:--" />

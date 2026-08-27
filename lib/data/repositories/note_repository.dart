@@ -159,17 +159,38 @@ class NoteRepository {
       );
 
   Future<void> deleteNote(String noteId) async {
-    // Silinen notun eklerini (resim/ses) ve hatırlatıcısını da temizle
-    final rows = await _db.query('notes', where: 'id = ?', whereArgs: [noteId]);
-    if (rows.isNotEmpty) {
-      final note = NoteModel.fromMap(rows.first);
-      for (final path in [...note.imagePaths, ...note.audioPaths]) {
+    // Notu silmeden önce, temizlik için eklerini/hatırlatıcı bilgisini
+    // best-effort olarak okuyoruz — bu adım başarısız olsa bile asıl silme
+    // işlemini ENGELLEMEMELİ.
+    List<String> attachmentPaths = const [];
+    try {
+      final rows =
+          await _db.query('notes', where: 'id = ?', whereArgs: [noteId]);
+      if (rows.isNotEmpty) {
+        final note = NoteModel.fromMap(rows.first);
+        attachmentPaths = [...note.imagePaths, ...note.audioPaths];
+      }
+    } catch (_) {}
+
+    // Asıl silme işlemi HER ZAMAN, yan etkilerden ÖNCE ve koşulsuz çalışır.
+    // Eskiden bildirim iptali (cancelTaskNotification) try/catch olmadan bu
+    // satırdan ÖNCE çalışıyordu — orada atılan herhangi bir hata (ör.
+    // eklenti başlatılmamışsa) deleteNote'un tamamının hata fırlatıp
+    // _db.delete'e hiç ulaşmamasına, yani notun aslında hiç silinmemesine
+    // yol açıyordu. Bu, bildirilen "not silme çalışmıyor" hatasının
+    // kök nedeniydi.
+    await _db.delete('notes', where: 'id = ?', whereArgs: [noteId]);
+
+    // Yan etkiler — hiçbiri asıl silmeyi etkilemesin diye best-effort.
+    try {
+      for (final path in attachmentPaths) {
         await NoteFileStorage.deleteIfExists(path);
       }
+    } catch (_) {}
+    try {
       await NotificationService()
           .cancelTaskNotification(_reminderNotifId(noteId));
-    }
-    await _db.delete('notes', where: 'id = ?', whereArgs: [noteId]);
+    } catch (_) {}
     if (_uid != null) {
       try {
         await _firebase.deleteNote(_uid!, noteId);

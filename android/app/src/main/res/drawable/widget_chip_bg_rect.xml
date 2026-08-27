@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Namaz vakti widget'larında "içinde bulunduğumuz vakti" vurgulayan zemin.
+     Eskiden widget_chip_bg (999dp köşe = tam yuvarlak/dairesel) kullanılıyordu;
+     bu daha ince köşeli, düz kare/dikdörtgen bir görünüm için ayrı bir
+     drawable — widget_chip_bg diğer yerlerde (ok butonları, tip rozeti)
+     hâlâ tam yuvarlak haliyle kullanılmaya devam ediyor. Düz beyaz dolgu,
+     runtime'da setColorFilter ile (düşük alfalı) vurgu rengine boyanır. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFFFFF" />
+    <corners android:radius="10dp" />
+</shape>

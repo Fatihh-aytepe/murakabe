@@ -36,6 +36,21 @@ object WidgetPrefs {
         prefs(context).edit().putInt(KEY_PREFIX + key, value).apply()
     }
 
+    fun getBoolean(context: Context, key: String, default: Boolean = false): Boolean =
+        try {
+            prefs(context).getBoolean(KEY_PREFIX + key, default)
+        } catch (_: ClassCastException) {
+            default
+        }
+
+    fun putBoolean(context: Context, key: String, value: Boolean) {
+        prefs(context).edit().putBoolean(KEY_PREFIX + key, value).apply()
+    }
+
+    fun putString(context: Context, key: String, value: String) {
+        prefs(context).edit().putString(KEY_PREFIX + key, value).apply()
+    }
+
     // ── Görünüm ayarları ─────────────────────────────────────────────────
     fun themeMode(context: Context): String = getString(context, "widget_theme_mode", "signature")
     fun bgOpacity(context: Context): Int = getInt(context, "widget_bg_opacity", 100)

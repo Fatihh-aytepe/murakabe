@@ -12,6 +12,16 @@ class LocalStorage {
     _prefs = await SharedPreferences.getInstance();
   }
 
+  /// SharedPreferences'ı diskten yeniden okur. `_prefs` uygulama açılışında
+  /// BİR KEZ alınıp bellekte önbelleklendiği için, ana ekran widget'ları gibi
+  /// Flutter motorunun dışından (native Kotlin kodu) doğrudan diske yazan
+  /// taraflar yaptığı değişiklikler, uygulama arka plandan öne dönene kadar
+  /// bu önbelleğe hiç yansımaz — ör. zikir sayacı widget'tan artırıldığında
+  /// uygulama içi ekran eski sayıyı göstermeye devam eder. Bu metod, o
+  /// senkron kopukluğunu gidermek için uygulama öne döndüğünde/ilgili
+  /// ekranlar açıldığında çağrılmalı.
+  Future<void> reload() => _prefs.reload();
+
   // Kullanıcı kayıtlı mı?
   bool get isUserRegistered => _prefs.getBool('isRegistered') ?? false;
   Future<void> setUserRegistered(bool value) =>

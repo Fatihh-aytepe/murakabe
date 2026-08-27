@@ -27,6 +27,15 @@ class PrayerTimesWidgetProvider : AppWidgetProvider() {
         for (id in appWidgetIds) {
             appWidgetManager.updateAppWidget(id, buildViews(context))
         }
+        // "Kalan vakit" yazısı dakikada bir tazelensin diye periyodik tick'i
+        // (yeniden) kur — PrayerCountdownWidgetProvider ile paylaşılan tek
+        // alarm, iki widget türünü de birlikte tazeler.
+        WidgetRefresher.scheduleMinuteTick(context)
+    }
+
+    override fun onDisabled(context: Context) {
+        super.onDisabled(context)
+        WidgetRefresher.cancelMinuteTickIfNoPrayerWidgetsLeft(context)
     }
 
     private fun buildViews(context: Context): RemoteViews {
@@ -68,10 +77,12 @@ class PrayerTimesWidgetProvider : AppWidgetProvider() {
             for (i in 0 until 6) {
                 views.setTextViewText(nameIds[i], names[i])
                 views.setTextViewText(timeIds[i], parsed[i].format(timeFormatter))
-                val isNext = window != null && i == window.nextIdx
-                views.setTextColor(nameIds[i], if (isNext) accent else dim)
-                views.setTextColor(timeIds[i], if (isNext) accent else primary)
-                if (isNext) {
+                // Kutucuk SIRADAKİ değil İÇİNDE BULUNULAN vakti vurgular —
+                // bkz. PrayerCountdownWidgetProvider'daki aynı düzeltme.
+                val isCurrent = window != null && i == window.prevIdx
+                views.setTextColor(nameIds[i], if (isCurrent) accent else dim)
+                views.setTextColor(timeIds[i], if (isCurrent) accent else primary)
+                if (isCurrent) {
                     views.setInt(cardBgIds[i], "setColorFilter", cardFill)
                     views.setViewVisibility(cardBgIds[i], View.VISIBLE)
                 } else {

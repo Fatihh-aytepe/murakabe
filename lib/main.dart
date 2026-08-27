@@ -8,6 +8,7 @@ import 'firebase_options.dart';
 import 'core/constants/app_theme.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/alarm_service.dart';
+import 'core/services/background_refresh_service.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/theme_service.dart';
 import 'data/local/local_storage.dart';
@@ -27,6 +28,9 @@ void main() async {
   await AlarmService().createSoundChannels();
   await ConnectivityService().init();
   await ThemeService().init();
+  // Ana ekran widget'larının namaz vakti/zikir/günlük içerik verisini
+  // uygulama kapalıyken de tazelemesi için — bkz. background_refresh_service.dart.
+  await BackgroundRefreshService.initializeAndSchedule();
 
   // NOT: Bildirim/konum/kamera/galeri izinleri artık burada TOPLU
   // istenmiyor. Play Store politikası ve kullanıcı deneyimi gereği her
