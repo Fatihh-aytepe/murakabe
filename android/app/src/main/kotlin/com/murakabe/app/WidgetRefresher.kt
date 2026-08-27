@@ -15,6 +15,11 @@ object WidgetRefresher {
      * PrayerCountdownWidgetProvider bu action'ı onReceive'de yakalar. */
     const val ACTION_PRAYER_TICK = "com.murakabe.app.widget.PRAYER_TICK"
     private const val TICK_REQUEST_CODE = 900
+    // DÜZELTME: android.app.AlarmManager sınıfında INTERVAL_MINUTE diye bir
+    // sabit YOK (en küçük hazır aralık sabiti INTERVAL_FIFTEEN_MINUTES) —
+    // önceki kod derlenmeyen bir referans kullanıyordu. Kendi 1 dakikalık
+    // milisaniye sabitimizi tanımlıyoruz.
+    private const val TICK_INTERVAL_MILLIS = 60_000L
 
     fun refreshAll(context: Context) {
         refresh(context, PrayerTimesWidgetProvider::class.java)
@@ -65,8 +70,8 @@ object WidgetRefresher {
         val am = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
         am.setInexactRepeating(
             AlarmManager.RTC,
-            System.currentTimeMillis() + AlarmManager.INTERVAL_MINUTE,
-            AlarmManager.INTERVAL_MINUTE,
+            System.currentTimeMillis() + TICK_INTERVAL_MILLIS,
+            TICK_INTERVAL_MILLIS,
             tickPendingIntent(context)
         )
     }
