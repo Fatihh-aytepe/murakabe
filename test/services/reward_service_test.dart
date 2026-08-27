@@ -238,31 +238,61 @@ void main() {
     });
   });
 
-  // ── checkTahajjudReward ──────────────────────────────────────────────────
+  // ── shouldPromptTahajjud / confirmTahajjudPrayed ─────────────────────────
+  // Not: eskiden tek bir checkTahajjudReward() metodu hem uygunluğu
+  // kontrol ediyor HEM DE kullanıcıya hiç sormadan ödülü veriyordu. Artık
+  // ikiye ayrıldı (bkz. RewardService) — bu testler yalnızca "sorulmalı
+  // mı" (shouldPromptTahajjud) tarafını kapsıyor; ödül artık yalnızca
+  // confirmTahajjudPrayed(true) ile veriliyor.
 
-  group('checkTahajjudReward', () {
+  group('shouldPromptTahajjud', () {
     test('teheccüd kapalıysa false döner', () async {
       storage.tahajjudEnabled = false;
-      expect(await service.checkTahajjudReward(), isFalse);
+      expect(await service.shouldPromptTahajjud(), isFalse);
     });
 
     test('alarm tarihi null ise false döner', () async {
       storage.tahajjudEnabled = true;
       storage.tahajjudAlarmDate = null;
-      expect(await service.checkTahajjudReward(), isFalse);
+      expect(await service.shouldPromptTahajjud(), isFalse);
     });
 
     test('bugün zaten ödüllendirildiyse false döner', () async {
       storage.tahajjudEnabled = true;
       storage.tahajjudAlarmDate = _today();
       rewardRepo.stubRewardForDate('tahajjud', _today(), value: true);
-      expect(await service.checkTahajjudReward(), isFalse);
+      expect(await service.shouldPromptTahajjud(), isFalse);
+    });
+
+    test('bugün zaten soruldu ise (cevap ne olursa olsun) false döner',
+        () async {
+      storage.tahajjudEnabled = true;
+      storage.tahajjudAlarmDate = _today();
+      rewardRepo.stubTahajjudAskedToday(_today());
+      expect(await service.shouldPromptTahajjud(), isFalse);
     });
 
     test('çok eski tarihli alarm false döner', () async {
       storage.tahajjudEnabled = true;
       storage.tahajjudAlarmDate = '2020-01-01';
-      expect(await service.checkTahajjudReward(), isFalse);
+      expect(await service.shouldPromptTahajjud(), isFalse);
+    });
+  });
+
+  group('confirmTahajjudPrayed', () {
+    test('false (kılmadım) ise ödül verilmez ama bir daha sorulmaz',
+        () async {
+      final result = await service.confirmTahajjudPrayed(false);
+      expect(result, isFalse);
+      expect(rewardRepo.savedRewards, isEmpty);
+      expect(await rewardRepo.tahajjudAskedToday(_today()), isTrue);
+    });
+
+    test('true (kıldım) ise ödül verilir', () async {
+      final result = await service.confirmTahajjudPrayed(true);
+      expect(result, isTrue);
+      expect(rewardRepo.savedRewards, hasLength(1));
+      expect(rewardRepo.savedRewards.first['type'], 'tahajjud');
     });
   });
 }

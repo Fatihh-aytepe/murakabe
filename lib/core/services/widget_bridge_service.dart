@@ -41,9 +41,13 @@ class WidgetBridgeService {
   /// Herhangi bir adım başarısız olursa (ör. konum yok) sessizce devam eder
   /// — widget'lar açık aşamayı atlayıp elindeki son veriyle görünmeye devam
   /// eder, hata kullanıcıya sızmaz.
-  Future<void> refreshAll() async {
+  /// [isBackground] true ise (bkz. BackgroundRefreshService'in WorkManager
+  /// izolesi) konum izni istemi TAMAMEN atlanır — o bağlamda görünür bir
+  /// Activity yok, sistem izin diyaloğu gösterilemez (bkz. LocationService.
+  /// getCurrentPosition). Ön planda (uygulama açıkken) her zaman false.
+  Future<void> refreshAll({bool isBackground = false}) async {
     await Future.wait([
-      _refreshPrayer(),
+      _refreshPrayer(isBackground: isBackground),
       _refreshZikir(),
       _refreshDailyContent(),
       _refreshAppearance(),
@@ -66,9 +70,11 @@ class WidgetBridgeService {
     await _notifyNative();
   }
 
-  Future<void> _refreshPrayer() async {
+  Future<void> _refreshPrayer({bool isBackground = false}) async {
     try {
-      final result = await _getPrayerTimes().timeout(
+      final result = await _getPrayerTimes(
+        requestPermissionIfNeeded: !isBackground,
+      ).timeout(
         const Duration(seconds: 12),
         onTimeout: () => null,
       );

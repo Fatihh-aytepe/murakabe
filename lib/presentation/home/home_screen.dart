@@ -96,6 +96,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    // ÖNCEDEN burada stop() çağrılmıyordu: HomeScreen dispose olduğunda
+    // (ör. çıkış yapma → LoginScreen'e pushAndRemoveUntil) Firestore
+    // dinleyicileri (bildirim + sohbet) arka planda çalışmaya devam
+    // ediyordu — gereksiz Firestore okuması ve potansiyel olarak yanlış
+    // hesap için bildirim tetiklenmesi riski.
+    FirestoreNotificationService().stop();
     super.dispose();
   }
 
@@ -188,14 +194,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
     }
 
-    // Teheccüd gece ödülü
+    // Teheccüd gece ödülü — önceden burada kullanıcıya HİÇ sorulmadan,
+    // yalnızca "alarm açıktı + saat 02:00-08:00 arası" koşuluyla ödül
+    // veriliyordu. Artık önce kısa bir onay soruluyor; ödül yalnızca
+    // "Evet, kıldım" cevabıyla veriliyor (bkz. RewardService.
+    // shouldPromptTahajjud / confirmTahajjudPrayed).
     if (!mounted) return;
-    final showTahajjud = await rewardService.checkTahajjudReward();
+    final shouldPrompt = await rewardService.shouldPromptTahajjud();
     if (!mounted) return;
-    if (showTahajjud) {
-      await nav.push(MaterialPageRoute(
-        builder: (_) => const TahajjudOdulScreen(),
-      ));
+    if (shouldPrompt) {
+      final prayed = await _askTahajjudConfirmation();
+      if (!mounted) return;
+      final showTahajjud = await rewardService.confirmTahajjudPrayed(prayed);
+      if (!mounted) return;
+      if (showTahajjud) {
+        await nav.push(MaterialPageRoute(
+          builder: (_) => const TahajjudOdulScreen(),
+        ));
+      }
     }
 
     // Teheccüd aylık kart (ayda 4 gece)
@@ -229,6 +245,48 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ),
       ));
     }
+  }
+
+  /// "Teheccüde kalktın mı?" onayını sorar. Yalnızca "Evet, kıldım"
+  /// seçilirse `true` döner — ödül buna bağlı olarak verilir (bkz.
+  /// _checkRewards, RewardService.confirmTahajjudPrayed).
+  Future<bool> _askTahajjudConfirmation() async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1B2A3B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Teheccüde Kalktın mı?',
+          style: GoogleFonts.playfairDisplay(
+              color: AppColors.gold, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Alarmın bu gece/dün gece için kuruluydu. Teheccüd namazını'
+          ' kıldıysan aşağıdan onaylayabilirsin.',
+          style: GoogleFonts.notoSans(color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hayır, kılmadım',
+                style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.gold,
+              foregroundColor: Colors.black,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Evet, kıldım'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 
   // ÖNEMLİ: Her veri kaynağı kendi try/catch'i içinde çağrılıyor.

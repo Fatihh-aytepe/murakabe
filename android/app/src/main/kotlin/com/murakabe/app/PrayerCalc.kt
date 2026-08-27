@@ -45,12 +45,26 @@ object PrayerCalc {
         if (nextPos == -1) nextPos = 0 // Yatsı da geçtiyse: yarının İmsak'ı
         val nextIdx = ELIGIBLE[nextPos]
         var nextTime = parsed[nextIdx]
-        if (!nextTime.isAfter(now)) nextTime = nextTime.plusDays(1)
+        // DÜZELTME: tek bir plusDays(1) yalnızca verinin TAM 1 gün eski
+        // olduğu durumu düzeltiyordu. Widget verisi (WidgetBridgeService)
+        // arka planda tazelenemezse (ör. konum izni/Doze/OEM pil kısıtları
+        // — bkz. BackgroundRefreshService) birkaç gün boyunca eski kalabilir;
+        // bu durumda tek plusDays(1) sonrasında nextTime hâlâ geçmişte
+        // kalıyor, remainingMinutes negatif çıkıp coerceAtLeast(0) ile "0 dk"
+        // gibi yanlış bir sonuca yuvarlanıyordu. Döngüyle, veri kaç gün eski
+        // olursa olsun nextTime her zaman `now`'dan SONRAKİ ilk güne taşınır
+        // (yaklaşık bir tahmin olsa da en azından asla "geçmişte" kalmaz).
+        while (!nextTime.isAfter(now)) nextTime = nextTime.plusDays(1)
 
         val prevPos = (nextPos - 1 + ELIGIBLE.size) % ELIGIBLE.size
         val prevIdx = ELIGIBLE[prevPos]
         var prevTime = parsed[prevIdx]
-        if (prevTime.isAfter(now)) prevTime = prevTime.minusDays(1)
+        while (prevTime.isAfter(now)) prevTime = prevTime.minusDays(1)
+        // prevTime, nextTime'ın öncesinde kalmalı — çok eski veride nextIdx
+        // ile prevIdx aynı ham zaman damgasına denk gelip prevTime'ın
+        // nextTime'a eşit/sonrasında kalmasını (sıfır/negatif totalMinutes)
+        // önler.
+        while (!prevTime.isBefore(nextTime)) prevTime = prevTime.minusDays(1)
 
         val totalMinutes = Duration.between(prevTime, nextTime).toMinutes().coerceAtLeast(1)
         val remainingMinutes = Duration.between(now, nextTime).toMinutes().coerceAtLeast(0)

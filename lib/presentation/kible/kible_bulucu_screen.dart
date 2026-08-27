@@ -17,10 +17,13 @@ import '../../domain/usecases/get_qibla_bearing.dart';
 ///   yazılmıyor.
 /// - Cihaz heading'i flutter_compass'tan geliyor. iOS'ta konum izni varsa
 ///   plugin zaten `trueHeading`'i kullanıyor (gerçek kuzey); Android'de
-///   plugin manyetik alan sensörünün ham (manyetik) heading'ini veriyor —
-///   iki platform arasındaki bu fark flutter_compass'ın kendi sınırıdır,
-///   burada "true heading" simüle edilmiyor, platformun verdiği en iyi değer
-///   kullanılıyor.
+///   plugin manyetik alan sensörünün ham (manyetik) heading'ini veriyor.
+///   DÜZELTME: Android'de bu ham değer artık android.hardware.
+///   GeomagneticField (cihaza gömülü Dünya Manyetik Modeli, bkz.
+///   MainActivity.getMagneticDeclination) ile hesaplanan manyetik sapma
+///   eklenerek gerçek kuzeye normalize ediliyor (bkz. _onCompassEvent) —
+///   aksi halde sapma yüksek olan bölgelerde (bazı yerlerde 20°+) 6°'lik
+///   "kıbleye hizalandın" eşiği yanlış tetiklenebiliyordu.
 /// - `accuracy` alanı her iki platformda da DERECE cinsinden bir hata payı
 ///   (küçük = daha güvenilir; null/negatif = bilinmiyor/güvenilmez) —
 ///   Android SENSOR_STATUS sabitlerini (HIGH→15°, MEDIUM→30°, LOW→45°,
@@ -178,8 +181,22 @@ class _KibleBulucuScreenState extends State<KibleBulucuScreen>
 
   void _onCompassEvent(CompassEvent event) {
     if (!mounted) return;
-    final heading = event.heading;
-    if (heading == null) return; // ilk okumalar bazı cihazlarda null gelebilir
+    final rawHeading = event.heading;
+    if (rawHeading == null) return; // ilk okumalar bazı cihazlarda null gelebilir
+
+    // DÜZELTME: Android'de flutter_compass ham MANYETİK heading verir,
+    // gerçek/coğrafi kuzeyi değil. Manyetik sapma (declination) bölgeye göre
+    // birkaç dereceden 20°+'ye kadar çıkabilir ve uygulamanın 6°'lik
+    // "kıbleye hizalandın" eşiğini kolayca aşıp yanlış yönde "hizalandınız"
+    // ya da tam hizadayken "dönün" göstermesine yol açabilirdi. _qibla
+    // yüklendiğinde GetQiblaBearing, android.hardware.GeomagneticField
+    // (Android'in kendi Dünya Manyetik Modeli) ile bu sapmayı zaten
+    // hesaplayıp getirdi (bkz. GetQiblaBearing._magneticDeclination); burada
+    // sadece ham heading'e ekleyip gerçek kuzeye göre normalize ediyoruz.
+    // iOS'ta magneticDeclination her zaman null'dır (flutter_compass zaten
+    // trueHeading veriyor) — bu durumda düzeltme yapılmaz.
+    final declination = _qibla?.magneticDeclination ?? 0.0;
+    final heading = (rawHeading + declination + 360) % 360;
 
     setState(() {
       _hasHeadingData = true;

@@ -2,6 +2,25 @@ import '../../data/models/user_model.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../core/services/notification_service.dart';
 
+/// DİKKAT — şu an UYGULAMA İÇİNDE HİÇBİR YERDEN ÇAĞRILMIYOR: "merhamet günü"
+/// (mercy day) toleranslı seri (streak) sıfırlama mantığı yalnızca burada
+/// tanımlı, hiçbir ekran/servis bunu çalıştırmıyor. Gerçek seri artışı hâlâ
+/// UserRepository.markQuranRead içindeki basit (mercy day'siz) mantıkla
+/// yapılıyor; bu yüzden kullanıcı bir gün Kur'ân okumayı atlarsa seri o an
+/// SIFIRLANMIYOR (yalnızca bir sonraki okumada `1`'e düşüyor), "merhamet
+/// günü" hakkı hiç işletilmiyor.
+///
+/// Bilerek burada OTOMATİK olarak günlük bir akışa (ör. HomeScreen açılışı)
+/// bağlanmadı: bu sınıfın kendi mantığında da ayrı bir boşluk var — kullanıcı
+/// BİRDEN FAZLA gün art arda okumadıysa ve `lastStreakDate` "dün" değilse,
+/// `else` dalındaki iç koşul (`lastStreakDate == yesterday`) hiç
+/// tetiklenmiyor ve seri yanlışlıkla KORUNUYOR (sıfırlanmıyor), üstelik
+/// `lastStreakDate` yine de "bugün"e güncelleniyor — bu da bir sonraki
+/// günlerde erken/geç mercy-day hesaplarını bozabilir. Bu, kullanıcıya
+/// görünen seri/rozet davranışını değiştiren bir ürün kararı olduğundan,
+/// geniş bir statik inceleme sırasında sessizce etkinleştirilmedi; önce bu
+/// ikinci boşluk giderilmeli, sonra bilinçli olarak (ör. HomeScreen
+/// initState'inde `lastStreakDate != today` ise) bağlanmalı.
 class UpdateStreak {
   final UserRepository _userRepo;
   final NotificationService _notifService = NotificationService();

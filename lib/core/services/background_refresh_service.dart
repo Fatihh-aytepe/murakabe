@@ -86,7 +86,11 @@ void callbackDispatcher() {
       // tamamen yerel/pakete gömülü kaynaklardan hesaplanıyor — Firebase'e
       // bağımlı DEĞİL, bu yüzden arka plan izolesinde Firebase.initializeApp
       // çağırmaya gerek yok.
-      await WidgetBridgeService().refreshAll();
+      // isBackground: true — bu izolede görünür bir Activity yok, konum
+      // izni "denied" ise sessizce son bilinen konuma düşülür; asla izin
+      // diyaloğu tetiklenmeye ÇALIŞILMAZ (bkz. LocationService.
+      // getCurrentPosition / WidgetBridgeService._refreshPrayer).
+      await WidgetBridgeService().refreshAll(isBackground: true);
     } catch (_) {
       // Konum izni yok, GPS kapalı, vb. — widget'lar son bilinen veriyi
       // göstermeye devam eder; bir sonraki periyotta tekrar denenecek.

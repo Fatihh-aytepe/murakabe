@@ -45,5 +45,23 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- ═══════════════════════════════════════════════════════════════════
+	     İZİN AÇIKLAMALARI — Android manifest'indeki karşılıklarıyla birebir
+	     aynı gerekçeler (bkz. android/app/src/main/AndroidManifest.xml).
+	     Bu anahtarlar olmadan iOS, ilgili API çağrıldığı an uygulamayı
+	     SESSİZCE REDDETMEK yerine anında ÇÖKERTİR (Apple zorunlu tutuyor).
+	     Önceden bu dosyada hiçbiri yoktu — namaz vakti/kıble (konum),
+	     profil fotoğrafı (kamera/galeri) ve sesli not (mikrofon)
+	     özellikleri iOS'ta ilk kullanıldıkları anda çökerdi.
+	     ═══════════════════════════════════════════════════════════════════ -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Namaz vakitlerini ve kıble yönünü doğru hesaplayabilmek için konumunuza ihtiyacımız var.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Profil fotoğrafı çekebilmeniz için kameraya erişim gerekiyor.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Profil fotoğrafı seçebilmeniz için galerinize erişim gerekiyor.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Notlarınıza sesli kayıt ekleyebilmeniz için mikrofona erişim gerekiyor.</string>
 </dict>
 </plist>

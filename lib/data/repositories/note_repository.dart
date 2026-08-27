@@ -19,6 +19,33 @@ class NoteRepository {
   int _reminderNotifId(String noteId) =>
       30000 + (noteId.hashCode.abs() % 20000);
 
+  /// Bir not düzenlenirken çağrılmalı: [oldPaths]/[oldUrls] notun ÖNCEKİ
+  /// (kaydedilmiş) resim/ses yol+URL listeleri, [newPaths] düzenleme
+  /// ekranından çıkan güncel yerel dosya yolu listesidir. Hâlâ mevcut olan
+  /// (silinmeyen) her yol için önceki Firebase Storage URL'si korunur; yeni
+  /// eklenen bir yolun henüz URL'si olmadığından '' döner (bunu gören
+  /// _syncAttachmentsToStorage dosyayı yükleyip URL'yi sonradan doldurur).
+  ///
+  /// Bu yapılmazsa (bkz. eski notes_screen.dart kodu): düzenleme ekranı yeni
+  /// NoteModel'i sıfırdan kurarken imageUrls/audioUrls hiç aktarılmıyordu,
+  /// yani HER düzenlemede önceki Storage yedek linkleri sıfırlanıyor,
+  /// Firestore'a önce boş liste yazılıyor, arka plandaki yeniden yükleme
+  /// başarısız olursa (ağ yoksa) o notun ekleri kalıcı olarak "yedeksiz"
+  /// kalıyordu.
+  static List<String> reconcileAttachmentUrls(
+    List<String> oldPaths,
+    List<String> oldUrls,
+    List<String> newPaths,
+  ) {
+    final urlByPath = <String, String>{};
+    for (var i = 0; i < oldPaths.length; i++) {
+      if (i < oldUrls.length && oldUrls[i].isNotEmpty) {
+        urlByPath[oldPaths[i]] = oldUrls[i];
+      }
+    }
+    return newPaths.map((p) => urlByPath[p] ?? '').toList();
+  }
+
   // Pinlenmiş notlar her zaman üstte, aynı grup içinde en son güncellenen önce.
   Future<List<NoteModel>> getNotes() async {
     final rows =

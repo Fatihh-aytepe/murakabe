@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import '../../core/services/role_service.dart';
 import '../local/database_helper.dart';
 import '../local/local_storage.dart';
 import '../local/note_file_storage.dart';
@@ -11,6 +12,37 @@ class UserRepository {
   final DatabaseHelper _db = DatabaseHelper();
   final LocalStorage _storage = LocalStorage();
   final FirebaseService _firebase = FirebaseService();
+
+  /// Kimlik doğrulaması BAŞARILI OLDUKTAN sonra, yeni hesabın verisini
+  /// yerelde okumadan/yazmadan ÖNCE çağrılmalıdır (bkz. login_screen.dart
+  /// normal giriş + hesap değiştirme akışları, ve createUser aşağıda).
+  ///
+  /// Neden gerekli: notes, saved_content, quran_tracking, tahajjud_tracking,
+  /// reminders, daily_index, rewards, badges gibi yerel SQLite tabloları
+  /// `userId` kolonu TAŞIMAZ — cihaz tek seferde tek bir aktif hesabın
+  /// verisini tutacak şekilde tasarlanmıştır. Bu yüzden aynı cihazda B
+  /// hesabına geçilirken A hesabının satırları temizlenmezse, B'nin
+  /// ekranları (ör. not listesi — bkz. NoteRepository.getAllNotes, hiçbir
+  /// WHERE/userId filtresi yok) A'nın notlarını/ödüllerini/rozetlerini de
+  /// gösterir, hatta B bunları düzenleyip silebilir.
+  ///
+  /// [uid] az önce giriş yapılan/oluşturulan Firebase Auth kullanıcısının
+  /// UID'sidir. Yereldeki önceki aktif hesap farklıysa (ve boş değilse) tüm
+  /// SQLite tabloları ve SharedPreferences (kayıtlı hesap listesi hariç)
+  /// temizlenir — tıpkı hesap silmede olduğu gibi, ama hesap listesi kalır.
+  Future<void> prepareLocalDataForUid(String uid) async {
+    final previousUid = _storage.userId;
+    if (previousUid == null || previousUid.isEmpty || previousUid == uid) {
+      return;
+    }
+    // Henüz Firestore'a yansımamış olabilecek streak/rozet/tercih verisini
+    // kaybetmemek için son bir senkron denemesi yapılır (best-effort).
+    try {
+      await _firebase.saveUserPrefs(previousUid, _storage.toSyncMap());
+    } catch (_) {}
+    await _db.wipeAllTables();
+    await _storage.clearForAccountSwitch();
+  }
 
   Future<UserModel?> getCurrentUser() async {
     final userId = _storage.userId;
@@ -44,6 +76,11 @@ class UserRepository {
     try {
       await _firebase.updateDisplayName(nameSurname);
     } catch (_) {}
+
+    // Cihazda başka bir hesabın verisi kalmışsa (ör. düzgün çıkış yapılmadan
+    // yeni hesap oluşturulduysa) yeni hesabın önceki hesabın yerel verisini
+    // miras almaması için temizle.
+    await prepareLocalDataForUid(authUser.uid);
 
     // Auth UID'sini kullan — UUID yerine
     final user = UserModel(
@@ -274,6 +311,20 @@ class UserRepository {
   }
 
   Future<void> markQuranRead(String date) async {
+    // İdempotent olmalı: aynı [date] için ikinci kez çağrılırsa (ör. hızlı
+    // çift dokunma — bkz. home_screen.dart QuranTrackerCard.onRead; buton
+    // yalnızca `isRead` state'i güncellendikten SONRA gizleniyor, aradaki
+    // pencerede ikinci bir çağrı mümkün) toplam okuma günü SAYISI tekrar
+    // artmamalı ve seri (streak) SIFIRLANMAMALI. Önceden korumasız ikinci
+    // çağrıda `lastStreakDate` zaten "bugün" olduğundan _yesterday() ile
+    // eşleşmiyor ve seri yanlışlıkla 1'e düşüyordu.
+    final already = await _db.query(
+      'quran_tracking',
+      where: 'date = ? AND isRead = 1',
+      whereArgs: [date],
+    );
+    if (already.isNotEmpty) return;
+
     await _db.insert('quran_tracking', {
       'date': date,
       'isRead': 1,
@@ -348,14 +399,33 @@ class UserRepository {
     // 1. Yeniden kimlik doğrulama
     await _firebase.reauthenticateWithPassword(password);
 
-    // 2 + 3. Firestore + Storage verisi
+    // 2. Topluluk üyeliklerinden ayrıl — Auth silinmeden ÖNCE yapılmalı,
+    // çünkü hem üyelik hem sayaç güncellemesi request.auth.uid'ye dayanıyor.
+    // Önceden bu adım hiç yoktu: hesap silindikten sonra topluluk üye
+    // listelerinde kullanıcıya ait "hayalet" bir kayıt sonsuza dek kalıyordu.
+    try {
+      final communityIds = await RoleService().getUserCommunityIds();
+      for (final communityId in communityIds) {
+        await RoleService().leaveCommunity(communityId);
+      }
+    } catch (e) {
+      debugPrint('[UserRepo] Topluluk üyelikleri temizlenemedi: $e');
+    }
+
+    // 3. users/{uid} dışındaki kişisel kayıtlar (admin başvurusu, gönderdiği/
+    // aldığı bildirimler) — bkz. FirebaseService.deletePersonalRecordsOutsideUserDoc.
+    await _firebase.deletePersonalRecordsOutsideUserDoc(uid);
+
+    // 4 + 5. Firestore (ana doküman + alt koleksiyonlar, quranProgress dahil) + Storage verisi
     await _firebase.deleteAccountData(uid);
 
-    // 4. Auth kullanıcısı
+    // 6. Auth kullanıcısı
     await _firebase.deleteAuthUser();
 
-    // 5. Yerel veri
+    // 7. Yerel veri — yalnızca BU hesaba ait. Cihazdaki diğer kayıtlı
+    // hesapların (savedAccounts — hesap değiştirme listesi) girdisi korunur;
+    // yalnızca silinen hesap listeden çıkarılır (bkz. LocalStorage.clearAllForAccountDeletion).
     await _db.wipeAllTables();
-    await _storage.clearAllForAccountDeletion();
+    await _storage.clearAllForAccountDeletion(uid);
   }
 }

@@ -3,7 +3,10 @@ description: Günlük İslami İbadet Hatırlatıcı
 publish_to: 'none'
 version: 1.1.9+1
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  # pubspec.lock bu projeyi Dart >=3.10.3 / Flutter >=3.38.4 ile kilitliyor;
+  # alt sınır burada da eşitlendi ki eski bir Flutter SDK ile `flutter pub get`
+  # görünürde başarılı olup derleme sırasında şaşırtıcı hatalar üretmesin.
+  sdk: '>=3.10.3 <4.0.0'
 
 dependencies:
   flutter:
@@ -22,6 +25,10 @@ dependencies:
   package_info_plus: ^8.0.0
   url_launcher: ^6.2.5
   syncfusion_flutter_pdfviewer: 33.2.5
+  # Güncelleme APK'sının bütünlüğünü doğrulamak için (SHA-256) — zaten
+  # firebase paketleri üzerinden geçişli bağımlılık olarak çözülüyordu,
+  # burada doğrudan bağımlılık olarak listelendi (bkz. UpdateService).
+  crypto: ^3.0.3
 
   # Local DB
   sqflite: ^2.3.0
@@ -78,8 +85,6 @@ dependencies:
   # kurallarına tabidir, gerçek periyodik iş sistemin kendisi tarafından
   # (JobScheduler/WorkManager) zamanlanır, biz sadece iş tanımlıyoruz.
   workmanager: ^0.10.9
-
-path_provider: ^2.1.4
 
 dev_dependencies:
   flutter_test:

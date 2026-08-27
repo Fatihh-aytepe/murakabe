@@ -43,6 +43,27 @@
          bastığında istenir. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
+    <!-- ═══════════════════════════════════════════════════════════════════
+         İMZA SEVİYELİ WIDGET İZNİ — ZikirWidgetProvider ve
+         DailyContentWidgetProvider, sistemin APPWIDGET_UPDATE'i dışında
+         KENDİ özel action'larını da dinliyor (ZIKIR_INCREMENT, CONTENT_PREV/
+         NEXT). AppWidgetProvider olduklarından android:exported="true"
+         ZORUNLU (aksi halde sistem güncelleme broadcast'lerini iletemez),
+         ama bu aynı zamanda başka HERHANGİ bir uygulamanın bu bileşene
+         doğrudan (explicit) intent göndererek zikir sayacını değiştirmesine
+         veya içerik indeksini kaydırmasına izin verir. protectionLevel=
+         "signature" ile korunan bu izin sayesinde yalnızca AYNI imzayla
+         (yani bizim uygulamamız) imzalanmış paketler bu action'ları
+         gönderebilir; sistemin kendi APPWIDGET_UPDATE broadcast'i
+         (system_server) izin kontrolünden muaf olduğundan etkilenmez, ve
+         widget'ın kendi "+1"/"‹ ›" PendingIntent'leri de bizim uygulamamızın
+         kimliğiyle oluşturulduğundan (bkz. *WidgetProvider.kt) sorunsuz
+         çalışmaya devam eder. -->
+    <permission
+        android:name="com.murakabe.app.permission.WIDGET_ACTION"
+        android:protectionLevel="signature"/>
+    <uses-permission android:name="com.murakabe.app.permission.WIDGET_ACTION"/>
+
     <application
         android:label="Murakabe"
         android:name="${applicationName}"
@@ -111,7 +132,8 @@
 
         <receiver
             android:name=".ZikirWidgetProvider"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.murakabe.app.permission.WIDGET_ACTION">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
                 <action android:name="com.murakabe.app.widget.ZIKIR_INCREMENT"/>
@@ -123,7 +145,8 @@
 
         <receiver
             android:name=".DailyContentWidgetProvider"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.murakabe.app.permission.WIDGET_ACTION">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
                 <action android:name="com.murakabe.app.widget.CONTENT_PREV"/>

@@ -1,0 +1,53 @@
+# Her push/PR'da temel bir sağlık kontrolü çalıştırır: bağımlılıkların
+# kurulabildiğini, statik analizin (flutter analyze) geçtiğini ve mevcut
+# test paketinin (flutter test) kırılmadığını doğrular.
+#
+# NOT: Bu depoda önceden HİÇBİR CI kurulumu yoktu — kod tabanına giren
+# değişiklikler yalnızca geliştiricinin kendi makinesinde (varsa) manuel
+# `flutter analyze`/`flutter test` çalıştırmasıyla doğrulanıyordu. Bu
+# workflow, en azından derleme/analiz/test seviyesindeki regresyonları
+# PR aşamasında otomatik yakalar.
+#
+# Flutter sürümü pubspec.lock'ın kilitlediği alt sınırla (Flutter >=3.38.4,
+# Dart >=3.10.3 — bkz. pubspec.yaml environment.sdk yorumu) uyumlu olacak
+# şekilde 'stable' kanalından alınıyor; belirli bir yapı numarasına sabitlemek
+# yerine kanalın güncel sürümünü kullanmak, alt sınırın üzerinde kalmayı
+# garanti eder.
+name: Flutter CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Bağımlılıkları kur
+        run: flutter pub get
+
+      - name: firebase_options.dart yer tutucusu oluştur
+        # lib/firebase_options.dart, API anahtarları içerdiği için .gitignore
+        # ile depoya HİÇ commit edilmiyor (bkz. .gitignore, README) — bu
+        # yüzden temiz bir checkout'ta bu dosya yok ve `flutter analyze`/
+        # `flutter test`, main.dart'taki import'u çözemediği için başarısız
+        # olurdu. Testler gerçek Firebase'e hiç dokunmadığından (yalnızca
+        # sahte/fake repository'ler kullanıyorlar), depoda zaten duran
+        # örnek dosyayı (sahte/placeholder anahtarlarla) kopyalamak analiz
+        # ve testlerin geçmesi için yeterli — GERÇEK bir Firebase projesi
+        # secret'ı burada GEREKMİYOR.
+        run: cp lib/firebase_options.dart.example lib/firebase_options.dart
+
+      - name: Statik analiz (flutter analyze)
+        run: flutter analyze --no-fatal-infos
+
+      - name: Testler (flutter test)
+        run: flutter test

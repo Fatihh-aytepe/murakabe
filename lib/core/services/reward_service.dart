@@ -152,13 +152,23 @@ class RewardService {
   Future<void> trackAyetOpen() => _storage.incrementAyetCount();
 
   // ── Teheccüd ödülü ───────────────────────────────────────────────────────
+  // Önceden bu tek metod, kullanıcıya HİÇBİR onay sormadan doğrudan ödülü
+  // veriyordu — "alarm açıktı + alarm tarihi bugün/dün + saat 02:00-08:00
+  // arası" yeterliydi, kullanıcının gerçekten kalkıp namaz kıldığına dair
+  // bir kontrol yoktu. Artık iki adıma bölündü: [shouldPromptTahajjud] aynı
+  // uygunluk şartlarını kontrol edip UI'nin "Teheccüde kalktın mı?" diye
+  // SORMASI gerekip gerekmediğini döner; ödül yalnızca kullanıcı
+  // [confirmTahajjudPrayed] ile "evet" derse verilir (bkz. home_screen.dart).
 
-  Future<bool> checkTahajjudReward() async {
+  /// Kullanıcıya teheccüd onayı SORULMALI mı? (Ödül burada VERİLMEZ.)
+  Future<bool> shouldPromptTahajjud() async {
     if (!_storage.tahajjudEnabled) return false;
     final alarmDateStr = _storage.tahajjudAlarmDate;
     if (alarmDateStr == null) return false;
 
     final today = _today();
+    // Bugün zaten soruldu mu (cevap ne olursa olsun) — bir daha sorma.
+    if (await _rewardRepo.tahajjudAskedToday(today)) return false;
     final alreadyDone = await _rewardRepo.hasRewardForDate('tahajjud', today);
     if (alreadyDone) return false;
 
@@ -167,6 +177,18 @@ class RewardService {
 
     final hour = DateTime.now().hour;
     if (hour < 2 || hour > 8) return false;
+
+    return true;
+  }
+
+  /// Kullanıcı "Teheccüde kalktın mı?" sorusuna cevap verdiğinde çağrılır.
+  /// [prayed]=false ise yalnızca "bugün soruldu" olarak işaretlenir, ödül
+  /// verilmez. [prayed]=true ise ödül verilir ve `true` döner (çağıran taraf
+  /// tebrik ekranını gösterebilir).
+  Future<bool> confirmTahajjudPrayed(bool prayed) async {
+    final today = _today();
+    await _rewardRepo.recordTahajjudAnswer(today, prayed: prayed);
+    if (!prayed) return false;
 
     await _rewardRepo.saveReward(
       type: 'tahajjud',

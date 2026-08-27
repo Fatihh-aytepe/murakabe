@@ -273,6 +273,20 @@ class RoleService {
 
     await batch.commit();
 
+    // inviteCode alanı yalnızca yukarıdaki üyelik kaydının Firestore
+    // kuralları tarafından doğrulanması için gerekliydi. Üye belgesi
+    // topluluktaki TÜM üyelerce okunabildiğinden (members/read), kod
+    // kalıcı olarak orada dururursa diğer üyeler onu görüp paylaşabilir.
+    // Doğrulama tamamlandığına göre hemen temizle (best-effort).
+    try {
+      await _db
+          .collection('communities')
+          .doc(communityId)
+          .collection('members')
+          .doc(_uid)
+          .update({'inviteCode': FieldValue.delete()});
+    } catch (_) {}
+
     // Topluluk adminine "yeni üye" bildirimi gönder
     try {
       final communityData = communityDoc.data();
@@ -403,6 +417,34 @@ class RoleService {
       {'memberCount': FieldValue.increment(-1)},
     );
     await batch.commit();
+  }
+
+  // ── Kullanıcı: Bir topluluktan kendi isteğiyle ayrıl ─────────────────────
+  // Şu an UI'da bir "topluluktan ayrıl" butonu yok; bu metod öncelikle hesap
+  // silme akışında (bkz. UserRepository.deleteAccountPermanently) kullanılan
+  // üyelikleri temizlemek için eklendi — daha önce hesap silindiğinde üyelik
+  // kaydı hiç silinmiyor, topluluk listelerinde silinen kullanıcıya ait
+  // "hayalet" bir üyelik sonsuza dek kalıyordu.
+  Future<void> leaveCommunity(String communityId) async {
+    if (_uid == null) return;
+    final batch = _db.batch();
+    batch.delete(
+      _db
+          .collection('communities')
+          .doc(communityId)
+          .collection('members')
+          .doc(_uid),
+    );
+    batch.update(
+      _db.collection('communities').doc(communityId),
+      {'memberCount': FieldValue.increment(-1)},
+    );
+    try {
+      await batch.commit();
+    } catch (_) {
+      // Topluluk zaten silinmiş/üyelik zaten kalkmış olabilir — hesap silme
+      // akışını engellemesin.
+    }
   }
 
   // ── Admin: Belirli bir üyeye kişisel bildirim gönder ─────────────────────

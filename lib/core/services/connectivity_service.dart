@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 
@@ -18,15 +19,36 @@ class ConnectivityService {
     _controller = StreamController<bool>.broadcast();
 
     final result = await _connectivity.checkConnectivity();
-    _isConnected = _checkConnected(result);
+    _isConnected = _checkConnected(result) && await _hasRealInternet();
 
-    _connectivity.onConnectivityChanged.listen((result) {
-      final connected = _checkConnected(result);
+    _connectivity.onConnectivityChanged.listen((result) async {
+      // DÜZELTME: connectivity_plus yalnızca bir ağ ARAYÜZÜNÜN (Wi-Fi/mobil
+      // veri radyosu) bağlı olduğunu söyler — gerçek internet erişimini
+      // GARANTİ ETMEZ (ör. internetsiz bir Wi-Fi'ye veya "captive portal"lı
+      // bir ağa bağlıyken bile "connected" döner). Radyo bağlıysa ek olarak
+      // kısa zaman aşımlı gerçek bir DNS sorgusuyla (_hasRealInternet)
+      // gerçekten erişilebilir olup olmadığı doğrulanıyor.
+      final connected = _checkConnected(result) && await _hasRealInternet();
       if (connected != _isConnected) {
         _isConnected = connected;
         _controller.add(connected);
       }
     });
+  }
+
+  /// Radyo seviyesinde "bağlı" görünse bile gerçekten internete
+  /// erişilebiliyor mu diye kısa bir DNS sorgusuyla doğrular. Başarısız
+  /// olursa (zaman aşımı, DNS hatası vb.) internet YOK kabul edilir.
+  Future<bool> _hasRealInternet() async {
+    try {
+      final result = await InternetAddress.lookup('firebase.google.com')
+          .timeout(const Duration(seconds: 4));
+      return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
+    } on SocketException {
+      return false;
+    } catch (_) {
+      return false;
+    }
   }
 
   bool _checkConnected(dynamic result) {

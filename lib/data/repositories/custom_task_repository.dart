@@ -152,11 +152,31 @@ class CustomTaskRepository {
 
   Future<void> unmarkTaskCompleted(String taskId) async {
     final today = DateTime.now().toIso8601String().substring(0, 10);
+    // Firestore'daki karşılığını silebilmek için önce yerel id'leri oku —
+    // önceden bu metod yalnızca SQLite'tan siliyordu; Firestore'daki
+    // taskCompletions kaydı kalıcı olarak kalıyordu ve bir sonraki
+    // restoreFromFirestore'da (ör. cihaz değişimi) görev "tamamlanmış"
+    // olarak geri geliyordu — geri alma (unmark) aslında hiç kalıcı
+    // olmuyordu.
+    final rows = await _db.query(
+      'custom_task_completions',
+      where: 'taskId = ? AND completedDate = ?',
+      whereArgs: [taskId, today],
+    );
     await _db.delete(
       'custom_task_completions',
       where: 'taskId = ? AND completedDate = ?',
       whereArgs: [taskId, today],
     );
+    if (_uid != null) {
+      for (final row in rows) {
+        final id = row['id'] as String?;
+        if (id == null) continue;
+        try {
+          await _firebase.deleteTaskCompletion(_uid!, id);
+        } catch (_) {}
+      }
+    }
   }
 
   // ── Senkronizasyon (uygulama açılışında çağır) ───────────────────────────
@@ -189,18 +209,24 @@ class CustomTaskRepository {
     if (parts.length != 2) return;
     final hour = int.tryParse(parts[0]) ?? 9;
     final minute = int.tryParse(parts[1]) ?? 0;
-    final now = DateTime.now();
-    var scheduledTime = DateTime(now.year, now.month, now.day, hour, minute);
-    if (scheduledTime.isBefore(now)) {
-      scheduledTime = scheduledTime.add(const Duration(days: 1));
-    }
-    await NotificationService().scheduleCustomReminder(
+    // ÖNCEDEN NotificationService.scheduleCustomReminder kullanılıyordu —
+    // o metod TEK SEFERLİK bir bildirim kurar (matchDateTimeComponents
+    // YOK). Kullanıcı tanımlı görevler ise doğası gereği HER GÜN aynı
+    // saatte hatırlatılmalı; tek seferlik kurulunca yalnızca ilk gün
+    // bildirim geliyor, ertesi gün sessiz kalıyordu (syncNotifications her
+    // açılışta yeniden kursa da, uygulama o gün hiç açılmazsa bildirim hiç
+    // gelmiyordu). scheduleTaskNotification, tıpkı topluluk görev
+    // hatırlatmaları (schedulePendingTaskReminders) gibi
+    // matchDateTimeComponents: DateTimeComponents.time ile GÜNLÜK
+    // tekrarlıyor.
+    await NotificationService().scheduleTaskNotification(
       taskNotifId(task.id),
       '${task.emoji} ${task.title}',
       task.description.isNotEmpty
           ? task.description
           : '${task.title} göreviniz sizi bekliyor',
-      scheduledTime,
+      hour,
+      minute,
     );
   }
 }

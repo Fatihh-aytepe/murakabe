@@ -70,9 +70,21 @@ class FakeLocalStorage extends Fake implements LocalStorage {
 class FakeRewardRepository extends Fake implements RewardRepository {
   final List<Map<String, String>> savedRewards = [];
   final Map<String, bool> _rewardDates = {};
+  final Set<String> _tahajjudAskedDates = {};
+  final List<Map<String, Object>> tahajjudAnswers = [];
 
   void stubRewardForDate(String type, String date, {bool value = true}) {
     _rewardDates['$type|$date'] = value;
+  }
+
+  /// checkTahajjudReward/shouldPromptTahajjud testlerinde "bugün zaten
+  /// soruldu" durumunu simüle etmek için.
+  void stubTahajjudAskedToday(String date, {bool value = true}) {
+    if (value) {
+      _tahajjudAskedDates.add(date);
+    } else {
+      _tahajjudAskedDates.remove(date);
+    }
   }
 
   @override
@@ -87,6 +99,16 @@ class FakeRewardRepository extends Fake implements RewardRepository {
   @override
   Future<bool> hasRewardForDate(String type, String date) async =>
       _rewardDates['$type|$date'] ?? false;
+
+  @override
+  Future<bool> tahajjudAskedToday(String date) async =>
+      _tahajjudAskedDates.contains(date);
+
+  @override
+  Future<void> recordTahajjudAnswer(String date, {required bool prayed}) async {
+    _tahajjudAskedDates.add(date);
+    tahajjudAnswers.add({'date': date, 'prayed': prayed});
+  }
 }
 
 // ── FakeBadgeRepository ───────────────────────────────────────────────────────

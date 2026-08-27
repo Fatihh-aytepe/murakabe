@@ -236,7 +236,38 @@ class LocalStorage {
   /// (kayıtlı hesap listesi dahil). Cihazda bu kullanıcıya ait hiçbir iz
   /// bırakmaz; bir sonraki açılışta uygulama sıfırdan kayıt/giriş ekranına
   /// döner.
-  Future<void> clearAllForAccountDeletion() => _prefs.clear();
+  /// [deletedUid] verilirse, tüm tercih/ayar verisi temizlenir AMA kayıtlı
+  /// hesaplar listesinden (`savedAccounts`) yalnızca SİLİNEN hesap çıkarılır
+  /// — cihazda başka hesaplar da kayıtlıysa hesap değiştirme ekranındaki
+  /// listeleri kaybetmezler. Önceden `_prefs.clear()` doğrudan çağrıldığı
+  /// için tek bir hesabı silmek cihazdaki TÜM kayıtlı hesap listesini de
+  /// siliyordu. Geriye dönük uyumluluk için [deletedUid] verilmezse eski
+  /// davranış (tam temizlik) korunur.
+  Future<void> clearAllForAccountDeletion([String? deletedUid]) async {
+    if (deletedUid == null || deletedUid.isEmpty) {
+      await _prefs.clear();
+      return;
+    }
+    final accounts = getSavedAccounts()
+      ..removeWhere((a) => a['uid'] == deletedUid);
+    await _prefs.clear();
+    await _prefs.setString('savedAccounts', jsonEncode(accounts));
+  }
+
+  /// Farklı bir hesaba GEÇİLİRKEN (hesap silme değil) çağrılır. Kayıtlı
+  /// hesaplar listesini (`savedAccounts` — hesap değiştirme ekranında
+  /// gösterilir) korur, geri kalan TÜM yerel tercih/ayar/streak/rozet
+  /// verisini temizler. Bu olmadan, örn. A hesabından B hesabına aynı
+  /// cihazda geçildiğinde B, A'nın streak/rozet/bildirim tercihi gibi
+  /// verilerini miras alıyordu (bkz. DatabaseHelper.wipeAllTables — SQLite
+  /// tarafındaki eşleniği, ikisi birlikte çağrılmalı).
+  Future<void> clearForAccountSwitch() async {
+    final savedAccountsRaw = _prefs.getString('savedAccounts');
+    await _prefs.clear();
+    if (savedAccountsRaw != null) {
+      await _prefs.setString('savedAccounts', savedAccountsRaw);
+    }
+  }
 
   // ── Çoklu hesap yönetimi ─────────────────────────────────────────────────
   // Her hesap: {uid, email, name, lastUsed}

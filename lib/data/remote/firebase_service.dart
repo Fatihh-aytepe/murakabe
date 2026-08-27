@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import '../models/user_model.dart';
 
 class FirebaseService {
@@ -143,6 +144,10 @@ class FirebaseService {
         .set(completion);
   }
 
+  Future<void> deleteTaskCompletion(String uid, String completionId) async {
+    await _sub(uid, 'taskCompletions').doc(completionId).delete();
+  }
+
   // ─── SAVED CONTENT (heybe) ────────────────────────────────────────────────
   Future<void> saveFavorite(String uid, Map<String, dynamic> content) async {
     await _sub(uid, 'saved').doc(content['id'] as String).set(content);
@@ -249,6 +254,11 @@ class FirebaseService {
       'tahajjudTracking',
       'badges',
       'reminders',
+      // quranProgress: QuranRepository.saveProgress/loadProgress tarafından
+      // kullanılan, "kaldığın yer" tek dokümanlık ilerleme kaydı. Önceden bu
+      // listede yoktu — hesap silindikten sonra Firestore'da kalıcı olarak
+      // kalıyordu.
+      'quranProgress',
     ];
     for (final col in subcollections) {
       await _deleteAllDocsIn(_sub(uid, col));
@@ -257,8 +267,41 @@ class FirebaseService {
     await _deleteStorageFolder('notes/$uid');
   }
 
+  /// `users/{uid}` alt koleksiyonlarının DIŞINDA kalan, kullanıcıyla
+  /// ilişkili kişisel kayıtları temizler: admin başvurusu ve gönderdiği/
+  /// aldığı bildirimler (bkz. firestore.rules — bu iki koleksiyonda artık
+  /// kullanıcının kendi adına/kendisine ait kayıtları silmesine izin
+  /// veriliyor). Best-effort — hata hesap silme akışını engellemez.
+  /// Not: topluluk üyelikleri RoleService.leaveCommunity ile, mesaj geçmişi
+  /// ise ayrı bir sunucu taraflı (Cloud Functions) temizlik gerektirdiğinden
+  /// burada kapsam dışıdır.
+  Future<void> deletePersonalRecordsOutsideUserDoc(String uid) async {
+    try {
+      await _db.collection('adminRequests').doc(uid).delete();
+    } catch (_) {}
+    try {
+      final asTarget = await _db
+          .collection('notifications')
+          .where('targetUid', isEqualTo: uid)
+          .get();
+      final asSender = await _db
+          .collection('notifications')
+          .where('fromUid', isEqualTo: uid)
+          .get();
+      final seenIds = <String>{};
+      final batch = _db.batch();
+      for (final doc in [...asTarget.docs, ...asSender.docs]) {
+        if (!seenIds.add(doc.id)) continue;
+        batch.delete(doc.reference);
+      }
+      if (seenIds.isNotEmpty) await batch.commit();
+    } catch (_) {}
+  }
+
   /// Storage'daki bir klasörü (ör. kullanıcının not eklerini) en iyi çaba
-  /// (best-effort) ile siler. Hata olursa hesap silme işlemini engellemez.
+  /// (best-effort) ile siler. Hata olursa hesap silme işlemini engellemez,
+  /// ama en azından debug loguna düşer (önceden tamamen sessizdi — bir
+  /// yükleme/izin hatası fark edilmeden kalıyordu).
   Future<void> _deleteStorageFolder(String path) async {
     try {
       final ref = FirebaseStorage.instance.ref(path);
@@ -266,12 +309,16 @@ class FirebaseService {
       for (final item in result.items) {
         try {
           await item.delete();
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[FirebaseService] Storage dosyası silinemedi ($path): $e');
+        }
       }
       for (final prefix in result.prefixes) {
         await _deleteStorageFolder(prefix.fullPath);
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[FirebaseService] Storage klasörü silinemedi ($path): $e');
+    }
   }
 
   Future<void> _deleteAllDocsIn(CollectionReference col) async {

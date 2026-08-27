@@ -1,6 +1,7 @@
 package com.murakabe.app
 
 import android.content.Intent
+import android.hardware.GeomagneticField
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -8,6 +9,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     private val widgetsChannel = "com.murakabe.app/widgets"
     private val audioChannel = "com.murakabe.app/audio"
+    private val qiblaChannel = "com.murakabe.app/qibla"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -55,6 +57,41 @@ class MainActivity : FlutterActivity() {
                     "stopPreviewAudio" -> {
                         AudioPicker.stopPreview()
                         result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        // Kıble pusulası: Android'de flutter_compass yalnızca MANYETİK
+        // heading verir (gerçek/coğrafi kuzey değil) — iOS'ta plugin konum
+        // izni varsa zaten trueHeading kullanıyor, bu yüzden bu kanal sadece
+        // Android tarafında çağrılır (bkz. KibleBulucuScreen). Manyetik
+        // sapma (declination), bölgeye göre birkaç dereceden 20°+'ye kadar
+        // çıkabilir ve uygulamanın 6°'lik "hizalandı" eşiğini kolayca aşar
+        // — android.hardware.GeomagneticField, ağ/veri indirmeye gerek
+        // duymadan cihaza gömülü Dünya Manyetik Modeli (WMM) ile bu sapmayı
+        // hesaplayan, Android SDK'nın kendi (üçüncü parti olmayan) sınıfı.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, qiblaChannel)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getMagneticDeclination" -> {
+                        val lat = call.argument<Double>("lat")
+                        val lng = call.argument<Double>("lng")
+                        if (lat == null || lng == null) {
+                            result.error("BAD_ARGS", "lat/lng eksik", null)
+                        } else {
+                            try {
+                                val field = GeomagneticField(
+                                    lat.toFloat(),
+                                    lng.toFloat(),
+                                    0f,
+                                    System.currentTimeMillis()
+                                )
+                                result.success(field.declination.toDouble())
+                            } catch (e: Exception) {
+                                result.error("CALC_FAILED", e.message, null)
+                            }
+                        }
                     }
                     else -> result.notImplemented()
                 }

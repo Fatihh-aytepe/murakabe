@@ -2,7 +2,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../../data/local/local_storage.dart';
-import 'notification_service.dart';
 
 /// Kullanıcının seçebileceği alarm sesleri.
 /// Dahili (hazır) sesler için [id] → assets/sounds/ + android res/raw
@@ -198,7 +197,16 @@ class AlarmService {
     await _plugin.initialize(
       const InitializationSettings(android: androidInit),
     );
-    await NotificationService().requestExactAlarmPermission();
+    // ÖNCEDEN burada NotificationService().requestExactAlarmPermission()
+    // çağrılıyordu. AlarmService().init() main()'de, kullanıcı daha giriş/
+    // kayıt ekranını bile görmeden UNKOŞULSUZ çalıştırılıyor (bkz.
+    // main.dart) — bu da tam alarm izni diyaloğunun uygulama açılır
+    // açılmaz, hiçbir gerekçe gösterilmeden çıkmasına neden oluyordu.
+    // Bu, PermissionHelper'ın kendi belgelediği kuralla ("Hiçbir izin
+    // uygulama açılışında topluca istenmez") doğrudan çelişiyordu. İzin artık
+    // yalnızca PermissionHelper.requestAlarmReliabilityPermissions()
+    // üzerinden, kayıt/girişten hemen sonra PermissionOnboardingScreen'de
+    // gerekçesiyle birlikte isteniyor.
   }
 
   // ── Teheccüd alarmı ───────────────────────────────────────────────────────

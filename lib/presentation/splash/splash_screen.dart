@@ -89,6 +89,34 @@ class _SplashScreenState extends State<SplashScreen>
           debugPrint('[Splash] Restore hatası: $e');
         }
       }
+
+      // ── E-posta doğrulama kontrolü ────────────────────────────────────
+      // login_screen.dart normal girişte e-posta doğrulanmadan HomeScreen'e
+      // geçmiyor (bkz. EmailVerificationScreen yönlendirmesi). Ancak Firebase
+      // Auth oturumu kayıt anında (doğrulama yapılmadan) zaten açılıyor ve
+      // cihazda kalıcı; bu yüzden kullanıcı doğrulamadan uygulamayı kapatıp
+      // yeniden açarsa, burası hiç kontrol yapmadan doğrudan HomeScreen'e
+      // yönlendiriyordu — doğrulama adımını tamamen atlatıyordu. Sahip
+      // hesabı (AppStrings.adminEmail) için normal girişte de bu kontrol
+      // aranmıyor, burada da aynı istisna korunur.
+      if (authUser.email != AppStrings.adminEmail) {
+        try {
+          await authUser.reload();
+        } catch (_) {}
+        final refreshed = FirebaseAuth.instance.currentUser;
+        if (refreshed == null) {
+          // reload() sırasında hesap silinmiş/oturum geçersiz kalmış olabilir.
+          if (!mounted) return;
+          _go(const LoginScreen());
+          return;
+        }
+        if (!refreshed.emailVerified) {
+          if (!mounted) return;
+          _go(EmailVerificationScreen(email: refreshed.email ?? ''));
+          return;
+        }
+      }
+
       if (!mounted) return;
       final role = await RoleService().getCurrentRole();
       if (!mounted) return;
@@ -123,10 +151,22 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _showUpdateDialog(UpdateInfo info) async {
+    // Not: Önceden burada kullanıcıya "önce mevcut uygulamayı kaldırın"
+    // deniyordu. Bu, hem senkronize olmamış yerel veriyi kaybettirebilir
+    // hem de Android'in normal APK güncelleme mekanizmasını (aynı imzayla
+    // üzerine kurma) atlatıp imza sürekliliği korumasını devre dışı
+    // bırakıyordu — oysa aynı imzayla imzalanmış bir APK zaten kaldırmadan
+    // doğrudan üzerine kurulabilir; imzalar uyuşmuyorsa Android kurulumu
+    // zaten kendi başına reddedip kullanıcıyı bilgilendirir. Talimat
+    // kaldırıldı.
+    bool isVerifying = false;
+    String? verifyError;
+
     await showDialog<void>(
       context: context,
       barrierDismissible: !info.forceUpdate,
-      builder: (ctx) => PopScope(
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => PopScope(
         canPop: !info.forceUpdate,
         child: AlertDialog(
           backgroundColor: const Color(0xFF1B2A3B),
@@ -137,20 +177,33 @@ class _SplashScreenState extends State<SplashScreen>
             style: GoogleFonts.playfairDisplay(
                 color: AppColors.gold, fontWeight: FontWeight.bold),
           ),
-          content: Text(
-            'Yeni sürüm (${info.latestVersion}) hazır!\n\n'
-            'Kurulum adımları:\n'
-            '1. İndirdikten sonra önce mevcut uygulamayı kaldırın\n'
-            '2. İndirilen APK dosyasını kurun',
-            style: GoogleFonts.notoSans(color: AppColors.white),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Yeni sürüm (${info.latestVersion}) hazır!\n\n'
+                'İndirilen dosyayı açtığınızda Android üzerine kurmayı '
+                'teklif edecek; uygulamayı önceden kaldırmanıza gerek yok.',
+                style: GoogleFonts.notoSans(color: AppColors.white),
+              ),
+              if (verifyError != null) ...[
+                const SizedBox(height: 12),
+                Text(verifyError!,
+                    style: const TextStyle(color: Colors.redAccent)),
+              ],
+            ],
           ),
           actions: [
             if (!info.forceUpdate)
               TextButton(
-                onPressed: () async {
-                  await LocalStorage().setSkippedVersion(info.latestVersion);
-                  if (ctx.mounted) Navigator.pop(ctx);
-                },
+                onPressed: isVerifying
+                    ? null
+                    : () async {
+                        await LocalStorage()
+                            .setSkippedVersion(info.latestVersion);
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
                 child: const Text('Sonra',
                     style: TextStyle(color: AppColors.turquoiseLight)),
               ),
@@ -161,18 +214,52 @@ class _SplashScreenState extends State<SplashScreen>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
               ),
-              onPressed: () async {
+              onPressed: isVerifying
+                  ? null
+                  : () async {
+                setDlg(() {
+                  isVerifying = true;
+                  verifyError = null;
+                });
+                // apk_sha256 Remote Config'te doluysa, kurulum linkini
+                // açmadan önce dosyanın bütünlüğünü doğrula (bkz.
+                // UpdateService.verifyApk). Boşsa anında true dönüp eski
+                // davranışla aynı şekilde devam eder.
+                final result = await UpdateService().verifyApk(info);
+                if (result == ApkVerifyResult.mismatch) {
+                  setDlg(() {
+                    isVerifying = false;
+                    verifyError =
+                        'İndirilen dosya doğrulanamadı, güvenlik nedeniyle '
+                        'kurulum başlatılmadı. Lütfen daha sonra tekrar deneyin.';
+                  });
+                  return;
+                }
+                // 'error' (ağ/zaman aşımı) durumunda doğrulamayı zorunlu
+                // kılmıyoruz — link zaten HTTPS ile taşınıyor ve Android
+                // kurulum sırasında imza sürekliliğini kendisi denetliyor;
+                // yalnızca "farklı olduğu KANITLANMIŞ" (mismatch) durumda
+                // engelliyoruz.
                 final uri = Uri.parse(info.apkUrl);
                 if (await canLaunchUrl(uri)) {
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                 }
+                setDlg(() => isVerifying = false);
                 if (!info.forceUpdate && ctx.mounted) {
                   Navigator.pop(ctx);
                 }
               },
-              child: const Text('Güncelle'),
+              child: isVerifying
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          color: Colors.black, strokeWidth: 2),
+                    )
+                  : const Text('Güncelle'),
             ),
           ],
+        ),
         ),
       ),
     );

@@ -16,8 +16,10 @@ class PrayerTimesResult {
 class GetPrayerTimes {
   final _locationService = LocationService();
 
-  Future<PrayerTimesResult?> call() async {
-    final position = await _locationService.getCurrentPosition();
+  Future<PrayerTimesResult?> call({bool requestPermissionIfNeeded = true}) async {
+    final position = await _locationService.getCurrentPosition(
+      requestIfDenied: requestPermissionIfNeeded,
+    );
     if (position == null) return null;
 
     final coordinates = Coordinates(position.latitude, position.longitude);

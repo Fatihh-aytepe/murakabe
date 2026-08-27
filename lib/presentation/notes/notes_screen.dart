@@ -112,6 +112,13 @@ Future<void> showNoteEditor(
             isPinned: draft.isPinned,
             imagePaths: draft.imagePaths,
             audioPaths: draft.audioPaths,
+            // Önceki Storage yedek linkleri korunur (bkz.
+            // NoteRepository.reconcileAttachmentUrls) — aksi halde her
+            // düzenlemede bu linkler sıfırlanıp ekler yedeksiz kalıyordu.
+            imageUrls: NoteRepository.reconcileAttachmentUrls(
+                note.imagePaths, note.imageUrls, draft.imagePaths),
+            audioUrls: NoteRepository.reconcileAttachmentUrls(
+                note.audioPaths, note.audioUrls, draft.audioPaths),
             reminderAt: draft.reminderAt,
             createdAt: note.createdAt,
             updatedAt: DateTime.now(),
@@ -663,7 +670,13 @@ class NoteEditorSheet extends StatefulWidget {
   final String? prefillTitle;
   final quill.Document? prefillDocument;
   final List<String> prefillTags;
-  final void Function(NoteDraft draft) onSave;
+  // Önceden `void Function(NoteDraft)` idi: gerçek uygulama (showNoteEditor
+  // içindeki async lambda) bir Future dönüyordu ama alan void tipinde
+  // olduğu için o Future hiç beklenmiyor, çağrı "fire-and-forget" oluyordu
+  // — _handleSave de hemen ardından Navigator.pop çağırdığından, kayıt
+  // (SQLite + Firestore yazımı) bitmeden pencere kapanıyordu. Artık
+  // çağıran taraf (_handleSave) bu Future'ı bekleyip ONDAN SONRA kapatıyor.
+  final Future<void> Function(NoteDraft draft) onSave;
 
   const NoteEditorSheet({
     super.key,
@@ -1111,22 +1124,33 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
 
   void _clearReminder() => setState(() => _reminderAt = null);
 
-  void _handleSave() {
+  bool _isSaving = false;
+
+  Future<void> _handleSave() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
     final title = _titleCtrl.text.trim();
     final plainText = _quillController.document.toPlainText().trim();
     final deltaJson = jsonEncode(_quillController.document.toDelta().toJson());
-    widget.onSave(NoteDraft(
-      title: title,
-      content: plainText,
-      contentDelta: deltaJson,
-      tags: _tags,
-      color: _color,
-      isPinned: _isPinned,
-      imagePaths: _imagePaths,
-      audioPaths: _audioPaths,
-      reminderAt: _reminderAt,
-    ));
-    Navigator.pop(context);
+    try {
+      // Kayıt (SQLite + Firestore yazımı) tamamlanana KADAR beklenir — aksi
+      // halde pencere hemen kapanıp asıl yazma işlemi arka planda yarım
+      // kalabiliyordu (bkz. widget.onSave alanındaki not).
+      await widget.onSave(NoteDraft(
+        title: title,
+        content: plainText,
+        contentDelta: deltaJson,
+        tags: _tags,
+        color: _color,
+        isPinned: _isPinned,
+        imagePaths: _imagePaths,
+        audioPaths: _audioPaths,
+        reminderAt: _reminderAt,
+      ));
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -1206,9 +1230,16 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
                     // hatırlatıcı varsa aşağıdaki etiket olarak gösterilmeye
                     // devam ediyor.
                     TextButton(
-                      onPressed: _handleSave,
-                      child: const Text('Kaydet',
-                          style: TextStyle(color: AppColors.gold)),
+                      onPressed: _isSaving ? null : _handleSave,
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                  color: AppColors.gold, strokeWidth: 2),
+                            )
+                          : const Text('Kaydet',
+                              style: TextStyle(color: AppColors.gold)),
                     ),
                   ],
                 ),

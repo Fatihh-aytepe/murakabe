@@ -34,7 +34,23 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isAuth() && (request.auth.uid == userId || isAdmin());
       allow list: if isAdmin();
-      allow write: if isAuth() && request.auth.uid == userId;
+      allow delete: if isAuth() && request.auth.uid == userId;
+      // İki ayrı akış aynı dokümana yazıyor: UserRepository.updateUser (tam
+      // profil, saveUser→set merge:true) ve LocalStorage.toSyncMap→
+      // saveUserPrefs (streak/rozet/tercih alanları, merge:true). Onun için
+      // burada tam bir hasOnly() beyaz listesi yerine, önceden sınırsız/
+      // negatif/yanlış türde yazılabilen ve rozet-ödül mantığının veya
+      // kimliğin taklit edilmesinde kullanılabilecek alanların TÜRÜ ve
+      // (sayısal olanlar için) negatif olmama şartı doğrulanıyor.
+      allow create, update: if isAuth() && request.auth.uid == userId &&
+        (!('id' in request.resource.data) || request.resource.data.id == userId) &&
+        (!('streakDays' in request.resource.data) ||
+          (request.resource.data.streakDays is int && request.resource.data.streakDays >= 0)) &&
+        (!('quranReadDays' in request.resource.data) ||
+          (request.resource.data.quranReadDays is int && request.resource.data.quranReadDays >= 0)) &&
+        (!('mercyDaysUsed' in request.resource.data) ||
+          (request.resource.data.mercyDaysUsed is int && request.resource.data.mercyDaysUsed >= 0)) &&
+        (!('isEmailVerified' in request.resource.data) || request.resource.data.isEmailVerified is bool);
 
       match /{sub}/{docId} {
         allow read, write: if isAuth() && request.auth.uid == userId;
@@ -66,16 +82,48 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid;
       allow get: if isAuth() && (isOwner() || request.auth.uid == requestId);
       allow list: if isAdmin();
-      allow update, delete: if isOwner();
+      allow update: if isOwner();
+      // Sahip her zaman silebilir; başvuru sahibi de hesabını silerken kendi
+      // başvurusunu temizleyebilir (bkz. UserRepository.deleteAccountPermanently).
+      allow delete: if isOwner() || (isAuth() && request.auth.uid == requestId);
     }
 
     // ── Bildirimler ───────────────────────────────────────────────────────────
     match /notifications/{notifId} {
-      allow create: if isAdmin();
+      // Normal kullanıcılar da iki dar durumda kendi adına bildirim
+      // yazabilir: admin başvurusu (sahibe) ve topluluğa katılma (o
+      // topluluğun adminine). Önceden bu iki yazım da isAdmin() şartına
+      // takılıp sessizce (catch (_) {}) başarısız oluyordu — bkz.
+      // RoleService.applyForAdmin / joinCommunity.
+      allow create: if isAdmin() || (
+        isAuth() &&
+        request.resource.data.fromUid == request.auth.uid &&
+        request.resource.data.fromName is string &&
+        request.resource.data.read == false &&
+        request.resource.data.createdAt == request.time &&
+        (
+          (request.resource.data.type == 'admin_request' &&
+           request.resource.data.keys().hasOnly(
+             ['type', 'fromUid', 'fromName', 'targetUid', 'createdAt', 'read']) &&
+           request.resource.data.targetUid ==
+             get(/databases/$(database)/documents/roles/owner).data.uid)
+          ||
+          (request.resource.data.type == 'community_joined' &&
+           request.resource.data.keys().hasOnly([
+             'type', 'fromUid', 'fromName', 'targetUid', 'communityId',
+             'communityName', 'createdAt', 'read'
+           ]) &&
+           isMember(request.resource.data.communityId) &&
+           request.resource.data.targetUid == get(
+             /databases/$(database)/documents/communities/$(request.resource.data.communityId)
+           ).data.adminUid)
+        )
+      );
       allow read, list: if isAuth() && (
         isOwner() ||
         isAdmin() ||
-        resource.data.targetUid == request.auth.uid
+        resource.data.targetUid == request.auth.uid ||
+        resource.data.fromUid == request.auth.uid
       );
       // Hedef kullanıcı yalnızca okundu bilgisini (read) güncelleyebilir
       allow update: if isAuth() && (
@@ -84,7 +132,11 @@ service cloud.firestore {
         (resource.data.targetUid == request.auth.uid &&
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']))
       );
-      allow delete: if isOwner() || isAdmin() || resource.data.targetUid == request.auth.uid;
+      // Alıcı VEYA gönderen kendi hesabını silerken kendine ait bildirimleri
+      // temizleyebilir (bkz. UserRepository.deleteAccountPermanently).
+      allow delete: if isOwner() || isAdmin() ||
+        resource.data.targetUid == request.auth.uid ||
+        resource.data.fromUid == request.auth.uid;
     }
 
     // ── Davet kodu arama tablosu ─────────────────────────────────────────────
@@ -110,10 +162,26 @@ service cloud.firestore {
       allow create: if isAdmin();
       allow delete: if isOwner() || isCommunityAdmin(communityId);
       allow update: if isOwner() || isCommunityAdmin(communityId) ||
-        // Katılım batch'i: herhangi bir auth kullanıcı yalnızca memberCount'u tam 1 artırabilir
+        // Katılım batch'i: herhangi bir auth kullanıcı memberCount'u tam 1
+        // artırabilir — AMA sadece kendi üyelik kaydını henüz oluşturmamışsa
+        // (!exists — daha önce+tekrar tekrar çağırıp sayacı şişiremesin) VE
+        // bu güncellemeyle AYNI batch'te kendi üyelik belgesi de
+        // oluşuyorsa (getAfter — üyelik kaydı olmadan sayaç artırılamaz).
+        // Önceden bu ikinci şart yoktu; herhangi bir kullanıcı üye
+        // olmadan sayaca sınırsız +1 gönderebiliyordu.
         (isAuth() &&
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']) &&
-         request.resource.data.memberCount == resource.data.memberCount + 1);
+         request.resource.data.memberCount == resource.data.memberCount + 1 &&
+         !exists(/databases/$(database)/documents/communities/$(communityId)/members/$(request.auth.uid)) &&
+         getAfter(/databases/$(database)/documents/communities/$(communityId)/members/$(request.auth.uid)).data.uid == request.auth.uid) ||
+        // Ayrılma (leave) batch'i: tersi — kendi üyelik kaydını SİLEN bir
+        // kullanıcı sayaçtan tam 1 düşebilir. Bkz. RoleService.leaveCommunity
+        // (hesap silme akışında üyelik "hayalet" kalmasın diye kullanılıyor).
+        (isAuth() &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']) &&
+         request.resource.data.memberCount == resource.data.memberCount - 1 &&
+         exists(/databases/$(database)/documents/communities/$(communityId)/members/$(request.auth.uid)) &&
+         !existsAfter(/databases/$(database)/documents/communities/$(communityId)/members/$(request.auth.uid)));
 
       // Özel topluluk ayarları (inviteCode vb.) — owner ve topluluk yöneticisi erişebilir
       match /private/{docId} {
@@ -139,12 +207,44 @@ service cloud.firestore {
            && exists(/databases/$(database)/documents/inviteLookup/$(request.resource.data.inviteCode))
            && get(/databases/$(database)/documents/inviteLookup/$(request.resource.data.inviteCode)).data.communityId == communityId)
         );
-        allow update, delete: if isOwner() || isCommunityAdmin(communityId);
+        // Owner/topluluk admini herhangi bir üyeyi atabilir; üye kendi
+        // kaydını silerek topluluktan ayrılabilir (bkz. leaveCommunity —
+        // hesap silindiğinde de bu yol kullanılıyor).
+        allow delete: if isOwner() || isCommunityAdmin(communityId) ||
+          (isAuth() && request.auth.uid == userId);
+        // Katılan üye, katılım kodunu (inviteCode) DOĞRULAMA için bir kez
+        // yazdıktan hemen sonra kendi belgesinden bu alanı silebilir — aksi
+        // halde kod, o topluluğun tüm üyelerince okunabilen bu belgede
+        // kalıcı olarak durur (bkz. RoleService.joinCommunity, members/read
+        // kuralı yalnızca "hangi alanlar" değil "tüm belge" bazında okuma
+        // izni veriyor; alan bazlı gizleme Firestore kurallarında mümkün
+        // değil, bu yüzden alanın kendisi kaldırılıyor).
+        allow update: if isOwner() || isCommunityAdmin(communityId) ||
+          (isAuth() && request.auth.uid == userId &&
+           'inviteCode' in resource.data &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['inviteCode']) &&
+           !('inviteCode' in request.resource.data));
       }
 
       match /messages/{messageId} {
         allow read: if isMember(communityId);
-        allow create: if isMember(communityId) && request.resource.data.senderUid == request.auth.uid;
+        // senderName istemciden geldiği gibi güvenilmiyor; gönderenin GERÇEK
+        // profil adıyla eşleşmesi zorunlu (uygulama zaten mesaj göndermeden
+        // hemen önce bu alanı users/{uid}.nameSurname'den okuyor — bkz.
+        // community_screen.dart _sendMessage). Böylece biri "senderName"
+        // alanını taklit ederek başka bir üye adına mesaj gönderemiyor.
+        // Ayrıca alan listesi, metin uzunluğu ve sunucu zaman damgası
+        // doğrulanıyor.
+        allow create: if isMember(communityId) &&
+          request.resource.data.keys().hasOnly(['text', 'senderUid', 'senderName', 'sentAt']) &&
+          request.resource.data.senderUid == request.auth.uid &&
+          request.resource.data.senderName == get(
+            /databases/$(database)/documents/users/$(request.auth.uid)
+          ).data.nameSurname &&
+          request.resource.data.text is string &&
+          request.resource.data.text.size() > 0 &&
+          request.resource.data.text.size() <= 4000 &&
+          request.resource.data.sentAt == request.time;
         allow update, delete: if isOwner() || isCommunityAdmin(communityId);
       }
 

@@ -380,6 +380,13 @@ class _LoginScreenState extends State<LoginScreen>
         return;
       }
 
+      // Farklı bir hesaba geçiliyorsa, o hesabın verisini okumadan/yazmadan
+      // önce bu cihazdaki önceki hesabın yerel verisini temizle (bkz.
+      // UserRepository.prepareLocalDataForUid — aksi halde local SQLite
+      // tabloları userId'ye göre ayrılmadığından yeni hesap eskisinin
+      // notlarını/ödüllerini/rozetlerini görür).
+      await UserRepository().prepareLocalDataForUid(authUser.uid);
+
       // Her girişte userId kaydet
       await LocalStorage().setUserId(authUser.uid);
       await LocalStorage().setUserRegistered(true);

@@ -38,12 +38,24 @@ android {
         multiDexEnabled = true
     }
 
+    // key.properties gizli bir dosyadır ve repoya dahil edilmez (bkz. .gitignore).
+    // Temiz bir klonda bu dosya yoksa release imzalama bilgisi bulunmaz; bu durumda
+    // önceden "as String" ile zorunlu cast yapıldığından Gradle configuration
+    // aşamasında (build türü seçilmeden önce) çöküyordu. Artık dosya yoksa release
+    // derlemesi debug imzasına düşüyor, böylece `flutter run`/`flutter build apk`
+    // temiz bir klonda da çalışır. Play Store'a yüklenecek gerçek bir release için
+    // `android/key.properties` dosyasını oluşturup imzalama bilgilerini girin
+    // (bkz. README.md).
+    val hasSigningConfig = keystorePropertiesFile.exists()
+
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = keystoreProperties["storeFile"]?.let { file("$it") }
-            storePassword = keystoreProperties["storePassword"] as String
+            if (hasSigningConfig) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }
+                storePassword = keystoreProperties["storePassword"] as String
+            }
         }
     }
 
@@ -55,7 +67,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (hasSigningConfig) {
+                signingConfigs.getByName("release")
+            } else {
+                // key.properties yok: debug imzasıyla derle (yalnızca yerel/test
+                // amaçlı). Play Store'a yüklenecek APK/AAB için gerçek bir
+                // imzalama yapılandırması şart.
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

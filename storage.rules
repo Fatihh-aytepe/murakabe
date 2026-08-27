@@ -3,8 +3,24 @@ service firebase.storage {
   match /b/{bucket}/o {
 
     // Her kullanıcı sadece kendi notes/{uid}/... klasörüne erişebilir.
-    match /notes/{uid}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+    // Not: dosya türü/boyut sınırı önceden hiç yoktu — herhangi bir dosya,
+    // sınırsız boyutta yüklenebiliyordu. Uygulama yalnızca not
+    // resimlerini (note_images) ve ses kayıtlarını (note_audio) bu yola
+    // yüklüyor (bkz. NoteFileStorage.uploadToStorage), bu yüzden sınırlar
+    // buna göre belirlendi. Eşleşmeyen başka bir alt yol, dosyanın en
+    // sonundaki genel "false" kuralına düşer (varsayılan red).
+    match /notes/{uid}/{noteId}/note_images/{fileName} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.size < 15 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /notes/{uid}/{noteId}/note_audio/{fileName} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.size < 30 * 1024 * 1024
+        && request.resource.contentType.matches('audio/.*');
     }
 
     // Tanımlı olmayan her yol varsayılan olarak kapalı.

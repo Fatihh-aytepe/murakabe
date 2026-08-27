@@ -426,7 +426,7 @@ class NotificationService {
     while (thursday.weekday != DateTime.thursday) {
       thursday = thursday.add(const Duration(days: 1));
     }
-    final scheduled = tz.TZDateTime(
+    var scheduled = tz.TZDateTime(
       tz.local,
       thursday.year,
       thursday.month,
@@ -434,6 +434,14 @@ class NotificationService {
       2,
       0,
     );
+    // Yukarıdaki while döngüsü BUGÜN perşembeyse hiç ilerlemiyor; saat
+    // zaten 02:00'ı geçtiyse (ör. perşembe öğleden sonra çalıştırılırsa)
+    // hesaplanan zaman GEÇMİŞTE kalıyordu. matchDateTimeComponents
+    // kullanılsa da geçmiş bir referans tarihine güvenmek yerine burada
+    // açıkça bir sonraki haftaya ilerletiliyor.
+    if (!scheduled.isAfter(now)) {
+      scheduled = scheduled.add(const Duration(days: 7));
+    }
     await _plugin.zonedSchedule(
       tahajjudNotifId + 10,
       'Teheccüd Vakti',
@@ -460,7 +468,7 @@ class NotificationService {
     while (friday.weekday != DateTime.friday) {
       friday = friday.add(const Duration(days: 1));
     }
-    final scheduled = tz.TZDateTime(
+    var scheduled = tz.TZDateTime(
       tz.local,
       friday.year,
       friday.month,
@@ -468,6 +476,11 @@ class NotificationService {
       10,
       0,
     );
+    // Bkz. scheduleThursdayTahajjud — aynı sebep: bugün cumaysa ve saat
+    // zaten 10:00'ı geçtiyse hesaplanan zaman geçmişte kalıyordu.
+    if (!scheduled.isAfter(now)) {
+      scheduled = scheduled.add(const Duration(days: 7));
+    }
     await _plugin.zonedSchedule(
       weeklyNotifId,
       'Haftalık Özet',

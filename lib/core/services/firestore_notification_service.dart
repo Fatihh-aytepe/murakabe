@@ -26,9 +26,19 @@ class FirestoreNotificationService {
     final uid = LocalStorage().userId;
     if (uid == null) return;
     _sub?.cancel();
+    // ÖNCEDEN read==false filtresi yoktu: sorgu yalnızca targetUid'e göre
+    // filtreleyip limit(20) ile kesiyordu, orderBy da yoktu. Firestore,
+    // orderBy verilmeyen sorgularda belge ID'sine göre sıralar; kullanıcının
+    // okunmuş (read:true) bildirimleri bu "ilk 20" içine düştüğünde, yeni
+    // gelen bildirimler limit'in dışında kalıp HİÇ işlenmiyordu (push de
+    // gelmiyordu). read==false filtresi eklenerek sorgu artık yalnızca
+    // henüz işlenmemiş bildirimleri getiriyor — okunmuşlar pencereyi asla
+    // doldurmaz. (targetUid + read için composite index firestore.indexes
+    // .json'da zaten tanımlıydı, kullanılmıyordu.)
     _sub = FirebaseFirestore.instance
         .collection('notifications')
         .where('targetUid', isEqualTo: uid)
+        .where('read', isEqualTo: false)
         .limit(20)
         .snapshots()
         .listen(_handle, onError: (_) {});

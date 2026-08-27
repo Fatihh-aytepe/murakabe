@@ -16,7 +16,7 @@
           "fieldPath": "__name__",
           "order": "DESCENDING"
         }
-      ],
+      ]
     },
     {
       "collectionGroup": "members",

@@ -3,6 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/alarm_service.dart';
@@ -1901,6 +1902,12 @@ class ProfileScreenState extends State<ProfileScreen>
                                         email: email, password: passCtrl.text);
                                     final authUser =
                                         FirebaseService().currentAuthUser!;
+                                    // Bkz. UserRepository.prepareLocalDataForUid:
+                                    // yerel SQLite tabloları userId'ye göre
+                                    // ayrılmadığından, geçilen hesap eskisinin
+                                    // verisini miras almasın diye önce temizlenir.
+                                    await UserRepository()
+                                        .prepareLocalDataForUid(authUser.uid);
                                     await LocalStorage()
                                         .setUserId(authUser.uid);
                                     await LocalStorage()
@@ -2075,14 +2082,42 @@ class ProfileScreenState extends State<ProfileScreen>
         imageQuality: 85,
       );
       if (picked != null) {
-        await LocalStorage().setProfilePhotoPath(picked.path);
-        if (mounted) setState(() => _profilePhotoPath = picked.path);
+        // DÜZELTME: image_picker'ın döndürdüğü yol GEÇİCİ bir önbellek/tmp
+        // dosyasıdır (Android'de cache temizlenince, iOS'ta ise çoğu zaman
+        // bir sonraki uygulama açılışında bile silinebilir) — bu yol
+        // doğrudan kaydedilince fotoğraf, önbellek temizliği/hesap
+        // değiştirme/cihaz yeniden başlatma gibi durumlarda sessizce
+        // kayboluyordu. Dosyayı uygulamanın KENDİ kalıcı belgeler
+        // klasörüne (path_provider) sabit bir adla kopyalayıp o kalıcı yolu
+        // saklıyoruz; eski dosya varsa üzerine yazılır.
+        final persistentPath = await _persistProfilePhoto(picked.path);
+        await LocalStorage().setProfilePhotoPath(persistentPath);
+        if (mounted) setState(() => _profilePhotoPath = persistentPath);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Fotoğraf seçilemedi')));
       }
+    }
+  }
+
+  /// Seçilen fotoğrafı uygulamanın kalıcı belgeler klasörüne
+  /// `profile_photo.jpg` adıyla kopyalar ve o kalıcı yolu döner. Kopyalama
+  /// başarısız olursa (çok nadir — disk dolu vb.) orijinal (geçici) yola
+  /// düşülür, en azından o an için fotoğraf gösterilebilsin diye.
+  Future<String> _persistProfilePhoto(String sourcePath) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final destPath = '${dir.path}/profile_photo.jpg';
+      final dest = File(destPath);
+      if (await dest.exists()) {
+        await dest.delete();
+      }
+      await File(sourcePath).copy(destPath);
+      return destPath;
+    } catch (_) {
+      return sourcePath;
     }
   }
 }
