@@ -1,0 +1,51 @@
+From 1f5237e52c76f93e3e7776961ce4701634eb580c Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 27 Aug 2026 22:15:27 +0000
+Subject: [PATCH] =?UTF-8?q?WidgetRefresher:=20var=20olmayan=20AlarmManager?=
+ =?UTF-8?q?.INTERVAL=5FMINUTE=20referans=C4=B1n=C4=B1=20d=C3=BCzelt?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+AlarmManager sınıfında INTERVAL_MINUTE diye bir sabit yok (en küçük hazır
+sabit INTERVAL_FIFTEEN_MINUTES) — bu kod derlenmiyordu (release APK
+derlemesi 'Unresolved reference' hatasıyla başarısız oluyordu). Kendi
+60 saniyelik milisaniye sabitimiz (TICK_INTERVAL_MILLIS) tanımlanıp
+setInexactRepeating çağrısında kullanıldı; davranış (dakikada bir tick)
+aynı kaldı.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+---
+ .../src/main/kotlin/com/murakabe/app/WidgetRefresher.kt  | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/android/app/src/main/kotlin/com/murakabe/app/WidgetRefresher.kt b/android/app/src/main/kotlin/com/murakabe/app/WidgetRefresher.kt
+index 0005be6..ecb65df 100644
+--- a/android/app/src/main/kotlin/com/murakabe/app/WidgetRefresher.kt
++++ b/android/app/src/main/kotlin/com/murakabe/app/WidgetRefresher.kt
+@@ -15,6 +15,11 @@ object WidgetRefresher {
+      * PrayerCountdownWidgetProvider bu action'ı onReceive'de yakalar. */
+     const val ACTION_PRAYER_TICK = "com.murakabe.app.widget.PRAYER_TICK"
+     private const val TICK_REQUEST_CODE = 900
++    // DÜZELTME: android.app.AlarmManager sınıfında INTERVAL_MINUTE diye bir
++    // sabit YOK (en küçük hazır aralık sabiti INTERVAL_FIFTEEN_MINUTES) —
++    // önceki kod derlenmeyen bir referans kullanıyordu. Kendi 1 dakikalık
++    // milisaniye sabitimizi tanımlıyoruz.
++    private const val TICK_INTERVAL_MILLIS = 60_000L
+ 
+     fun refreshAll(context: Context) {
+         refresh(context, PrayerTimesWidgetProvider::class.java)
+@@ -65,8 +70,8 @@ object WidgetRefresher {
+         val am = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+         am.setInexactRepeating(
+             AlarmManager.RTC,
+-            System.currentTimeMillis() + AlarmManager.INTERVAL_MINUTE,
+-            AlarmManager.INTERVAL_MINUTE,
++            System.currentTimeMillis() + TICK_INTERVAL_MILLIS,
++            TICK_INTERVAL_MILLIS,
+             tickPendingIntent(context)
+         )
+     }
+-- 
+2.43.0
+

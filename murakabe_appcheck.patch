@@ -1,0 +1,136 @@
+From 13206729e5d03601bd42b312926e1eed7af928bd Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 27 Aug 2026 21:09:59 +0000
+Subject: [PATCH] Firebase App Check istemci entegrasyonunu ekle
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+ChatGPT'nin raporundaki "toplu bildirim gönderiminde App Check/hız
+sınırlaması eksik" notuna karşılık firebase_app_check paketini ekleyip
+main.dart'ta Firebase.initializeApp'ten hemen sonra activate() çağrısını
+ekledim (debug derlemede AndroidProvider.debug/AppleProvider.debug,
+release derlemede Play Integrity/App Attest). Bu adım TEK BAŞINA hiçbir
+isteği engellemez — enforce (zorlama) ayrı olarak Firebase Console'dan
+açılır ve bu güncelleme Play Store'a çıkıp kullanıcıların büyük kısmı
+güncellemeden önce açılırsa TÜM eski sürüm kullanıcılarının isteklerini
+reddeder; bu yüzden Console tarafındaki güvenli sıralamayı hem
+main.dart'taki yorumda hem README'de ayrıntılı belgeledim. pubspec.lock
+bu ortamda `flutter pub get` çalıştırılamadığı için güncellenemedi —
+patch uygulandıktan sonra bunun çalıştırılması gerekiyor.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HLWBbWvtC27euvgP6voPwg
+---
+ README.md     | 22 ++++++++++++++++++++++
+ lib/main.dart | 35 ++++++++++++++++++++++++++++++++++-
+ pubspec.yaml  |  5 +++++
+ 3 files changed, 61 insertions(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index abb016a..eea1023 100644
+--- a/README.md
++++ b/README.md
+@@ -63,6 +63,28 @@ firebase deploy --only firestore:rules,firestore:indexes,storage
+ projenize deploy etmeniz gerekir (aksi halde bileşik sorgular
+ `FAILED_PRECONDITION` hatası verir).
+ 
++### App Check (kötüye kullanım/bulk istek koruması)
++
++`lib/main.dart`, `FirebaseAppCheck.instance.activate()` çağırır — bu,
++istemci kodunu içerir ama tek başına HİÇBİR isteği engellemez; Firebase
++Console tarafında ayrıca kurulum gerekir:
++
++1. [Firebase Console](https://console.firebase.google.com) → projeniz →
++   **App Check** sekmesi → Android uygulamasını **Play Integrity**
++   sağlayıcısıyla kaydedin.
++2. Debug/emulator derlemesinde `AndroidProvider.debug` kullanılır; ilk
++   çalıştırmada konsola (`adb logcat` veya `flutter run` çıktısı) bir debug
++   token yazdırılır — bunu App Check → Apps → "Manage debug tokens"
++   kısmına ekleyin, aksi halde debug derlemesinin istekleri App Check
++   metriklerinde "geçersiz" görünür (enforce kapalıyken bu isteği
++   ENGELLEMEZ).
++3. **Enforce'u (Firestore/Storage/Auth için) bu güncelleme Play Store'a
++   çıkıp kullanıcıların büyük kısmı güncellemeden ÖNCE AÇMAYIN** — aksi
++   halde App Check'i içermeyen eski sürümü kullanan tüm kullanıcıların
++   istekleri reddedilir. Önce Console'daki "İstek metrikleri" grafiğinde
++   geçerli token oranının yükseldiğini doğrulayın, ancak sonra
++   Enforce'u açın.
++
+ ## 3. Android imzalama (yalnızca release build için)
+ 
+ `android/app/build.gradle.kts`, `android/key.properties` dosyası yoksa
+diff --git a/lib/main.dart b/lib/main.dart
+index e06d5e9..b314a19 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -1,9 +1,10 @@
+-import 'package:flutter/foundation.dart' show debugPrint;
++import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+ import 'package:flutter/material.dart';
+ import 'package:flutter_localizations/flutter_localizations.dart';
+ import 'package:flutter_quill/flutter_quill.dart'
+     show FlutterQuillLocalizations;
+ import 'package:firebase_core/firebase_core.dart';
++import 'package:firebase_app_check/firebase_app_check.dart';
+ import 'package:provider/provider.dart';
+ import 'firebase_options.dart';
+ import 'core/constants/app_theme.dart';
+@@ -46,6 +47,38 @@ void main() async {
+     'Firebase.initializeApp',
+     () => Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+   );
++  // App Check: her Firestore/Storage/Auth isteğine, isteğin gerçekten bu
++  // uygulamadan ve kurcalanmamış gerçek bir cihazdan geldiğini kanıtlayan
++  // bir token ekler (ChatGPT incelemesi — bulk bildirim gönderiminde App
++  // Check/hız sınırlaması eksikliği notu). Android'de gerçek derlemede
++  // Play Integrity, debug derlemede (emulator/yerel test) her zaman
++  // başarısız olacak Play Integrity yerine debug provider kullanılır —
++  // debug token'ı ilk çalıştırmada konsola yazdırılır, Firebase Console →
++  // App Check → Apps → "Manage debug tokens" kısmına EL İLE eklenmesi
++  // gerekir, aksi halde debug derlemesinde App Check istekleri reddedilir
++  // (ama enforce KAPALI olduğu sürece bu reddedilme gerçek isteği
++  // ENGELLEMEZ, yalnızca App Check metriklerinde "geçersiz" sayılır).
++  //
++  // ÖNEMLİ — ZORLAMA (enforce) SIRASI: Bu satır App Check'i yalnızca
++  // İSTEMCİ tarafında etkinleştirir; Firebase Console'da Firestore/
++  // Storage/Auth için "Enforce" AÇILMADIĞI sürece hiçbir isteği
++  // ENGELLEMEZ. Enforce'u bu güncelleme mağazaya çıkıp kullanıcıların
++  // büyük kısmı güncellemeden ÖNCE açmayın — aksi halde App Check'i henüz
++  // içermeyen eski sürümü kullanan TÜM kullanıcıların istekleri
++  // reddedilir. Sırasıyla: (1) bu kodu yayınla, (2) Console → App Check →
++  // Apps'te Android uygulamasını Play Integrity ile kaydet, (3) birkaç
++  // gün/hafta bekleyip Console'daki "İstek metrikleri" grafiğinde geçerli
++  // token oranının yükseldiğini doğrula, (4) ancak o zaman Firestore/
++  // Storage/Auth için Enforce'u aç.
++  await _safeInit(
++    'FirebaseAppCheck.activate',
++    () => FirebaseAppCheck.instance.activate(
++      androidProvider:
++          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
++      appleProvider:
++          kDebugMode ? AppleProvider.debug : AppleProvider.appAttest,
++    ),
++  );
+   await _safeInit('LocalStorage.init', () => LocalStorage().init());
+   await _safeInit('NotificationService.init', () => NotificationService().init());
+   await _safeInit('AlarmService.init', () => AlarmService().init());
+diff --git a/pubspec.yaml b/pubspec.yaml
+index 8e708d6..291242b 100644
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -20,6 +20,11 @@ dependencies:
+   firebase_auth: ^6.5.0
+   cloud_firestore: ^6.4.0
+   firebase_remote_config: ^6.5.0
++  # App Check: her isteğin gerçek uygulamamızdan (ve gerçek bir cihazdan)
++  # geldiğini doğrular — bkz. main.dart'taki activate() çağrısı. Zorlama
++  # (enforce) Firebase Console'dan AYRI olarak açılır, bkz. o çağrının
++  # yanındaki yorum.
++  firebase_app_check: ^0.4.7
+ 
+   # Update
+   package_info_plus: ^8.0.0
+-- 
+2.43.0
+

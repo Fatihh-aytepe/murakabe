@@ -1,0 +1,118 @@
+From 34209dbf85512bc6e9bbaffa70d3204483101bfa Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 27 Aug 2026 22:50:56 +0000
+Subject: [PATCH] =?UTF-8?q?Hat=C4=B1rlat=C4=B1c=C4=B1=20ekle/sil=20ak?=
+ =?UTF-8?q?=C4=B1=C5=9F=C4=B1ndaki=20korumas=C4=B1z=20bildirim=20=C3=A7a?=
+ =?UTF-8?q?=C4=9Fr=C4=B1lar=C4=B1n=C4=B1=20d=C3=BCzelt?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Android 12+ tam zamanlı alarm (exact alarm) izni verilmemişse
+NotificationService().scheduleCustomReminder/cancelNotification bir
+istisna fırlatabiliyordu; bu istisna try/catch olmadan yukarı fırlayınca
+hatırlatıcı ekleme akışında Navigator.pop/_loadReminders() hiç
+çalışmıyordu (SQLite'a yazılmış olsa da ekran anlık güncellenmiyor,
+sadece uygulama yeniden açılınca görünüyordu) ve bildirim hiç
+planlanamadığı için asla tetiklenmiyordu; silme akışında da aynı şekilde
+bildirim iptali başarısız olursa asıl SQLite silmesi hiç çalışmıyordu.
+Artık kayıt/silme + ekran güncellemesi bildirim planlama/iptali
+başarısız olsa bile her zaman tamamlanıyor; planlama başarısız olursa
+kullanıcıya izin eksikliğini bildirip doğrudan izin isteme seçeneği
+sunuluyor.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+---
+ .../reminders/reminders_screen.dart           | 59 ++++++++++++++++++-
+ 1 file changed, 56 insertions(+), 3 deletions(-)
+
+diff --git a/lib/presentation/reminders/reminders_screen.dart b/lib/presentation/reminders/reminders_screen.dart
+index 7acc6d2..0a2172a 100644
+--- a/lib/presentation/reminders/reminders_screen.dart
++++ b/lib/presentation/reminders/reminders_screen.dart
+@@ -400,11 +400,30 @@ class _RemindersScreenState extends State<RemindersScreen> {
+                               _uid!, reminder.toMap());
+                         } catch (_) {}
+                       }
+-                      // Bildirim planla
+-                      await _scheduleReminderNotification(reminder);
++                      // DÜZELTME: Bildirim planlama (Android 12+ "tam
++                      // zamanlı alarm" izni verilmemişse) bir istisna
++                      // fırlatabiliyordu — bu istisna try/catch olmadan
++                      // buradan yukarı fırlayınca ne Navigator.pop ne de
++                      // _loadReminders() hiç ÇALIŞMIYORDU: hatırlatıcı
++                      // SQLite'a yazılmış olsa da ekran anlık güncellenmiyor
++                      // (sadece uygulama kapatılıp açılınca initState'teki
++                      // _loadReminders ile görünüyordu) ve bildirim de hiç
++                      // planlanamadığı için asla gelmiyordu. Artık kayıt/
++                      // ekran güncelleme her durumda tamamlanıyor; sadece
++                      // planlama başarısızsa kullanıcıyı izin eksikliği
++                      // konusunda uyarıyoruz.
++                      String? schedulingError;
++                      try {
++                        await _scheduleReminderNotification(reminder);
++                      } catch (e) {
++                        schedulingError = e.toString();
++                      }
+                       if (!ctx.mounted) return;
+                       Navigator.pop(ctx);
+                       await _loadReminders();
++                      if (schedulingError != null) {
++                        await _warnIfExactAlarmPermissionMissing();
++                      }
+                     },
+                     child: const Text('Hatırlatıcı Kur'),
+                   ),
+@@ -439,7 +458,16 @@ class _RemindersScreenState extends State<RemindersScreen> {
+     // planlanmış bildirim iptal EDİLMİYORDU, kullanıcı sildiği bir
+     // hatırlatıcı için yine de bildirim alabiliyordu. Aynı formülle
+     // hesaplanan ID ile bildirimi de iptal ediyoruz.
+-    await NotificationService().cancelNotification(_notifIdFor(reminder.id));
++    //
++    // DÜZELTME 2: bildirim iptali try/catch İÇİNDE olmadığı için (nadiren
++    // de olsa) burada fırlayan bir istisna, aşağıdaki SQLite silmesinin ve
++    // ekranın yenilenmesinin HİÇ çalışmamasına yol açabiliyordu — "sil
++    // deyince silinmiyor" şikâyetinin olası bir sebebi. Asıl silme işlemi
++    // artık bildirim iptali başarısız olsa bile her zaman tamamlanıyor.
++    try {
++      await NotificationService()
++          .cancelNotification(_notifIdFor(reminder.id));
++    } catch (_) {}
+     await _db.delete('reminders', where: 'id = ?', whereArgs: [reminder.id]);
+     if (_uid != null) {
+       try {
+@@ -449,6 +477,31 @@ class _RemindersScreenState extends State<RemindersScreen> {
+     await _loadReminders();
+   }
+ 
++  /// Bildirim planlama bir istisna fırlattıysa, çoğunlukla sebep Android
++  /// 12+ "tam zamanlı alarm" (exact alarm) izninin verilmemiş olmasıdır —
++  /// bu durumda hatırlatıcı kaydedilir ama bildirim HİÇ tetiklenmez.
++  /// Kullanıcıyı bilgilendirip izni doğrudan buradan istemesini sağlıyoruz.
++  Future<void> _warnIfExactAlarmPermissionMissing() async {
++    final canSchedule =
++        await NotificationService().checkExactAlarmPermission();
++    if (canSchedule || !mounted) return;
++    ScaffoldMessenger.of(context).showSnackBar(
++      SnackBar(
++        content: const Text(
++          'Hatırlatıcı kaydedildi ama bildirim izni eksik olduğu için '
++          'zamanında gelmeyebilir.',
++        ),
++        action: SnackBarAction(
++          label: 'İzin Ver',
++          onPressed: () async {
++            await NotificationService().requestExactAlarmPermission();
++          },
++        ),
++        duration: const Duration(seconds: 6),
++      ),
++    );
++  }
++
+   String _formatDateTime(DateTime dt) {
+     const months = [
+       '',
+-- 
+2.43.0
+
