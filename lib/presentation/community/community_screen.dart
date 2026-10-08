@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +28,9 @@ class _CommunityScreenState extends State<CommunityScreen>
   bool _isFirstLoad = true;
   int _prevDocCount = 0;
   Set<String> _hiddenAnnouncementIds = {};
+  // Engellenen kişiler — mesajları kanalda gizlenir (bkz. RoleService.blockUser)
+  Set<String> _blockedUids = {};
+  StreamSubscription<Set<String>>? _blockedSub;
 
   String? get _uid => _storage.userId;
 
@@ -35,12 +39,16 @@ class _CommunityScreenState extends State<CommunityScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _loadHiddenAnnouncements();
+    _blockedSub = _roleService.blockedUidsStream().listen((uids) {
+      if (mounted) setState(() => _blockedUids = uids);
+    }, onError: (_) {});
     // Kullanıcı chat'e girdi → okunmamış bayrağını sıfırla
     FirestoreNotificationService().markChatRead(widget.communityId);
   }
 
   @override
   void dispose() {
+    _blockedSub?.cancel();
     _tabController.dispose();
     _msgCtrl.dispose();
     _scrollCtrl.dispose();
@@ -301,10 +309,269 @@ class _CommunityScreenState extends State<CommunityScreen>
                   ],
                 ),
               ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.white54),
+                color: const Color(0xFF1A2035),
+                tooltip: 'Diğer',
+                onSelected: (v) {
+                  if (v == 'blocked') _showBlockedList();
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: 'blocked',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.block,
+                            color: Colors.white54, size: 18),
+                        const SizedBox(width: 10),
+                        Text('Engellenen kişiler',
+                            style: GoogleFonts.notoSans(
+                                color: Colors.white, fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         );
       },
+    );
+  }
+
+  // ── Bildir / engelle ──────────────────────────────────────────────────────
+  static const _reportReasons = [
+    'Hakaret, tehdit veya taciz',
+    'Uygunsuz ya da müstehcen içerik',
+    'Spam veya reklam',
+    'Diğer',
+  ];
+
+  void _showSnack(String text, {SnackBarAction? action}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(text),
+        backgroundColor: const Color(0xFF1B3A4B),
+        behavior: SnackBarBehavior.floating,
+        action: action,
+      ));
+  }
+
+  void _showMessageActions(Map<String, dynamic> data, String messageId) {
+    final senderUid = data['senderUid'] as String?;
+    if (senderUid == null || senderUid == _uid) return;
+    final rawName = (data['senderName'] as String?)?.trim() ?? '';
+    final name = rawName.isEmpty ? 'Bu kişi' : rawName;
+    HapticFeedback.selectionClick();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF0F1A2B),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (sheetCtx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 6),
+            ListTile(
+              leading:
+                  const Icon(Icons.flag_outlined, color: Colors.orangeAccent),
+              title: Text('Mesajı bildir',
+                  style: GoogleFonts.notoSans(color: Colors.white)),
+              subtitle: Text('Topluluk yöneticisi inceler',
+                  style:
+                      GoogleFonts.notoSans(color: Colors.white38, fontSize: 12)),
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                _reportMessage(data, messageId);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.block, color: Colors.redAccent),
+              title: Text('Kişiyi engelle',
+                  style: GoogleFonts.notoSans(color: Colors.white)),
+              subtitle: Text('$name adlı kişinin mesajlarını artık görmezsin',
+                  style:
+                      GoogleFonts.notoSans(color: Colors.white38, fontSize: 12)),
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                _blockUser(senderUid, name);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _reportMessage(
+      Map<String, dynamic> data, String messageId) async {
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (dCtx) => SimpleDialog(
+        backgroundColor: const Color(0xFF1A2035),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Neden bildiriyorsun?',
+            style: GoogleFonts.playfairDisplay(
+                color: AppColors.gold,
+                fontWeight: FontWeight.bold,
+                fontSize: 18)),
+        children: [
+          for (final r in _reportReasons)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(dCtx, r),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Text(r,
+                    style: GoogleFonts.notoSans(
+                        color: Colors.white70, fontSize: 14)),
+              ),
+            ),
+        ],
+      ),
+    );
+    if (reason == null || !mounted) return;
+    try {
+      await _roleService.reportMessage(
+        communityId: widget.communityId,
+        messageId: messageId,
+        messageText: data['text'] as String? ?? '',
+        reportedUid: data['senderUid'] as String,
+        reportedName: data['senderName'] as String? ?? '',
+        reason: reason,
+      );
+      _showSnack('Bildirimin topluluk yöneticisine iletildi. Teşekkürler.');
+    } catch (_) {
+      _showSnack(
+          'Bildirim gönderilemedi. İnternet bağlantını kontrol edip tekrar dene.');
+    }
+  }
+
+  Future<void> _blockUser(String targetUid, String name) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2035),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Kişiyi engelle',
+            style: GoogleFonts.playfairDisplay(
+                color: Colors.redAccent, fontWeight: FontWeight.bold)),
+        content: Text(
+            '$name adlı kişinin mesajlarını tüm topluluklarda artık görmeyeceksin. '
+            'Engeli istediğin zaman sağ üstteki menüden kaldırabilirsin.',
+            style: GoogleFonts.notoSans(color: Colors.white70, height: 1.4)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dCtx, false),
+            child: Text('Vazgeç',
+                style: GoogleFonts.notoSans(color: Colors.white38)),
+          ),
+          ElevatedButton(
+            style:
+                ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
+            onPressed: () => Navigator.pop(dCtx, true),
+            child: Text('Engelle',
+                style: GoogleFonts.notoSans(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await _roleService.blockUser(targetUid, name);
+      _showSnack(
+        '$name engellendi',
+        action: SnackBarAction(
+          label: 'Geri al',
+          textColor: AppColors.gold,
+          onPressed: () => _roleService.unblockUser(targetUid),
+        ),
+      );
+    } catch (_) {
+      _showSnack('Engellenemedi. İnternet bağlantını kontrol edip tekrar dene.');
+    }
+  }
+
+  void _showBlockedList() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF0F1A2B),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (sheetCtx) => SafeArea(
+        child: StreamBuilder<List<Map<String, String>>>(
+          stream: _roleService.blockedUsersStream(),
+          builder: (_, snap) {
+            final list = snap.data ?? const [];
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+                  child: Text('Engellenen kişiler',
+                      style: GoogleFonts.playfairDisplay(
+                          color: AppColors.gold,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                ),
+                if (list.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                    child: Text(
+                        'Engellediğin kimse yok. Bir mesaja uzun basarak '
+                        'kişiyi engelleyebilir ya da mesajı bildirebilirsin.',
+                        style: GoogleFonts.notoSans(
+                            color: Colors.white54, fontSize: 13, height: 1.4)),
+                  )
+                else
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(sheetCtx).size.height * 0.5),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        for (final u in list)
+                          ListTile(
+                            leading: const Icon(Icons.person_off_outlined,
+                                color: Colors.white38),
+                            title: Text(u['name'] ?? 'Kullanıcı',
+                                style:
+                                    GoogleFonts.notoSans(color: Colors.white)),
+                            trailing: TextButton(
+                              onPressed: () async {
+                                try {
+                                  await _roleService.unblockUser(u['uid']!);
+                                } catch (_) {
+                                  _showSnack('Engel kaldırılamadı. Tekrar dene.');
+                                }
+                              },
+                              child: Text('Engeli kaldır',
+                                  style: GoogleFonts.notoSans(
+                                      color: AppColors.turquoiseLight)),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 12),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -349,7 +616,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                 .limitToLast(100)
                 .snapshots(),
             builder: (_, snap) {
-              final docs = snap.data?.docs ?? [];
+              final docs = (snap.data?.docs ?? []).where((d) {
+                final sender =
+                    (d.data() as Map<String, dynamic>)['senderUid'];
+                return sender == null || !_blockedUids.contains(sender);
+              }).toList();
 
               // Scroll mantığı: ilk yüklemede en alta git, sonra yalnızca yeni mesaj gelince git
               final currentCount = docs.length;
@@ -398,7 +669,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   return Column(
                     children: [
                       if (showDate) _buildDateSeparator(ts),
-                      _buildBubble(data, isMe, groupStart, ts),
+                      _buildBubble(data, isMe, groupStart, ts, docs[i].id),
                     ],
                   );
                 },
@@ -440,13 +711,14 @@ class _CommunityScreenState extends State<CommunityScreen>
     bool isMe,
     bool groupStart,
     DateTime? ts,
+    String messageId,
   ) {
     final text = data['text'] as String? ?? '';
     final name = data['senderName'] as String? ?? '';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
     final timeStr = ts != null ? _fmtTime(ts) : '';
 
-    return Padding(
+    final bubble = Padding(
       padding: EdgeInsets.only(
         bottom: groupStart ? 2 : 1,
         top: groupStart ? 6 : 0,
@@ -553,6 +825,14 @@ class _CommunityScreenState extends State<CommunityScreen>
           ),
         ],
       ),
+    );
+
+    // Başkasının mesajına uzun basınca: bildir / engelle (Play UGC politikası)
+    if (isMe) return bubble;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onLongPress: () => _showMessageActions(data, messageId),
+      child: bubble,
     );
   }
 

@@ -1455,7 +1455,18 @@ class ProfileScreenState extends State<ProfileScreen>
             children: [
               Expanded(
                 child: DropdownButton<String>(
-                  value: current.id,
+                  // Kullanıcının kendi eklediği ses seçiliyse listede yok —
+                  // value null bırakılıp adı ipucu olarak gösterilir
+                  // (aksi halde DropdownButton hata verir).
+                  value: AlarmService.availableSounds
+                          .any((s) => s.id == current.id)
+                      ? current.id
+                      : null,
+                  hint: Text(current.label,
+                      style: GoogleFonts.notoSans(
+                        color: isDark ? Colors.white : AppColors.textPrimary,
+                        fontSize: 14,
+                      )),
                   isExpanded: true,
                   dropdownColor:
                       isDark ? const Color(0xFF1A2035) : Colors.white,
@@ -1913,7 +1924,7 @@ class ProfileScreenState extends State<ProfileScreen>
                                     // doğrudan HomeScreen'e geçilebiliyordu.
                                     // Sahip hesabı istisnası (bkz.
                                     // splash_screen.dart) burada da korunur.
-                                    if (authUser.email != AppStrings.adminEmail) {
+                                    if (!AppStrings.isOwnerEmail(authUser.email)) {
                                       try {
                                         await authUser.reload();
                                       } catch (_) {}

@@ -16,9 +16,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <!-- KALDIRILDI (Play politikası): REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+         (dar kullanım şartı) ve FOREGROUND_SERVICE / _DATA_SYNC (uygulama
+         ön plan servisi kullanmıyor; kalırsa Play ayrı beyan istiyor). -->
 
     <!-- Konum: SADECE ön planda (namaz vakti/kıble hesaplama). Arka plan
          konum izni (ACCESS_BACKGROUND_LOCATION) BİLİNÇLİ OLARAK istenmiyor
@@ -33,15 +33,26 @@
     <!-- Kamera/galeri: yalnızca kullanıcı profil fotoğrafı eklemeyi
          seçtiğinde image_picker tarafından tetiklenir. -->
     <uses-permission android:name="android.permission.CAMERA"/>
-    <!-- Android 12 ve altı için galeri erişimi; 13+ üzerinde Photo Picker
-         izin gerektirmediğinden maxSdkVersion ile sınırlandırıldı. -->
+    <!-- Galeri: image_picker sistemin fotoğraf seçicisini kullanır, depolama
+         izni GEREKMEZ. Play'in Fotoğraf/Video İzinleri politikası gereği bu
+         izinler istenmiyor ve bir eklentinin manifestinden sızmasın diye
+         açıkça kaldırılıyor. -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+        tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"
+        tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"
+        tools:node="remove"/>
 
     <!-- Notlar ekranında sesli not kaydı için; yalnızca kullanıcı kayda
          bastığında istenir. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+    <!-- Reklam kimliği KULLANILMIYOR (Play Console → Reklam Kimliği beyanı:
+         Hayır). Bir eklenti/SDK bu izni manifest birleştirmede sızdırmasın
+         diye açıkça kaldırılıyor. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"
+        tools:node="remove"/>
 
     <!-- ═══════════════════════════════════════════════════════════════════
          İMZA SEVİYELİ WIDGET İZNİ — ZikirWidgetProvider ve

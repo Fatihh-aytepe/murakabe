@@ -3,6 +3,9 @@ package com.murakabe.app
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
+import org.json.JSONException
+import org.json.JSONObject
+import java.time.LocalDate
 
 /**
  * Flutter'ın `shared_preferences` eklentisinin Android'de kullandığı
@@ -68,6 +71,62 @@ object WidgetPrefs {
 
     fun putString(context: Context, key: String, value: String) {
         prefs(context).edit().putString(KEY_PREFIX + key, value).apply()
+    }
+
+    fun remove(context: Context, key: String) {
+        prefs(context).edit().remove(KEY_PREFIX + key).apply()
+    }
+
+    // ── 30 günlük tablolar ───────────────────────────────────────────────
+    // Dart tarafı (WidgetBridgeService) namaz vakti / günlük içerik / zikir
+    // verisini {"yyyy-MM-dd": {...}} biçiminde 30 gün ileriye yazar. Widget
+    // her çizildiğinde BUGÜNÜN kaydını buradan okur — böylece uygulama hiç
+    // açılmasa da gün değişince doğru günün verisi gösterilir. Tabloda
+    // bugünün kaydı yoksa (ör. eski sürümden gelen veri) çağıran taraf eski
+    // tek günlük anahtarlara düşer.
+
+    /** [key] tablosundan [date] gününün kaydı; yoksa null. */
+    fun dayEntry(context: Context, key: String, date: LocalDate = LocalDate.now()): JSONObject? {
+        val raw = getString(context, key)
+        if (raw.isEmpty()) return null
+        return try {
+            JSONObject(raw).optJSONObject(date.toString())
+        } catch (_: JSONException) {
+            null
+        }
+    }
+
+    /** Bugünün 6 vakti (ISO). Tabloda yoksa eski 'widget_prayer_times_iso'. */
+    fun prayerTimesIsoToday(context: Context): List<String> {
+        val arr = dayEntry(context, "widget_prayer_days")?.optJSONArray("t")
+        if (arr != null && arr.length() == 6) {
+            return (0 until 6).map { arr.optString(it) }
+        }
+        return getString(context, "widget_prayer_times_iso")
+            .split(",").filter { it.isNotBlank() }
+    }
+
+    /** Bugünün hicri tarihi. Tabloda yoksa eski 'widget_prayer_hijri'. */
+    fun prayerHijriToday(context: Context): String {
+        val entry = dayEntry(context, "widget_prayer_days")
+        return entry?.optString("h") ?: getString(context, "widget_prayer_hijri")
+    }
+
+    /** Günlük tablo alanı: bugünün kaydı VARSA onu (boş da olsa), yoksa eski anahtarı döner. */
+    fun dayString(context: Context, tableKey: String, field: String, legacyKey: String): String {
+        val entry = dayEntry(context, tableKey)
+        return if (entry != null) entry.optString(field) else getString(context, legacyKey)
+    }
+
+    /** Bugünün zikir hedefi — tabloda yoksa eski 'widget_zikir_target'. */
+    fun zikirTargetToday(context: Context): Int {
+        val entry = dayEntry(context, "widget_zikir_days")
+        val target = if (entry != null && entry.has("g")) {
+            entry.optInt("g", 33)
+        } else {
+            getInt(context, "widget_zikir_target", 33)
+        }
+        return target.coerceAtLeast(1)
     }
 
     // ── Görünüm ayarları ─────────────────────────────────────────────────

@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+
 class AppStrings {
   // Uygulama
   static const String appName = 'Murakabe';
@@ -43,7 +47,19 @@ class AppStrings {
   static const String tahajjud = 'Teheccüd Namazlarım';
 
   // Admin
-  static const String adminEmail = 'yavuzbera02@gmail.com';
+  // Sahip e-postası kodda AÇIK metin olarak tutulmaz; yalnızca
+  // küçük harfe çevrilmiş adresin SHA-256 özeti (base64) saklanır.
+  // Aynı özet firestore.rules içindeki roles/owner kuralında da kullanılır —
+  // sahip e-postası değişirse İKİ yeri birlikte güncelleyin.
+  static const String _ownerEmailSha256B64 =
+      'DH3seHl0DvxTaVUKm4NWyoeruJ/RW2EZE78IhpavpSw=';
+
+  /// Verilen e-posta sahip hesabının e-postası mı?
+  static bool isOwnerEmail(String? email) {
+    if (email == null || email.isEmpty) return false;
+    final digest = sha256.convert(utf8.encode(email.trim().toLowerCase()));
+    return base64Encode(digest.bytes) == _ownerEmailSha256B64;
+  }
 
   // Bildirimler
   static const String quranReminder = 'Bugün Kuran Okudun mu?';

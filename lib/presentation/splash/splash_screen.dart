@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/services/connectivity_service.dart';
 import '../../core/services/role_service.dart';
 import '../../core/services/update_service.dart';
 import '../../data/local/local_storage.dart';
@@ -50,19 +51,31 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateAfterDelay() async {
+    // Güncelleme kontrolü splash animasyonuyla AYNI ANDA yapılır (önceden
+    // 3 sn beklendikten SONRA başlıyordu). İnternet yoksa hiç denenmez —
+    // uygulama internetsiz de bekletmeden açılmalı.
+    final online = ConnectivityService().isConnected;
+    final updateFuture = online
+        ? UpdateService().checkForUpdate()
+        : Future.value(const UpdateInfo(
+            hasUpdate: false,
+            latestVersion: '',
+            currentVersion: '',
+            forceUpdate: false,
+          ));
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
 
     // Güncelleme kontrolü
-    final updateInfo = await UpdateService().checkForUpdate();
+    final updateInfo = await updateFuture;
     if (!mounted) return;
     final skipped = LocalStorage().skippedVersion;
-    if (updateInfo.hasUpdate &&
-        updateInfo.apkUrl.isNotEmpty &&
-        skipped != updateInfo.latestVersion) {
+    // apk_url artık kullanılmıyor (bkz. _showUpdateDialog); yalnızca
+    // Remote Config'teki latest_version'a bakılır.
+    if (updateInfo.hasUpdate && skipped != updateInfo.latestVersion) {
       await _showUpdateDialog(updateInfo);
       if (!mounted) return;
-      // forceUpdate ise APK kurulana kadar uygulamayı ilerletme
+      // forceUpdate ise güncelleme yapılana kadar uygulamayı ilerletme
       if (updateInfo.forceUpdate) return;
     }
 
@@ -109,11 +122,13 @@ class _SplashScreenState extends State<SplashScreen>
       // cihazda kalıcı; bu yüzden kullanıcı doğrulamadan uygulamayı kapatıp
       // yeniden açarsa, burası hiç kontrol yapmadan doğrudan HomeScreen'e
       // yönlendiriyordu — doğrulama adımını tamamen atlatıyordu. Sahip
-      // hesabı (AppStrings.adminEmail) için normal girişte de bu kontrol
+      // hesabı (AppStrings.isOwnerEmail) için normal girişte de bu kontrol
       // aranmıyor, burada da aynı istisna korunur.
-      if (authUser.email != AppStrings.adminEmail) {
+      if (!AppStrings.isOwnerEmail(authUser.email)) {
+        // Çevrimdışıyken uzun beklememek için en fazla 4 sn; başarısız
+        // olursa cihazdaki son bilinen doğrulama durumu kullanılır.
         try {
-          await authUser.reload();
+          await authUser.reload().timeout(const Duration(seconds: 4));
         } catch (_) {}
         final refreshed = FirebaseAuth.instance.currentUser;
         if (refreshed == null) {
@@ -165,23 +180,19 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Future<void> _showUpdateDialog(UpdateInfo info) async {
-    // Not: Önceden burada kullanıcıya "önce mevcut uygulamayı kaldırın"
-    // deniyordu. Bu, hem senkronize olmamış yerel veriyi kaybettirebilir
-    // hem de Android'in normal APK güncelleme mekanizmasını (aynı imzayla
-    // üzerine kurma) atlatıp imza sürekliliği korumasını devre dışı
-    // bırakıyordu — oysa aynı imzayla imzalanmış bir APK zaten kaldırmadan
-    // doğrudan üzerine kurulabilir; imzalar uyuşmuyorsa Android kurulumu
-    // zaten kendi başına reddedip kullanıcıyı bilgilendirir. Talimat
-    // kaldırıldı.
-    bool isVerifying = false;
-    String? verifyError;
+  // Google Play politikası gereği uygulama Play dışından KENDİNİ
+  // GÜNCELLEYEMEZ. Önceden burada Remote Config'teki apk_url'den APK
+  // indirtilip kurduruluyordu — Play sürümünde bu doğrudan politika
+  // ihlali (reddedilme sebebi). Artık "Güncelle" yalnızca uygulamanın Play
+  // Store sayfasını açar; güncellemeyi Play yapar.
+  static const _playStoreUrl =
+      'https://play.google.com/store/apps/details?id=com.murakabe.app';
 
+  Future<void> _showUpdateDialog(UpdateInfo info) async {
     await showDialog<void>(
       context: context,
       barrierDismissible: !info.forceUpdate,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDlg) => PopScope(
+      builder: (ctx) => PopScope(
         canPop: !info.forceUpdate,
         child: AlertDialog(
           backgroundColor: const Color(0xFF1B2A3B),
@@ -192,33 +203,17 @@ class _SplashScreenState extends State<SplashScreen>
             style: GoogleFonts.playfairDisplay(
                 color: AppColors.gold, fontWeight: FontWeight.bold),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Yeni sürüm (${info.latestVersion}) hazır!\n\n'
-                'İndirilen dosyayı açtığınızda Android üzerine kurmayı '
-                'teklif edecek; uygulamayı önceden kaldırmanıza gerek yok.',
-                style: GoogleFonts.notoSans(color: AppColors.white),
-              ),
-              if (verifyError != null) ...[
-                const SizedBox(height: 12),
-                Text(verifyError!,
-                    style: const TextStyle(color: Colors.redAccent)),
-              ],
-            ],
+          content: Text(
+            'Yeni sürüm (${info.latestVersion}) Google Play\'de hazır.',
+            style: GoogleFonts.notoSans(color: AppColors.white),
           ),
           actions: [
             if (!info.forceUpdate)
               TextButton(
-                onPressed: isVerifying
-                    ? null
-                    : () async {
-                        await LocalStorage()
-                            .setSkippedVersion(info.latestVersion);
-                        if (ctx.mounted) Navigator.pop(ctx);
-                      },
+                onPressed: () async {
+                  await LocalStorage().setSkippedVersion(info.latestVersion);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
                 child: const Text('Sonra',
                     style: TextStyle(color: AppColors.turquoiseLight)),
               ),
@@ -229,52 +224,16 @@ class _SplashScreenState extends State<SplashScreen>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
               ),
-              onPressed: isVerifying
-                  ? null
-                  : () async {
-                setDlg(() {
-                  isVerifying = true;
-                  verifyError = null;
-                });
-                // apk_sha256 Remote Config'te doluysa, kurulum linkini
-                // açmadan önce dosyanın bütünlüğünü doğrula (bkz.
-                // UpdateService.verifyApk). Boşsa anında true dönüp eski
-                // davranışla aynı şekilde devam eder.
-                final result = await UpdateService().verifyApk(info);
-                if (result == ApkVerifyResult.mismatch) {
-                  setDlg(() {
-                    isVerifying = false;
-                    verifyError =
-                        'İndirilen dosya doğrulanamadı, güvenlik nedeniyle '
-                        'kurulum başlatılmadı. Lütfen daha sonra tekrar deneyin.';
-                  });
-                  return;
-                }
-                // 'error' (ağ/zaman aşımı) durumunda doğrulamayı zorunlu
-                // kılmıyoruz — link zaten HTTPS ile taşınıyor ve Android
-                // kurulum sırasında imza sürekliliğini kendisi denetliyor;
-                // yalnızca "farklı olduğu KANITLANMIŞ" (mismatch) durumda
-                // engelliyoruz.
-                final uri = Uri.parse(info.apkUrl);
+              onPressed: () async {
+                final uri = Uri.parse(_playStoreUrl);
                 if (await canLaunchUrl(uri)) {
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                 }
-                setDlg(() => isVerifying = false);
-                if (!info.forceUpdate && ctx.mounted) {
-                  Navigator.pop(ctx);
-                }
+                if (!info.forceUpdate && ctx.mounted) Navigator.pop(ctx);
               },
-              child: isVerifying
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          color: Colors.black, strokeWidth: 2),
-                    )
-                  : const Text('Güncelle'),
+              child: const Text('Güncelle'),
             ),
           ],
-        ),
         ),
       ),
     );

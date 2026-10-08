@@ -329,10 +329,15 @@ class _QuranSurahViewState extends State<QuranSurahView> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '${ayah.surahNumber}:${ayah.number} — ${ayah.arabic}',
+                  ayah.displayArabic,
                   textAlign: TextAlign.right,
                   textDirection: TextDirection.rtl,
-                  style: GoogleFonts.amiri(color: AppColors.gold, fontSize: 16),
+                  style: const TextStyle(
+                    fontFamily: 'UthmanicHafs',
+                    color: AppColors.gold,
+                    fontSize: 18,
+                    height: 2.1,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

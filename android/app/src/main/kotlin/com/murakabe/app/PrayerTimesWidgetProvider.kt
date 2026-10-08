@@ -51,13 +51,13 @@ class PrayerTimesWidgetProvider : AppWidgetProvider() {
         views.setTextColor(R.id.tv_hijri, accent)
         views.setTextColor(R.id.tv_next, primary)
 
-        val hijri = WidgetPrefs.getString(context, "widget_prayer_hijri")
+        val hijri = WidgetPrefs.prayerHijriToday(context)
         views.setTextViewText(R.id.tv_hijri, hijri.ifEmpty { context.getString(R.string.widget_prayer_label) })
 
         val names = WidgetPrefs.getString(context, "widget_prayer_names")
             .split(",").filter { it.isNotBlank() }
-        val timesIso = WidgetPrefs.getString(context, "widget_prayer_times_iso")
-            .split(",").filter { it.isNotBlank() }
+        // Bugünün vakitleri 30 günlük tablodan (bkz. WidgetPrefs.prayerTimesIsoToday).
+        val timesIso = WidgetPrefs.prayerTimesIsoToday(context)
 
         val nameIds = intArrayOf(R.id.tv_name_0, R.id.tv_name_1, R.id.tv_name_2, R.id.tv_name_3, R.id.tv_name_4, R.id.tv_name_5)
         val timeIds = intArrayOf(R.id.tv_time_0, R.id.tv_time_1, R.id.tv_time_2, R.id.tv_time_3, R.id.tv_time_4, R.id.tv_time_5)

@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/services.dart';
@@ -93,11 +94,11 @@ class ContentRepository {
       'savedAt': DateTime.now().toIso8601String(),
     };
     await _db.insert('saved_content', doc);
+    // Firestore yazımı BEKLENMEZ — sunucu onayını beklemek butonu
+    // geciktiriyordu. Bağlantı gelince Firestore kendisi senkronlar.
     final uid = _storage.userId;
     if (uid != null) {
-      try {
-        await _firebase.saveFavorite(uid, doc);
-      } catch (_) {}
+      unawaited(_firebase.saveFavorite(uid, doc).catchError((_) {}));
     }
   }
 
@@ -109,11 +110,24 @@ class ContentRepository {
     );
     final uid = _storage.userId;
     if (uid != null) {
-      try {
-        await _firebase.deleteFavorite(uid, '${type}_$contentId');
-      } catch (_) {}
+      unawaited(_firebase
+          .deleteFavorite(uid, '${type}_$contentId')
+          .catchError((_) {}));
     }
   }
+
+  // ─── Günlük "Okudum" durumu ───────────────────────────────────────────────
+  // Ana sayfadaki içerik kartlarının ve detay ekranlarının "Okudum" butonu.
+  // Yalnızca BUGÜN ve AYNI içerik için geçerlidir; ertesi gün (ya da içerik
+  // değişince) kendiliğinden sıfırlanır. Yerelde (SharedPreferences) tutulur.
+  bool isReadToday(String type, int contentId) =>
+      _storage.contentReadMark(type) == _readMark(contentId);
+
+  Future<void> markReadToday(String type, int contentId) =>
+      _storage.setContentReadMark(type, _readMark(contentId));
+
+  String _readMark(int contentId) =>
+      '${DateTime.now().toIso8601String().substring(0, 10)}|$contentId';
 
   Future<bool> isSaved(String type, int contentId) async {
     final r = await _db.query(

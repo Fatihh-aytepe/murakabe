@@ -1,0 +1,14 @@
+{
+  "name": "murakabe-functions",
+  "description": "Murakabe sunucu fonksiyonları: topluluk mesaj bildirimlerini e-postayla iletir.",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "firebase-admin": "12.7.0",
+    "firebase-functions": "6.1.1",
+    "nodemailer": "6.9.16"
+  }
+}

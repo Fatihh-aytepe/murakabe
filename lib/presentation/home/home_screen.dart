@@ -1,7 +1,12 @@
-import 'dart:async' show unawaited;
+import 'dart:async' show Timer, unawaited;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_strings.dart';
+import '../auth/login_screen.dart' show EmailVerificationScreen;
+import '../auth/consent_screen.dart';
+import '../../core/services/consent_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/reward_service.dart';
 import '../../data/models/esma_model.dart';
@@ -27,13 +32,17 @@ import '../hadis/hadis_detail_screen.dart';
 import '../rewards/murakabe_hosgeldin_screen.dart';
 import '../rewards/tahajjud_odul_screen.dart';
 import '../rewards/tebrik_karti_screen.dart';
+import '../rewards/reward_flow.dart';
 import '../../core/services/badge_service.dart';
 import '../../core/services/firestore_notification_service.dart';
 import '../../core/services/role_service.dart';
 import '../../core/services/widget_bridge_service.dart';
 import '../quran/quran_screen.dart';
-import '../tefsir/tefhimul_kuran_screen.dart';
-import '../riyazussalihin/riyazus_salihin_screen.dart';
+// TELİF: İzin alınana kadar kapalı. Açmak için bu iki import'u ve aşağıdaki
+// iki menü öğesindeki _goToPage satırlarını geri açın, pubspec.yaml'daki
+// PDF asset satırlarını da yorumdan çıkarın.
+// import '../tefsir/tefhimul_kuran_screen.dart';
+// import '../riyazussalihin/riyazus_salihin_screen.dart';
 import '../../data/repositories/zikir_repository.dart';
 import 'widgets/zikir_home_card.dart';
 import '../zikir/zikir_sayac_screen.dart';
@@ -77,10 +86,90 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _tasksSectionHidden = false;
   bool _communitySectionHidden = false;
 
+  // Ekrandaki içeriğin ait olduğu gün ("yyyy-MM-dd"). Uygulama açık ya da
+  // arka planda beklerken gün değişirse içerik/namaz vakitleri yenilenir —
+  // önceden ancak uygulama tamamen kapatılıp açılınca değişiyordu.
+  static String _todayKey() => DateTime.now().toIso8601String().substring(0, 10);
+  String _loadedDay = _todayKey();
+  Timer? _midnightTimer;
+
+  void _scheduleMidnightRefresh() {
+    _midnightTimer?.cancel();
+    final now = DateTime.now();
+    final nextDay = DateTime(now.year, now.month, now.day + 1, 0, 0, 5);
+    _midnightTimer = Timer(nextDay.difference(now), () {
+      _checkDayChange();
+      _scheduleMidnightRefresh();
+    });
+  }
+
+  void _checkDayChange() {
+    if (!mounted) return;
+    final today = _todayKey();
+    if (today == _loadedDay) return;
+    setState(() {
+      _loadedDay = today;
+      // Yeni günde bildirimler yeniden planlansın — 30 günlük pencere de
+      // böylece bir gün ileri kayar.
+      _notificationsScheduled = false;
+    });
+    _loadContent();
+  }
+
+  // E-postası doğrulanmamış bir hesap ana sayfaya HANGİ yoldan gelirse
+  // gelsin (splash, giriş, hesap değiştirme, profil kurulumu, eski bir
+  // akış…) doğrulama ekranına geri gönderilir. Splash zaten kontrol
+  // ediyor; bu, tek bir eksik yolun doğrulamayı atlatmasını engelleyen
+  // ikinci kilit. Sahip hesabı (AppStrings.isOwnerEmail) bu kontrolden muaf — splash ve
+  // girişteki istisnayla aynı.
+  bool _redirectingToVerification = false;
+
+  // Onay kapısı: güncel koşulları/açık rızayı onaylamamış kullanıcı (eski
+  // kullanıcılar dahil) ConsentScreen'e yönlendirilir ve onaylamadan geri
+  // dönemez. İzin tanıtımı ve ödül akışları bu kontrol bitene kadar bekler.
+  Future<bool> _consentOk = Future.value(true);
+
+  Future<bool> _enforceConsent() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return true;
+    final ok = await ConsentService.hasAccepted(uid);
+    if (ok || !mounted) return ok;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const ConsentScreen()),
+        (_) => false,
+      );
+    });
+    return false;
+  }
+
+  bool _mustVerifyEmail() {
+    final user = FirebaseAuth.instance.currentUser;
+    return user != null &&
+        !AppStrings.isOwnerEmail(user.email) &&
+        !user.emailVerified;
+  }
+
   @override
   void initState() {
     super.initState();
+    if (_mustVerifyEmail()) {
+      _redirectingToVerification = true;
+      final email = FirebaseAuth.instance.currentUser?.email ?? '';
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+              builder: (_) => EmailVerificationScreen(email: email)),
+          (_) => false,
+        );
+      });
+      return; // içerik/bildirim/dinleyici hiçbiri başlatılmaz
+    }
+    _consentOk = _enforceConsent();
     WidgetsBinding.instance.addObserver(this);
+    _scheduleMidnightRefresh();
     _tasksSectionHidden = LocalStorage().tasksSectionHidden;
     _communitySectionHidden = LocalStorage().communitySectionHidden;
     FirestoreNotificationService().start();
@@ -95,6 +184,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _loadContent().then((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
+        if (!await _consentOk || !mounted) return;
         await _maybeShowPermissionOnboarding();
         if (!mounted) return;
         _checkRewards();
@@ -105,6 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _midnightTimer?.cancel();
     // ÖNCEDEN burada stop() çağrılmıyordu: HomeScreen dispose olduğunda
     // (ör. çıkış yapma → LoginScreen'e pushAndRemoveUntil) Firestore
     // dinleyicileri (bildirim + sohbet) arka planda çalışmaya devam
@@ -120,6 +211,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // dosyasına doğrudan yazılıyor; Flutter'ın bellekteki önbelleği bunu
     // uygulama öne dönene kadar görmüyor — bu yüzden burada zorla reload.
     if (state == AppLifecycleState.resumed) {
+      // Arka planda beklerken gün değiştiyse içeriği yenile; Timer arka
+      // planda donmuş olabilir, yeniden kur.
+      _checkDayChange();
+      _scheduleMidnightRefresh();
       LocalStorage().reload().then((_) => _refreshZikirCount());
       // Kullanıcı ayarlar dışına çıkıp e-posta doğrulama linkine tıkladıktan
       // sonra uygulamaya geri dönebilir — bkz. initState'teki açıklama.
@@ -355,7 +450,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       debugPrint('❌ getActiveTasks hata: $e');
     }
     try {
-      communityIdNameMap = await RoleService().getUserCommunityIdNameMap();
+      // Çevrimdışıyken Firestore ~10 sn bekleyebiliyor ve bu bitmeden ana
+      // sayfa içeriği HİÇ gösterilmiyordu. En fazla 4 sn beklenir; sorgu
+      // daha geç tamamlanırsa (yavaş internet) sonuç YİNE DE uygulanır —
+      // topluluk bölümü ve sohbet bildirimi dinleyicileri kaybolmasın.
+      final communityFuture = RoleService().getUserCommunityIdNameMap();
+      var timedOut = false;
+      communityIdNameMap = await communityFuture.timeout(
+        const Duration(seconds: 4),
+        onTimeout: () {
+          timedOut = true;
+          return <String, String>{};
+        },
+      );
+      if (timedOut) {
+        unawaited(communityFuture.then((map) {
+          if (!mounted || map.isEmpty) return;
+          setState(() => _communityIdNameMap = map);
+          try {
+            FirestoreNotificationService().startChatListeners(map);
+          } catch (_) {}
+        }).catchError((_) {}));
+      }
     } catch (e) {
       debugPrint('❌ getUserCommunityIdNameMap hata: $e');
     }
@@ -401,12 +517,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   ) async {
     if (esma == null || hadis == null || ayet == null) return;
 
-    await NotificationService().scheduleDailyNotifications();
-
-    await NotificationService().scheduleThursdayTahajjud();
-    await NotificationService().scheduleWeeklyFridaySummary();
-    await NotificationService().scheduleHourlyQuranReminders(_quranReadToday);
-    await _taskRepo.syncNotifications();
+    // Her adım ayrı try/catch içinde: önceden ilk adım hata verirse
+    // (ör. release derlemedeki Gson/R8 sorunu) geri kalan HİÇBİR bildirim
+    // planlanmıyordu ve hata sessizce kayboluyordu.
+    final steps = <String, Future<void> Function()>{
+      'günlük içerik': () => NotificationService().scheduleDailyNotifications(),
+      'perşembe teheccüd': () => NotificationService().scheduleThursdayTahajjud(),
+      'cuma özeti': () => NotificationService().scheduleWeeklyFridaySummary(),
+      'Kur\'an saatlik': () => NotificationService()
+          .scheduleHourlyQuranReminders(_quranReadToday),
+      'görevler': () => _taskRepo.syncNotifications(),
+    };
+    for (final entry in steps.entries) {
+      try {
+        await entry.value();
+      } catch (e) {
+        debugPrint('❌ Bildirim planlama (${entry.key}) hata: $e');
+        unawaited(LocalStorage().setNotifLastError(
+            '${DateTime.now().toIso8601String().substring(0, 16)} | '
+            '${entry.key}: $e'));
+      }
+    }
   }
 
   Future<void> _refreshZikirCount() async {
@@ -468,6 +599,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    if (_redirectingToVerification) {
+      return const Scaffold(backgroundColor: Color(0xFF0D1B2A));
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return PopScope(
@@ -575,12 +709,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   _buildDrawerItem(
                     icon: Icons.auto_stories_outlined,
                     label: 'Tefhimul Kuran',
-                    onTap: () => _goToPage(const TefhimulKuranScreen()),
+                    badge: 'Yakında',
+                    // onTap: () => _goToPage(const TefhimulKuranScreen()),
+                    onTap: () => _showComingSoon('Tefhimul Kuran'),
                   ),
                   _buildDrawerItem(
                       icon: Icons.auto_stories_outlined,
                       label: 'Riyazüs Salihin',
-                      onTap: () => _goToPage(const RiyazusSalihinScreen())),
+                      badge: 'Yakında',
+                      // onTap: () => _goToPage(const RiyazusSalihinScreen())),
+                      onTap: () => _showComingSoon('Riyazüs Salihin')),
                   const SizedBox(height: 8),
                   const Divider(color: Colors.white12),
                   const SizedBox(height: 4),
@@ -803,6 +941,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         slivers: [
           SliverToBoxAdapter(
             child: IslamicHeader(
+              // Gün değişince başlık (namaz vakitleri) sıfırdan yüklensin.
+              key: ValueKey('islamic_header_$_loadedDay'),
               user: _currentUser,
               onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
             ),
@@ -814,6 +954,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 if (_todayEsma != null)
                   ContentCard(
                     type: 'esma',
+                    contentId: _todayEsma!.id,
                     title: _todayEsma!.arabic,
                     subtitle: _todayEsma!.meaning,
                     tag: 'Günün Esması',
@@ -824,15 +965,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         builder: (_) => EsmaDetailScreen(esma: _todayEsma!),
                       ),
                     ).then((_) => _profileKey.currentState?.reload()),
-                    onSave: () => _contentRepo
-                        .saveContent('esma', _todayEsma!.id)
-                        .catchError((_) {}),
                     onRemind: () {},
                   ),
                 const SizedBox(height: 16),
                 if (_todayAyet != null)
                   ContentCard(
                     type: 'ayet',
+                    contentId: _todayAyet!.id,
                     title: _todayAyet!.arabic,
                     subtitle: _todayAyet!.turkish,
                     tag:
@@ -844,15 +983,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         builder: (_) => AyetDetailScreen(ayet: _todayAyet!),
                       ),
                     ).then((_) => _profileKey.currentState?.reload()),
-                    onSave: () => _contentRepo
-                        .saveContent('ayet', _todayAyet!.id)
-                        .catchError((_) {}),
                     onRemind: () {},
                   ),
                 const SizedBox(height: 16),
                 if (_todayHadis != null)
                   ContentCard(
                     type: 'hadis',
+                    contentId: _todayHadis!.id,
                     title: _todayHadis!.arabic.isNotEmpty
                         ? _todayHadis!.arabic
                         : 'Hadis',
@@ -865,9 +1002,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         builder: (_) => HadisDetailScreen(hadis: _todayHadis!),
                       ),
                     ).then((_) => _profileKey.currentState?.reload()),
-                    onSave: () => _contentRepo
-                        .saveContent('hadis', _todayHadis!.id)
-                        .catchError((_) {}),
                     onRemind: () {},
                   ),
                 const SizedBox(height: 16),
@@ -887,19 +1021,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 QuranTrackerCard(
                   isRead: _quranReadToday,
                   onRead: () async {
+                    // Önce kart ANINDA yeşile döner, kayıt arkadan yapılır.
+                    if (_quranReadToday) return;
+                    final nav = Navigator.of(context);
+                    setState(() => _quranReadToday = true);
+                    final today =
+                        DateTime.now().toIso8601String().substring(0, 10);
                     try {
-                      final today =
-                          DateTime.now().toIso8601String().substring(0, 10);
                       await _userRepo.markQuranRead(today);
+                    } catch (_) {
+                      // Kayıt başarısız: kartı geri al, kullanıcı tekrar denesin.
+                      if (mounted) setState(() => _quranReadToday = false);
+                      return;
+                    }
+                    try {
                       await NotificationService().cancelKuranNotification();
-                      final updatedUser = await _userRepo.getCurrentUser();
-                      if (mounted) {
-                        setState(() {
-                          _quranReadToday = true;
-                          _currentUser = updatedUser;
-                        });
-                      }
                     } catch (_) {}
+                    try {
+                      final updatedUser = await _userRepo.getCurrentUser();
+                      if (mounted) setState(() => _currentUser = updatedUser);
+                    } catch (_) {}
+                    // Kur'ân serisi tebriği + rozet kontrolü anında.
+                    unawaited(RewardFlow.afterRead(nav, 'kuran'));
                   },
                 ),
                 if (_activeTasks.isNotEmpty) ...[

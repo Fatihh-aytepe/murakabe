@@ -6,6 +6,7 @@ import '../../data/repositories/content_repository.dart';
 import '../../core/services/notification_service.dart';
 import '../notes/notes_screen.dart';
 import '../notes/note_quote_builder.dart';
+import '../rewards/reward_flow.dart';
 
 class EsmaDetailScreen extends StatefulWidget {
   final EsmaModel esma;
@@ -209,7 +210,7 @@ class _EsmaDetailScreenState extends State<EsmaDetailScreen> {
                           label: 'Okudum',
                           icon: Icons.check_circle_outline,
                           color: const Color(0xFF4CAF50),
-                          onTap: () => Navigator.pop(context),
+                          onTap: _markReadAndClose,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -365,13 +366,30 @@ class _EsmaDetailScreenState extends State<EsmaDetailScreen> {
     );
   }
 
+  // Önce ekran ANINDA güncellenir, kayıt arkadan yapılır. Kayıt hata
+  // verirse eski duruma geri dönülür.
   Future<void> _toggleSave() async {
-    if (_isSaved) {
-      await _contentRepo.unsaveContent('esma', _currentEsma.id);
-    } else {
-      await _contentRepo.saveContent('esma', _currentEsma.id);
+    final wasSaved = _isSaved;
+    setState(() => _isSaved = !wasSaved);
+    try {
+      if (wasSaved) {
+        await _contentRepo.unsaveContent('esma', _currentEsma.id);
+      } else {
+        await _contentRepo.saveContent('esma', _currentEsma.id);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isSaved = wasSaved);
     }
-    if (mounted) setState(() => _isSaved = !_isSaved);
+  }
+
+  void _markReadAndClose() {
+    final nav = Navigator.of(context);
+    final alreadyRead = _contentRepo.isReadToday('esma', _currentEsma.id);
+    _contentRepo.markReadToday('esma', _currentEsma.id);
+    nav.pop();
+    // Seri + tebrik + rozet kontrolü anında; aynı içerik bugün zaten
+    // okunduysa tekrar sayılmaz.
+    if (!alreadyRead) RewardFlow.afterRead(nav, 'esma');
   }
 
   Future<void> _scheduleRemind() async {

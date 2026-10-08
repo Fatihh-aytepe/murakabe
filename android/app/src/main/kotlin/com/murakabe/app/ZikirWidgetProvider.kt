@@ -42,6 +42,24 @@ class ZikirWidgetProvider : AppWidgetProvider() {
         val today = LocalDate.now().toString() // "yyyy-MM-dd" — Dart'taki substring(0,10) ile aynı biçim
         val stored = WidgetPrefs.getString(context, "zikirProgressDate")
         if (stored == today) return
+
+        // Dart'taki ZikirRepository._checkCustomExpiry / isTimedCustomActive
+        // ile birebir aynı kural: süreli özel zikirde sayaç günler boyunca
+        // birikir (toplam hedef); süre dolunca varsayılan zikirlere dönülür
+        // ve sayaç sıfırlanır.
+        val isCustom = WidgetPrefs.getString(context, "zikirMode") == "custom"
+        val endDate = WidgetPrefs.getString(context, "customZikirEndDate")
+        if (isCustom && endDate.isNotEmpty()) {
+            if (today <= endDate) {
+                // Süre devam ediyor: sıfırlama YOK, sadece tarihi güncelle.
+                WidgetPrefs.putString(context, "zikirProgressDate", today)
+                return
+            }
+            // Süre doldu.
+            WidgetPrefs.putString(context, "zikirMode", "default")
+            WidgetPrefs.remove(context, "customZikirEndDate")
+        }
+
         WidgetPrefs.putInt(context, "zikirCurrentCount", 0)
         WidgetPrefs.putBoolean(context, "zikirCelebrationShown", false)
         WidgetPrefs.putString(context, "zikirProgressDate", today)
@@ -52,6 +70,9 @@ class ZikirWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
+        // Gün değiştiyse sayaç (kurala göre) daha +1'e basılmadan sıfırlansın
+        // — önceden widget yeni günde dünün sayısını gösteriyordu.
+        rolloverIfNewDay(context)
         for (id in appWidgetIds) {
             appWidgetManager.updateAppWidget(id, buildViews(context, id))
         }
@@ -70,7 +91,7 @@ class ZikirWidgetProvider : AppWidgetProvider() {
         // İki taraf farklı davranınca widget'tan hedefe ulaşmak, uygulamanın
         // göreceği sayıyla uyuşmayan bir sıfırlanma gibi görünüyordu — şimdi
         // native de Dart ile birebir aynı davranıyor.
-        val target = WidgetPrefs.getInt(context, "widget_zikir_target", 33).coerceAtLeast(1)
+        val target = WidgetPrefs.zikirTargetToday(context)
         val current = WidgetPrefs.getInt(context, "zikirCurrentCount")
         val next = current + 1
         WidgetPrefs.putInt(context, "zikirCurrentCount", next)
@@ -105,10 +126,11 @@ class ZikirWidgetProvider : AppWidgetProvider() {
         // Türkçesiyle eşleşmeyen bir Arapça göstermek yerine o satırı tamamen
         // gizliyoruz (daha önce buradaki sabit fallback bu senkron hatasına
         // sebep oluyordu).
-        val arabic = WidgetPrefs.getString(context, "widget_zikir_arabic")
-        val turkish = WidgetPrefs.getString(context, "widget_zikir_turkish")
+        // Bugünün zikri 30 günlük tablodan (bkz. WidgetPrefs.dayString).
+        val arabic = WidgetPrefs.dayString(context, "widget_zikir_days", "a", "widget_zikir_arabic")
+        val turkish = WidgetPrefs.dayString(context, "widget_zikir_days", "t", "widget_zikir_turkish")
             .ifEmpty { "Sübhanallah" }
-        val target = WidgetPrefs.getInt(context, "widget_zikir_target", 33).coerceAtLeast(1)
+        val target = WidgetPrefs.zikirTargetToday(context)
         val current = WidgetPrefs.getInt(context, "zikirCurrentCount")
 
         if (arabic.isEmpty()) {

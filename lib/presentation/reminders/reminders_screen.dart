@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async' show unawaited;
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants/app_colors.dart';
@@ -7,6 +8,7 @@ import '../../data/local/local_storage.dart';
 import '../../data/remote/firebase_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/utils/stable_hash.dart';
+import '../../core/utils/permission_helper.dart';
 
 class ReminderModel {
   final String id;
@@ -254,6 +256,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
     final titleCtrl = TextEditingController();
     final contentCtrl = TextEditingController();
     DateTime selectedDate = DateTime.now().add(const Duration(hours: 1));
+    // Çift dokunmada aynı hatırlatıcının iki kez kaydedilmesini engeller.
+    bool isSaving = false;
 
     showModalBottomSheet(
       context: context,
@@ -378,33 +382,70 @@ class _RemindersScreenState extends State<RemindersScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () async {
+                      if (isSaving) return;
                       if (titleCtrl.text.trim().isEmpty) return;
-                      final reminder = ReminderModel(
-                        id: const Uuid().v4(),
-                        title: titleCtrl.text.trim(),
-                        content: contentCtrl.text.trim(),
-                        reminderTime: selectedDate,
-                        isActive: true,
-                      );
-                      await _db.insert('reminders', reminder.toMap());
-                      // DÜZELTME: önceden hatırlatıcılar SADECE SQLite'a
-                      // yazılıyordu — FirebaseService.saveReminder hiç
-                      // çağrılmıyordu (UserRepository.restoreFromFirestore
-                      // 'reminders' alt koleksiyonunu zaten okuyordu, ama o
-                      // koleksiyon hiç dolmuyordu). Uygulama silinip tekrar
-                      // kurulursa veya hesap başka cihazda açılırsa tüm
-                      // hatırlatıcılar kaybolurdu.
-                      if (_uid != null) {
-                        try {
-                          await _firebase.saveReminder(
-                              _uid!, reminder.toMap());
-                        } catch (_) {}
+                      // Geçmiş bir zamana hatırlatıcı kurulamaz — önceden
+                      // sessizce kaydediliyor ama bildirim hiç
+                      // planlanmıyordu (scheduleCustomReminder geçmiş
+                      // zamanı sessizce atlıyor).
+                      if (!selectedDate.isAfter(DateTime.now())) {
+                        await _showInfoDialog(ctx, 'Geçmiş bir zaman seçildi',
+                            'Lütfen ileri bir tarih ve saat seç.');
+                        return;
                       }
-                      // Bildirim planla
-                      await _scheduleReminderNotification(reminder);
-                      if (!ctx.mounted) return;
-                      Navigator.pop(ctx);
-                      await _loadReminders();
+                      isSaving = true;
+                      try {
+                        // Bildirim izni yoksa önce iste; verilmezse
+                        // hatırlatıcı oluşturulmaz, pencere açık kalır.
+                        final granted = await PermissionHelper
+                            .ensureNotificationPermissionForReminder(ctx);
+                        if (!granted) return;
+
+                        final reminder = ReminderModel(
+                          id: const Uuid().v4(),
+                          title: titleCtrl.text.trim(),
+                          content: contentCtrl.text.trim(),
+                          reminderTime: selectedDate,
+                          isActive: true,
+                        );
+                        await _db.insert('reminders', reminder.toMap());
+
+                        // Bildirim, Firestore'dan ÖNCE planlanır. Önceden
+                        // önce Firestore sunucu onayı bekleniyordu — yavaş
+                        // internette pencere geç kapanıyor, internet yoksa
+                        // hiç kapanmıyor ve bildirim HİÇ planlanmıyordu.
+                        String? scheduleError;
+                        try {
+                          await _scheduleReminderNotification(reminder);
+                        } catch (e) {
+                          scheduleError = '$e';
+                        }
+
+                        // Firestore yedeği arka planda (beklenmez).
+                        // Bağlantı gelince Firestore kendisi senkronlar.
+                        if (_uid != null) {
+                          unawaited(_firebase
+                              .saveReminder(_uid!, reminder.toMap())
+                              .catchError((_) {}));
+                        }
+
+                        if (!ctx.mounted) return;
+                        Navigator.pop(ctx);
+                        await _loadReminders();
+                        if (scheduleError != null && mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Hatırlatıcı kaydedildi ama bildirimi '
+                                  'kurulamadı: $scheduleError'),
+                              backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 6),
+                            ),
+                          );
+                        }
+                      } finally {
+                        isSaving = false;
+                      }
                     },
                     child: const Text('Hatırlatıcı Kur'),
                   ),
@@ -424,6 +465,23 @@ class _RemindersScreenState extends State<RemindersScreen> {
   // ile güvenle iptal edilebiliyor — hatta uygulama SDK sürümü güncellense
   // bile.
   int _notifIdFor(String reminderId) => stableStringHash(reminderId) % 1000 + 1000;
+
+  Future<void> _showInfoDialog(
+      BuildContext ctx, String title, String message) {
+    return showDialog<void>(
+      context: ctx,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text('Tamam'),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _scheduleReminderNotification(ReminderModel reminder) async {
     await NotificationService().scheduleCustomReminder(

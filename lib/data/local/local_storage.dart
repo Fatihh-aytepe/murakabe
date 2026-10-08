@@ -79,6 +79,18 @@ class LocalStorage {
   Future<void> setNotesViewMode(String v) =>
       _prefs.setString('notesViewMode', v);
 
+  // Son bildirim planlama hatası — teşhis için (bkz. NotificationService
+  // _recordError). Biçim: "yyyy-MM-ddTHH:mm | hata metni".
+  String get notifLastError => _prefs.getString('notif_last_error') ?? '';
+  Future<void> setNotifLastError(String v) =>
+      _prefs.setString('notif_last_error', v);
+
+  // İçerik kartı "Okudum" işareti — değer "yyyy-MM-dd|içerikId" biçiminde
+  // (bkz. ContentRepository.isReadToday / markReadToday).
+  String? contentReadMark(String type) => _prefs.getString('contentRead_$type');
+  Future<void> setContentReadMark(String type, String mark) =>
+      _prefs.setString('contentRead_$type', mark);
+
   String? get profilePhotoPath => _prefs.getString('profilePhotoPath');
   Future<void> setProfilePhotoPath(String path) =>
       _prefs.setString('profilePhotoPath', path);
@@ -172,6 +184,30 @@ class LocalStorage {
   String get widgetPrayerNames => _prefs.getString('widget_prayer_names') ?? '';
   Future<void> setWidgetPrayerNames(String v) =>
       _prefs.setString('widget_prayer_names', v);
+
+  // ── 30 günlük widget tabloları ─────────────────────────────────────────
+  // JSON biçimi: {"yyyy-MM-dd": {...}, ...}. Native widget'lar (bkz.
+  // WidgetPrefs.kt dayEntry) BUGÜNÜN tarihine karşılık gelen kaydı okur —
+  // böylece uygulama açılmasa da gün değişince widget kendiliğinden
+  // doğru günün verisini gösterir.
+  // widget_prayer_days: {"t": [6 ISO vakit], "h": "hicri tarih"}
+  // widget_content_days: {"et","ea","em","at","as","ht","hs"}
+  // widget_zikir_days:   {"g": hedef, "t": türkçe, "a": arapça}
+  Future<void> setWidgetPrayerDays(String json) =>
+      _prefs.setString('widget_prayer_days', json);
+  Future<void> setWidgetContentDays(String json) =>
+      _prefs.setString('widget_content_days', json);
+  Future<void> setWidgetZikirDays(String json) =>
+      _prefs.setString('widget_zikir_days', json);
+
+  // Son başarılı konum — arka planda (WorkManager) konum alınamadığında
+  // namaz vakitleri bu koordinatla hesaplanır.
+  double? get lastPrayerLat => _prefs.getDouble('last_prayer_lat');
+  double? get lastPrayerLng => _prefs.getDouble('last_prayer_lng');
+  Future<void> setLastPrayerLocation(double lat, double lng) async {
+    await _prefs.setDouble('last_prayer_lat', lat);
+    await _prefs.setDouble('last_prayer_lng', lng);
+  }
 
   String get widgetPrayerTimesIso =>
       _prefs.getString('widget_prayer_times_iso') ?? '';

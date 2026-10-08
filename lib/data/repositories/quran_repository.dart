@@ -9,7 +9,11 @@ import '../../data/local/local_storage.dart';
 class QuranAyah {
   final int number; // sure içi ayet no
   final int globalNumber; // 1-6236
-  final String arabic;
+  final String arabic; // text_uthmani — not/kopyalama gibi düz metin işleri için
+  // text_qpc_hafs — EKRANDA gösterilen metin. UthmanicHafs fontu için
+  // kodlanmıştır; sonunda ayet numarası (Arapça rakam) bulunur ve font
+  // bunu Mushaf'taki süslü ayet sonu işareti olarak çizer.
+  final String arabicHafs;
   final String turkish;
   final int page;
   final int surahNumber;
@@ -19,11 +23,25 @@ class QuranAyah {
     required this.number,
     required this.globalNumber,
     required this.arabic,
+    this.arabicHafs = '',
     required this.turkish,
     required this.page,
     required this.surahNumber,
     required this.surahName,
   });
+
+  /// Ekranda gösterilecek Arapça metin: text_qpc_hafs varsa o; yoksa
+  /// (API alanı boş dönerse) text_uthmani + Arapça rakamla ayet numarası —
+  /// UthmanicHafs fontu o rakamı da ayet sonu işareti olarak çizer.
+  String get displayArabic {
+    if (arabicHafs.isNotEmpty) return arabicHafs;
+    return '$arabic ${toArabicDigits(number)}';
+  }
+
+  static String toArabicDigits(int n) {
+    const digits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return n.toString().split('').map((c) => digits[int.parse(c)]).join();
+  }
 }
 
 class QuranSurah {
@@ -189,7 +207,7 @@ class QuranRepository {
         Uri.parse(
           '$_baseUrl/verses/by_page/$page'
           '?translations=$translationId'
-          '&fields=text_uthmani,page_number,verse_key'
+          '&fields=text_uthmani,text_qpc_hafs,page_number,verse_key'
           '&per_page=50',
         ),
         headers: {'Accept': 'application/json'},
@@ -211,7 +229,7 @@ class QuranRepository {
         Uri.parse(
           '$_baseUrl/verses/by_chapter/$surahNumber'
           '?translations=$translationId'
-          '&fields=text_uthmani,page_number,verse_key'
+          '&fields=text_uthmani,text_qpc_hafs,page_number,verse_key'
           '&per_page=300',
         ),
         headers: {'Accept': 'application/json'},
@@ -237,6 +255,7 @@ class QuranRepository {
         number: ayahNo,
         globalNumber: v['id'] ?? 0,
         arabic: v['text_uthmani'] ?? '',
+        arabicHafs: v['text_qpc_hafs'] ?? '',
         turkish: translation?['text'] ?? '',
         page: v['page_number'] ?? 1,
         surahNumber: surahNo,

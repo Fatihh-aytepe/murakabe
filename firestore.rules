@@ -54,7 +54,10 @@ service cloud.firestore {
 
       match /{sub}/{docId} {
         allow read, write: if isAuth() && request.auth.uid == userId;
-        allow read: if isOwner();
+        // Mahremiyet: sahip; kaydedilen içerik, Kuran/teheccüd takibi,
+        // rozet, ödül gibi verileri görebilir, ama kullanıcının kişisel
+        // NOTLARINI ve HATIRLATICILARINI göremez.
+        allow read: if isOwner() && !(sub in ['notes', 'reminders']);
       }
     }
 
@@ -74,7 +77,11 @@ service cloud.firestore {
       // o gerçek e-posta kutusuna erişimi olmadıkça bunu imkansız kılar.
       allow create: if isAuth()
         && !exists(/databases/$(database)/documents/roles/owner)
-        && request.auth.token.email == 'yavuzbera02@gmail.com'
+        // Sahip e-postası burada açık yazılmaz; küçük harfli adresin
+        // SHA-256 özeti (base64) karşılaştırılır. Aynı özet
+        // lib/core/constants/app_strings.dart içinde de var.
+        && hashing.sha256(request.auth.token.email.lower()).toBase64()
+             == 'DH3seHl0DvxTaVUKm4NWyoeruJ/RW2EZE78IhpavpSw='
         && request.auth.token.email_verified == true;
       allow update: if isOwner();
       allow delete: if isOwner();
@@ -266,7 +273,37 @@ service cloud.firestore {
           request.resource.data.text.size() > 0 &&
           request.resource.data.text.size() <= 4000 &&
           request.resource.data.sentAt == request.time;
-        allow update, delete: if isOwner() || isCommunityAdmin(communityId);
+        allow update: if isOwner() || isCommunityAdmin(communityId);
+        // Gönderen KENDİ mesajını silebilir — hesap silmede kullanıcının
+        // mesaj geçmişi (UID, ad, metin) toplulukta kalmasın diye (bkz.
+        // RoleService.deleteOwnMessagesIn).
+        allow delete: if isOwner() || isCommunityAdmin(communityId) ||
+          (isAuth() && resource.data.senderUid == request.auth.uid);
+      }
+
+      // ── Mesaj bildirimleri (Google Play UGC politikası) ──────────────
+      // Üye, topluluktaki GERÇEK bir mesajı bildirebilir: bildirilen
+      // metin, gönderen UID'si ve adı, mesaj belgesindekilerle birebir
+      // eşleşmek zorunda (sahte/uydurma bildirim yazılamaz). Kişi kendi
+      // mesajını bildiremez. Bildirimleri yalnızca topluluk yöneticisi ve
+      // sahip okuyup kapatabilir (silme = "incelendi, kapatıldı").
+      match /reports/{reportId} {
+        allow create: if isMember(communityId) &&
+          request.resource.data.keys().hasOnly([
+            'messageId', 'messageText', 'reportedUid', 'reportedName',
+            'reporterUid', 'reason', 'createdAt']) &&
+          request.resource.data.reporterUid == request.auth.uid &&
+          request.resource.data.reportedUid != request.auth.uid &&
+          request.resource.data.reason is string &&
+          request.resource.data.reason.size() > 0 &&
+          request.resource.data.reason.size() <= 100 &&
+          request.resource.data.createdAt == request.time &&
+          request.resource.data.messageId is string &&
+          exists(/databases/$(database)/documents/communities/$(communityId)/messages/$(request.resource.data.messageId)) &&
+          get(/databases/$(database)/documents/communities/$(communityId)/messages/$(request.resource.data.messageId)).data.senderUid == request.resource.data.reportedUid &&
+          get(/databases/$(database)/documents/communities/$(communityId)/messages/$(request.resource.data.messageId)).data.senderName == request.resource.data.reportedName &&
+          get(/databases/$(database)/documents/communities/$(communityId)/messages/$(request.resource.data.messageId)).data.text == request.resource.data.messageText;
+        allow read, delete: if isOwner() || isCommunityAdmin(communityId);
       }
 
       match /announcements/{announcementId} {

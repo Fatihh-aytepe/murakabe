@@ -30,7 +30,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadCommunity();
   }
 
@@ -616,10 +616,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               indicatorColor: AppColors.gold,
               labelStyle: GoogleFonts.notoSans(
                   fontWeight: FontWeight.bold, fontSize: 12),
-              tabs: const [
-                Tab(text: 'Yönetim'),
-                Tab(text: 'Üyeler'),
-                Tab(text: 'Görevler'),
+              isScrollable: false,
+              tabs: [
+                const Tab(text: 'Yönetim'),
+                const Tab(text: 'Üyeler'),
+                const Tab(text: 'Görevler'),
+                Tab(child: _reportsTabLabel()),
               ],
             ),
 
@@ -633,6 +635,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         _buildManagementTab(),
                         _buildMembersTab(),
                         _buildTasksTab(),
+                        _buildReportsTab(),
                       ],
                     ),
             ),
@@ -1364,6 +1367,225 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   ),
                 );
               },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ── Bildirimler sekmesi (Play UGC politikası) ─────────────────────────────
+  // Üyelerin bildirdiği mesajlar. Yönetici mesajı silebilir, gönderen üyeyi
+  // atabilir ya da bildirimi kapatabilir (kapatma = bildirim kaydını silme).
+  Stream<QuerySnapshot>? _reportsStream() {
+    final id = _communityId;
+    if (id == null) return null;
+    return FirebaseFirestore.instance
+        .collection('communities')
+        .doc(id)
+        .collection('reports')
+        .orderBy('createdAt', descending: true)
+        .snapshots();
+  }
+
+  Widget _reportsTabLabel() {
+    final stream = _reportsStream();
+    if (stream == null) return const Text('Bildirimler');
+    return StreamBuilder<QuerySnapshot>(
+      stream: stream,
+      builder: (_, snap) {
+        final n = snap.data?.docs.length ?? 0;
+        return Text(n > 0 ? 'Bildirimler ($n)' : 'Bildirimler',
+            overflow: TextOverflow.ellipsis);
+      },
+    );
+  }
+
+  Future<void> _closeReport(String reportId) async {
+    final id = _communityId;
+    if (id == null) return;
+    await FirebaseFirestore.instance
+        .collection('communities')
+        .doc(id)
+        .collection('reports')
+        .doc(reportId)
+        .delete();
+  }
+
+  Future<void> _deleteReportedMessage(String reportId, String messageId) async {
+    final id = _communityId;
+    if (id == null) return;
+    final db = FirebaseFirestore.instance;
+    final batch = db.batch();
+    batch.delete(db
+        .collection('communities')
+        .doc(id)
+        .collection('messages')
+        .doc(messageId));
+    batch.delete(db
+        .collection('communities')
+        .doc(id)
+        .collection('reports')
+        .doc(reportId));
+    await batch.commit();
+  }
+
+  Widget _buildReportsTab() {
+    final stream = _reportsStream();
+    if (stream == null) {
+      return Center(
+        child: Text('Önce topluluk oluşturun',
+            style: GoogleFonts.notoSans(color: Colors.white38)),
+      );
+    }
+    return StreamBuilder<QuerySnapshot>(
+      stream: stream,
+      builder: (_, snap) {
+        if (snap.hasError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text('Bildirimler yüklenemedi. Bağlantını kontrol et.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.notoSans(color: Colors.white38)),
+            ),
+          );
+        }
+        final reports = snap.data?.docs ?? [];
+        if (reports.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.verified_user_outlined,
+                    color: Colors.white24, size: 48),
+                const SizedBox(height: 12),
+                Text('Bekleyen bildirim yok',
+                    style: GoogleFonts.notoSans(color: Colors.white38)),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                      'Üyeler uygunsuz bir mesajı bildirdiğinde burada görünür.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.notoSans(
+                          color: Colors.white24, fontSize: 12)),
+                ),
+              ],
+            ),
+          );
+        }
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: reports.length,
+          itemBuilder: (_, i) {
+            final data = reports[i].data() as Map<String, dynamic>;
+            final reportId = reports[i].id;
+            final name = data['reportedName'] as String? ?? 'Kullanıcı';
+            final reportedUid = data['reportedUid'] as String? ?? '';
+            final messageId = data['messageId'] as String? ?? '';
+            final text = data['messageText'] as String? ?? '';
+            final reason = data['reason'] as String? ?? '';
+            final at = (data['createdAt'] as Timestamp?)?.toDate();
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A2035),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: Colors.orangeAccent.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.flag_outlined,
+                          color: Colors.orangeAccent, size: 16),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(reason,
+                            style: GoogleFonts.notoSans(
+                                color: Colors.orangeAccent,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13)),
+                      ),
+                      if (at != null)
+                        Text('${at.day}.${at.month}.${at.year}',
+                            style: GoogleFonts.notoSans(
+                                color: Colors.white38, fontSize: 11)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(name,
+                      style: GoogleFonts.notoSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13)),
+                  const SizedBox(height: 4),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(text,
+                        style: GoogleFonts.notoSans(
+                            color: Colors.white70, fontSize: 13, height: 1.4)),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      TextButton.icon(
+                        icon: const Icon(Icons.delete_outline,
+                            color: Colors.redAccent, size: 18),
+                        label: Text('Mesajı sil',
+                            style:
+                                GoogleFonts.notoSans(color: Colors.redAccent)),
+                        onPressed: messageId.isEmpty
+                            ? null
+                            : () async {
+                                try {
+                                  await _deleteReportedMessage(
+                                      reportId, messageId);
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                            content: Text('Mesaj silindi')));
+                                  }
+                                } catch (_) {}
+                              },
+                      ),
+                      if (reportedUid.isNotEmpty)
+                        TextButton.icon(
+                          icon: const Icon(Icons.person_remove_outlined,
+                              color: Colors.white70, size: 18),
+                          label: Text('Üyeyi at',
+                              style:
+                                  GoogleFonts.notoSans(color: Colors.white70)),
+                          onPressed: () => _showKickDialog(reportedUid, name),
+                        ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.check,
+                            color: AppColors.turquoise, size: 18),
+                        label: Text('Kapat',
+                            style: GoogleFonts.notoSans(
+                                color: AppColors.turquoise)),
+                        onPressed: () async {
+                          try {
+                            await _closeReport(reportId);
+                          } catch (_) {}
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             );
           },
         );

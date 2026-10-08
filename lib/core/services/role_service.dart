@@ -16,17 +16,30 @@ class RoleService {
   String? get currentUid => FirebaseAuth.instance.currentUser?.uid;
 
   // ── Mevcut kullanıcının rolünü Firestore'dan sorgula ──────────────────────
+  /// İnternetsiz açılış için: sunucudan okumayı en fazla 4 sn bekler,
+  /// alınamazsa (çevrimdışı) cihazdaki Firestore önbelleğine düşer.
+  /// Önceden çevrimdışıyken her get() ~10 sn bekliyordu ve açılışta iki
+  /// get() art arda yapıldığı için uygulama ~20 sn splash'ta kalıyordu.
+  Future<DocumentSnapshot<Map<String, dynamic>>> _getDocFast(
+      DocumentReference<Map<String, dynamic>> ref) async {
+    try {
+      return await ref.get().timeout(const Duration(seconds: 4));
+    } catch (_) {
+      return ref.get(const GetOptions(source: Source.cache));
+    }
+  }
+
   Future<UserRole> getCurrentRole() async {
     if (_uid == null) return UserRole.user;
     try {
       // Önce sahip mi kontrol et
-      final ownerDoc = await _db.collection('roles').doc('owner').get();
+      final ownerDoc = await _getDocFast(_db.collection('roles').doc('owner'));
       if (ownerDoc.exists && ownerDoc.data()?['uid'] == _uid) {
         return UserRole.owner;
       }
 
       // Admin mi kontrol et
-      final adminDoc = await _db.collection('roles').doc(_uid).get();
+      final adminDoc = await _getDocFast(_db.collection('roles').doc(_uid));
       if (adminDoc.exists && adminDoc.data()?['role'] == 'admin') {
         return UserRole.admin;
       }
@@ -484,6 +497,83 @@ class RoleService {
     }
   }
 
+  // ── Topluluk güvenliği: mesaj bildirme ve kullanıcı engelleme ─────────────
+  // Google Play "Kullanıcı Tarafından Oluşturulan İçerik" politikası gereği:
+  // kullanıcı uygunsuz bir mesajı bildirebilmeli ve bir kişiyi
+  // engelleyebilmeli; topluluk yöneticisi bildirimleri görüp işlem
+  // yapabilmeli (bkz. AdminDashboardScreen → Bildirimler sekmesi).
+
+  /// Bir mesajı topluluk yöneticisine bildirir. Metin ve gönderen bilgisi
+  /// sunucu kuralında gerçek mesajla karşılaştırılır (firestore.rules →
+  /// communities/{id}/reports).
+  Future<void> reportMessage({
+    required String communityId,
+    required String messageId,
+    required String messageText,
+    required String reportedUid,
+    required String reportedName,
+    required String reason,
+  }) async {
+    final uid = _uid;
+    if (uid == null) throw Exception('Oturum bulunamadı');
+    await _db
+        .collection('communities')
+        .doc(communityId)
+        .collection('reports')
+        .add({
+      'messageId': messageId,
+      'messageText': messageText,
+      'reportedUid': reportedUid,
+      'reportedName': reportedName,
+      'reporterUid': uid,
+      'reason': reason,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Engellenen kişiler: users/{uid}/blocked/{engellenenUid}. Engel tüm
+  /// topluluklarda geçerlidir; yalnızca engelleyen kişinin görünümünü
+  /// etkiler (karşı taraf bundan haberdar edilmez).
+  CollectionReference<Map<String, dynamic>>? _blockedCol() {
+    final uid = _uid;
+    if (uid == null) return null;
+    return _db.collection('users').doc(uid).collection('blocked');
+  }
+
+  Stream<Set<String>> blockedUidsStream() {
+    final col = _blockedCol();
+    if (col == null) return Stream.value(<String>{});
+    return col.snapshots().map((s) => s.docs.map((d) => d.id).toSet());
+  }
+
+  /// Engel listesini ad bilgisiyle döner: [{uid, name}]
+  Stream<List<Map<String, String>>> blockedUsersStream() {
+    final col = _blockedCol();
+    if (col == null) return Stream.value(const []);
+    return col.snapshots().map((s) => s.docs
+        .map((d) => {
+              'uid': d.id,
+              'name': (d.data()['name'] as String?) ?? 'Kullanıcı',
+            })
+        .toList());
+  }
+
+  Future<void> blockUser(String targetUid, String name) async {
+    final col = _blockedCol();
+    if (col == null) throw Exception('Oturum bulunamadı');
+    if (targetUid == _uid) return;
+    await col.doc(targetUid).set({
+      'name': name,
+      'blockedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> unblockUser(String targetUid) async {
+    final col = _blockedCol();
+    if (col == null) return;
+    await col.doc(targetUid).delete();
+  }
+
   // ── Admin: Üyeyi topluluktan at ───────────────────────────────────────────
   Future<void> kickMember(String communityId, String targetUid) async {
     final batch = _db.batch();
@@ -507,6 +597,30 @@ class RoleService {
   // üyelikleri temizlemek için eklendi — daha önce hesap silindiğinde üyelik
   // kaydı hiç silinmiyor, topluluk listelerinde silinen kullanıcıya ait
   // "hayalet" bir üyelik sonsuza dek kalıyordu.
+  /// Hesap silinirken, topluluktan AYRILMADAN ÖNCE çağrılır (mesajları
+  /// listeleyebilmek için üyelik gerekir — bkz. firestore.rules). Kullanıcının
+  /// bu topluluktaki tüm mesajlarını sayfa sayfa siler. Hata fırlatabilir;
+  /// çağıran taraf yakalar.
+  Future<void> deleteOwnMessagesIn(String communityId) async {
+    final uid = _uid;
+    if (uid == null) return;
+    final col = _db
+        .collection('communities')
+        .doc(communityId)
+        .collection('messages');
+    while (true) {
+      final snap =
+          await col.where('senderUid', isEqualTo: uid).limit(200).get();
+      if (snap.docs.isEmpty) break;
+      final batch = _db.batch();
+      for (final d in snap.docs) {
+        batch.delete(d.reference);
+      }
+      await batch.commit();
+      if (snap.docs.length < 200) break;
+    }
+  }
+
   Future<void> leaveCommunity(String communityId) async {
     if (_uid == null) return;
     final batch = _db.batch();
@@ -757,7 +871,7 @@ class RoleService {
     } catch (_) {}
 
     // Alt koleksiyonları toplu sil
-    for (final sub in ['tasks', 'members', 'messages', 'announcements', 'private']) {
+    for (final sub in ['tasks', 'members', 'messages', 'announcements', 'private', 'reports']) {
       final snap = await _db
           .collection('communities')
           .doc(communityId)

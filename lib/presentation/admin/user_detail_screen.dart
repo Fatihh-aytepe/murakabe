@@ -33,8 +33,6 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   Map<String, dynamic> _userData = {};
   StreamSubscription<DocumentSnapshot>? _userSub;
 
-  List<Map<String, dynamic>> _notes = [];
-  List<Map<String, dynamic>> _reminders = [];
   List<Map<String, dynamic>> _tasks = [];
   List<Map<String, dynamic>> _badges = [];
   List<Map<String, dynamic>> _rewards = [];
@@ -48,7 +46,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _listenUser();
     _loadSubcollections();
   }
@@ -76,8 +74,6 @@ class _UserDetailScreenState extends State<UserDetailScreen>
     try {
       final uid = widget.uid;
       final results = await Future.wait([
-        _getSub(uid, 'notes'),
-        _getSub(uid, 'reminders'),
         _getSub(uid, 'tasks'),
         _getSub(uid, 'badges'),
         _getSub(uid, 'rewards'),
@@ -88,14 +84,12 @@ class _UserDetailScreenState extends State<UserDetailScreen>
 
       if (mounted) {
         setState(() {
-          _notes = results[0];
-          _reminders = results[1];
-          _tasks = results[2];
-          _badges = results[3];
-          _rewards = results[4];
-          _quranTracking = results[5];
-          _tahajjudTracking = results[6];
-          _saved = results[7];
+          _tasks = results[0];
+          _badges = results[1];
+          _rewards = results[2];
+          _quranTracking = results[3];
+          _tahajjudTracking = results[4];
+          _saved = results[5];
           _loading = false;
         });
       }
@@ -189,8 +183,6 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                     _buildGenel(),
                     _buildKuran(),
                     _buildRozetler(),
-                    _buildNotlar(),
-                    _buildHatirlaticlar(),
                     _buildGorevler(),
                   ],
                 ),
@@ -279,8 +271,6 @@ class _UserDetailScreenState extends State<UserDetailScreen>
       Tab(text: 'Genel'),
       Tab(text: 'Kuran'),
       Tab(text: 'Rozetler'),
-      Tab(text: 'Notlar'),
-      Tab(text: 'Hatırlatıcı'),
       Tab(text: 'Görevler'),
     ];
     return Container(
@@ -367,23 +357,11 @@ class _UserDetailScreenState extends State<UserDetailScreen>
             children: [
               Expanded(
                   child: _statCard(
-                      '📝', '${_notes.length}', 'Not', AppColors.gold)),
+                      '✅', '${_tasks.length}', 'Görev', Colors.greenAccent)),
               const SizedBox(width: 10),
               Expanded(
                   child: _statCard(
                       '🏅', '${_badges.length}', 'Rozet', Colors.amberAccent)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                  child: _statCard('⏰', '${_reminders.length}', 'Hatırlatıcı',
-                      Colors.blueAccent)),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: _statCard(
-                      '✅', '${_tasks.length}', 'Görev', Colors.greenAccent)),
             ],
           ),
           const SizedBox(height: 16),
@@ -486,124 +464,6 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   }
 
   // 4. NOTLAR
-  Widget _buildNotlar() {
-    if (_notes.isEmpty) {
-      return _emptyState(Icons.note_outlined, 'Henüz not yok.');
-    }
-    final sorted = List.of(_notes)
-      ..sort((a, b) {
-        final aDate = a['updatedAt'] as String? ?? '';
-        final bDate = b['updatedAt'] as String? ?? '';
-        return bDate.compareTo(aDate);
-      });
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: sorted.length,
-      itemBuilder: (_, i) {
-        final n = sorted[i];
-        final title = n['title'] as String? ?? 'Başlıksız';
-        final content = n['content'] as String? ?? '';
-        final updatedAt = _fmtDate(n['updatedAt'] as String?);
-        return Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A2035),
-            borderRadius: BorderRadius.circular(12),
-            border:
-                Border.all(color: AppColors.gold.withValues(alpha: 0.15)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.sticky_note_2_outlined,
-                      color: AppColors.gold, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: GoogleFonts.notoSans(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    updatedAt,
-                    style: GoogleFonts.notoSans(
-                        color: Colors.white38, fontSize: 10),
-                  ),
-                ],
-              ),
-              if (content.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  content,
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.notoSans(
-                      color: Colors.white60, fontSize: 12, height: 1.5),
-                ),
-              ],
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // 5. HATIRLATICIAR
-  Widget _buildHatirlaticlar() {
-    if (_reminders.isEmpty) {
-      return _emptyState(Icons.alarm_outlined, 'Hatırlatıcı yok.');
-    }
-    final sorted = List.of(_reminders)
-      ..sort((a, b) {
-        final aT = a['reminderTime'] as String? ?? '';
-        final bT = b['reminderTime'] as String? ?? '';
-        return bT.compareTo(aT);
-      });
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: sorted.length,
-      itemBuilder: (_, i) {
-        final r = sorted[i];
-        final title = r['title'] as String? ?? 'Başlıksız';
-        final content = r['content'] as String? ?? '';
-        final time = _fmtDate(r['reminderTime'] as String?);
-        final isActive = _asBool(r['isActive']);
-        return _listTile(
-          icon: Icons.alarm_outlined,
-          color: isActive ? Colors.blueAccent : Colors.white38,
-          title: title,
-          sub: content.isNotEmpty ? '$content  •  $time' : time,
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: (isActive ? Colors.blueAccent : Colors.grey)
-                  .withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              isActive ? 'Aktif' : 'Pasif',
-              style: GoogleFonts.notoSans(
-                color: isActive ? Colors.blueAccent : Colors.white38,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // 6. GÖREVLER
   Widget _buildGorevler() {
     if (_tasks.isEmpty) {
       return _emptyState(Icons.task_alt_outlined, 'Görev yok.');

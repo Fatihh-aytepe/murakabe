@@ -19,7 +19,19 @@ class ConnectivityService {
     _controller = StreamController<bool>.broadcast();
 
     final result = await _connectivity.checkConnectivity();
-    _isConnected = _checkConnected(result) && await _hasRealInternet();
+    // Açılışı BEKLETMEDEN: radyo durumu hemen alınır, gerçek internet
+    // doğrulaması (en fazla 4 sn'lik DNS sorgusu) arka planda yapılır.
+    // Önceden bu sorgu main() içinde runApp'ten ÖNCE bekleniyordu —
+    // internetsiz bir Wi-Fi'deyken açılış 4 sn uzuyordu.
+    _isConnected = _checkConnected(result);
+    if (_isConnected) {
+      _hasRealInternet().then((ok) {
+        if (ok != _isConnected) {
+          _isConnected = ok;
+          _controller.add(ok);
+        }
+      });
+    }
 
     _connectivity.onConnectivityChanged.listen((result) async {
       // DÜZELTME: connectivity_plus yalnızca bir ağ ARAYÜZÜNÜN (Wi-Fi/mobil

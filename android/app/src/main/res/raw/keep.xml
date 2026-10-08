@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Release derlemede (isShrinkResources = true) alarm seslerinin APK'dan
+     silinmesini engeller. Bu sesler yalnızca Dart kodundan isimle
+     (RawResourceAndroidNotificationSound('alarm_...')) çağrıldığı için
+     kaynak küçültücü onları "kullanılmıyor" sanıp siliyordu — teheccüd
+     alarmı release'de sessiz kalır / hiç gelmezdi. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/alarm_*" />

@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -469,9 +470,12 @@ class UserRepository {
       ));
     }
 
-    try {
-      await _firebase.markQuranRead(_storage.userId!, date);
-    } catch (_) {}
+    // Firestore yazımı BEKLENMEZ — sunucu onayını beklemek "Okudum"
+    // butonunu geciktiriyordu.
+    final readUid = _storage.userId;
+    if (readUid != null) {
+      unawaited(_firebase.markQuranRead(readUid, date).catchError((_) {}));
+    }
 
     // Streak verisini Firestore'a yedekle (yeniden yükleme koruması)
     final uid = _storage.userId;
@@ -532,6 +536,14 @@ class UserRepository {
     try {
       final communityIds = await RoleService().getUserCommunityIds();
       for (final communityId in communityIds) {
+        // Önce kullanıcının bu topluluktaki mesaj geçmişi silinir (üyelik
+        // hâlâ varken — listeleme için gerekli). Önceden mesajlar (UID, ad,
+        // metin) hesap silindikten sonra da toplulukta kalıyordu.
+        try {
+          await RoleService().deleteOwnMessagesIn(communityId);
+        } catch (e) {
+          debugPrint('[UserRepo] Topluluk mesajları silinemedi ($communityId): $e');
+        }
         await RoleService().leaveCommunity(communityId);
       }
     } catch (e) {
@@ -549,6 +561,22 @@ class UserRepository {
       await _firebase.deleteRoleRecordIfAny(uid);
     } catch (e) {
       debugPrint('[UserRepo] Rol kaydı temizlenemedi: $e');
+    }
+
+    // 4a. Not eklerini NOT BAZINDA sil (notes/{uid}/{noteId}/...). Bu
+    // seviyedeki listeleme mevcut Storage kurallarıyla da izinli; böylece
+    // yeni storage.rules henüz yayınlanmamış olsa bile ekler silinir.
+    // (deleteAccountData içindeki üst klasör temizliği ek güvence olarak
+    // kalıyor.)
+    try {
+      final noteRows = await _db.query('notes');
+      for (final row in noteRows) {
+        final noteId = row['id'] as String?;
+        if (noteId == null || noteId.isEmpty) continue;
+        await NoteFileStorage.deleteNoteFolder(uid, noteId);
+      }
+    } catch (e) {
+      debugPrint('[UserRepo] Not ekleri silinemedi: $e');
     }
 
     // 4 + 5. Firestore (ana doküman + alt koleksiyonlar, quranProgress dahil) + Storage verisi

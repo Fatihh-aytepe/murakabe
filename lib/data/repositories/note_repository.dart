@@ -8,6 +8,15 @@ import '../remote/firebase_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/utils/stable_hash.dart';
 
+/// Not kaydedildi ama hatırlatıcı bildirimi planlanamadı. Not kaybolmaz;
+/// çağıran taraf (not editörü) bu hatayı kullanıcıya gösterir.
+class ReminderScheduleException implements Exception {
+  final Object cause;
+  ReminderScheduleException(this.cause);
+  @override
+  String toString() => '$cause';
+}
+
 class NoteRepository {
   final _db = DatabaseHelper();
   final _firebase = FirebaseService();
@@ -85,14 +94,27 @@ class NoteRepository {
       updatedAt: now,
     );
     await _db.insert('notes', note.toMap());
-    if (reminderAt != null) await _scheduleReminder(note);
-    if (_uid != null) {
+    // Hatırlatıcı hatası notun kaydını/senkronunu YARIDA KESMEMELİ —
+    // önceden burada atılan hata addNote'u bitiriyordu ve kullanıcı hiçbir
+    // mesaj görmüyordu. Hata sona saklanıp en sonda fırlatılıyor.
+    Object? reminderError;
+    if (reminderAt != null) {
       try {
-        await _firebase.saveNote(_uid!, note.toMap());
-      } catch (_) {}
+        await _scheduleReminder(note);
+      } catch (e) {
+        reminderError = e;
+      }
+    }
+    // Firestore yazımı BEKLENMEZ: set() sunucu onayı gelene kadar tamamlanmaz
+    // (internet yoksa hiç tamamlanmaz) — Kaydet butonu bu yüzden takılıyordu.
+    // Yerel SQLite kaydı yukarıda tamamlandı; Firestore kuyruğa alıp bağlantı
+    // gelince kendisi senkronlar.
+    if (_uid != null) {
+      unawaited(_firebase.saveNote(_uid!, note.toMap()).catchError((_) {}));
     }
     // Ekler varsa arka planda Storage'a yükle (yavaşlatmamak için beklenmeden).
     unawaited(_syncAttachmentsToStorage(note));
+    if (reminderError != null) throw ReminderScheduleException(reminderError);
     return note;
   }
 
@@ -100,18 +122,24 @@ class NoteRepository {
     final updated = note._withUpdatedNow();
     await _db.update('notes', updated.toMap(),
         where: 'id = ?', whereArgs: [note.id]);
-    if (updated.reminderAt != null) {
-      await _scheduleReminder(updated);
-    } else {
-      await NotificationService()
-          .cancelTaskNotification(_reminderNotifId(note.id));
+    // Hatırlatıcı hatası güncellemeyi yarıda kesmesin (bkz. addNote).
+    Object? reminderError;
+    try {
+      if (updated.reminderAt != null) {
+        await _scheduleReminder(updated);
+      } else {
+        await NotificationService()
+            .cancelTaskNotification(_reminderNotifId(note.id));
+      }
+    } catch (e) {
+      reminderError = e;
     }
+    // Firestore yazımı BEKLENMEZ (bkz. addNote'taki açıklama).
     if (_uid != null) {
-      try {
-        await _firebase.saveNote(_uid!, updated.toMap());
-      } catch (_) {}
+      unawaited(_firebase.saveNote(_uid!, updated.toMap()).catchError((_) {}));
     }
     unawaited(_syncAttachmentsToStorage(updated));
+    if (reminderError != null) throw ReminderScheduleException(reminderError);
   }
 
   /// Notun resim/ses eklerinden henüz Storage'a yüklenmemiş olanları

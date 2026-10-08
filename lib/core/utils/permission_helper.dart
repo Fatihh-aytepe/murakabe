@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../services/notification_service.dart';
 
@@ -16,6 +17,48 @@ class PermissionHelper {
     return result.isGranted;
   }
 
+  /// Hatırlatıcı kurmadan HEMEN ÖNCE çağrılır. Bildirim izni varsa true.
+  /// Yoksa önce sistem izin diyaloğunu açar; kullanıcı yine izin vermezse
+  /// (ya da daha önce kalıcı reddettiyse) "Ayarları Aç" seçenekli bir
+  /// pencere gösterip false döner.
+  ///
+  /// NEDEN: Bildirim izni önceden yalnızca ilk girişteki tanıtım ekranında
+  /// BİR KEZ soruluyordu. Orada "Atla" denirse ya da izin reddedilirse bir
+  /// daha hiç sorulmuyor, hatırlatıcı "kuruldu" görünüyor ama Android 13+
+  /// üzerinde bildirim hiç gösterilmiyordu.
+  static Future<bool> ensureNotificationPermissionForReminder(
+      BuildContext context) async {
+    var status = await Permission.notification.status;
+    if (status.isGranted) return true;
+    if (!status.isPermanentlyDenied) {
+      status = await Permission.notification.request();
+      if (status.isGranted) return true;
+    }
+    if (!context.mounted) return false;
+    final openSettings = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Bildirim izni kapalı'),
+        content: const Text(
+            'Hatırlatıcının sana ulaşabilmesi için Murakabe\'nin bildirim '
+            'göndermesine izin vermen gerekiyor. Ayarlardan bildirimleri '
+            'açıp tekrar deneyebilirsin.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: const Text('Vazgeç'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, true),
+            child: const Text('Ayarları Aç'),
+          ),
+        ],
+      ),
+    );
+    if (openSettings == true) await openAppSettings();
+    return false;
+  }
+
   /// Namaz vakti alarmlarının tam zamanında çalması için Android 12+
   /// "tam zamanlı alarm" izni + pil optimizasyonu istisnası.
   /// Bildirim izniyle birlikte, aynı gerekçe ekranının parçası olarak istenir.
@@ -25,10 +68,10 @@ class PermissionHelper {
     if (!canSchedule) {
       await NotificationService().requestExactAlarmPermission();
     }
-    final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
-    if (batteryStatus.isDenied) {
-      await Permission.ignoreBatteryOptimizations.request();
-    }
+    // Pil optimizasyonu istisnası (REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+    // KALDIRILDI: Google Play bu izni yalnızca çok dar kullanım
+    // durumlarında kabul ediyor; reddedilme riski. Tam zamanlı alarm izni
+    // bildirimlerin zamanında gelmesi için yeterli.
   }
 
   /// Konum izni — SADECE ön planda (whileInUse). Arka plan konum izni
@@ -54,13 +97,4 @@ class PermissionHelper {
     return result.isGranted;
   }
 
-  /// Galeri/foto izni — YALNIZCA kullanıcı "Galeriden seç" seçeneğine
-  /// dokunduğunda. Android 13+ (Photo Picker) için genelde sistem düzeyinde
-  /// izin gerekmez; image_picker bunu otomatik yönetir.
-  static Future<bool> requestPhotosPermission() async {
-    final status = await Permission.photos.status;
-    if (status.isGranted) return true;
-    final result = await Permission.photos.request();
-    return result.isGranted;
-  }
 }

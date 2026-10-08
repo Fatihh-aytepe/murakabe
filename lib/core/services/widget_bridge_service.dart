@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:adhan/adhan.dart';
 import 'package:flutter/services.dart';
 import '../../data/local/local_storage.dart';
 import '../../data/repositories/content_repository.dart';
@@ -27,6 +29,12 @@ class WidgetBridgeService {
   final _contentRepo = ContentRepository();
   final _zikirRepo = ZikirRepository();
   final _getPrayerTimes = GetPrayerTimes();
+
+  /// Widget tablolarının kaç gün ileriye yazılacağı. Uygulama/arka plan
+  /// görevi bu süre içinde bir kez bile çalışırsa tablo uzar.
+  static const _tableDays = 30;
+
+  String _dateKey(DateTime d) => d.toIso8601String().substring(0, 10);
 
   static const _prayerNamesOrdered = [
     'İmsak',
@@ -70,6 +78,11 @@ class WidgetBridgeService {
     await _notifyNative();
   }
 
+  // ÖNCEDEN: yalnızca BUGÜNÜN vakitleri yazılıyordu ve bunun için her
+  // seferinde konum gerekiyordu. Arka planda (WorkManager) konum çoğu
+  // zaman alınamadığından widget ertesi gün eski günün vakitlerinde
+  // kalıyordu. ŞİMDİ: konumla (yoksa son kaydedilen konumla) 30 günlük
+  // vakit tablosu yazılıyor; native widget bugünün tarihine göre okuyor.
   Future<void> _refreshPrayer({bool isBackground = false}) async {
     try {
       final result = await _getPrayerTimes(
@@ -78,20 +91,49 @@ class WidgetBridgeService {
         const Duration(seconds: 12),
         onTimeout: () => null,
       );
-      if (result == null) return;
-      final pt = result.prayerTimes;
-      final times = [
-        pt.fajr,
-        pt.sunrise,
-        pt.dhuhr,
-        pt.asr,
-        pt.maghrib,
-        pt.isha,
-      ];
+
+      double? lat = result?.latitude;
+      double? lng = result?.longitude;
+      if (lat != null && lng != null) {
+        await _storage.setLastPrayerLocation(lat, lng);
+      } else {
+        lat = _storage.lastPrayerLat;
+        lng = _storage.lastPrayerLng;
+      }
+      if (lat == null || lng == null) return; // hiç konum yok
+
+      final coords = Coordinates(lat, lng);
+      final params = CalculationMethod.turkey.getParameters();
+      final now = DateTime.now();
+      final base = DateTime(now.year, now.month, now.day);
+      final table = <String, dynamic>{};
+      List<DateTime>? todayTimes;
+
+      for (var i = 0; i < _tableDays; i++) {
+        final day = base.add(Duration(days: i));
+        final pt = PrayerTimes(coords, DateComponents.from(day), params);
+        final times = [
+          pt.fajr,
+          pt.sunrise,
+          pt.dhuhr,
+          pt.asr,
+          pt.maghrib,
+          pt.isha,
+        ];
+        todayTimes ??= times;
+        table[_dateKey(day)] = {
+          't': times.map((t) => t.toIso8601String()).toList(),
+          'h': _hijriString(day),
+        };
+      }
+
       await _storage.setWidgetPrayerNames(_prayerNamesOrdered.join(','));
-      await _storage
-          .setWidgetPrayerTimesIso(times.map((t) => t.toIso8601String()).join(','));
-      await _storage.setWidgetPrayerHijri(_hijriString(DateTime.now()));
+      await _storage.setWidgetPrayerDays(jsonEncode(table));
+      // Eski tek günlük anahtarlar da yazılmaya devam ediyor (geri uyum —
+      // tablo bir şekilde okunamazsa native taraf bunlara düşer).
+      await _storage.setWidgetPrayerTimesIso(
+          todayTimes!.map((t) => t.toIso8601String()).join(','));
+      await _storage.setWidgetPrayerHijri(_hijriString(now));
     } catch (_) {
       // Konum/izin yoksa widget son bilinen veriyi göstermeye devam eder.
     }
@@ -103,8 +145,26 @@ class WidgetBridgeService {
       await _storage.setWidgetZikirTarget(active.target);
       await _storage.setWidgetZikirTurkish(active.turkish);
       await _storage.setWidgetZikirArabic(active.arabic);
+
+      // 30 günlük zikir tablosu — gün değişince widget kendiliğinden
+      // yeni günün zikrine geçer.
+      final now = DateTime.now();
+      final base = DateTime(now.year, now.month, now.day);
+      final table = <String, dynamic>{};
+      for (var i = 0; i < _tableDays; i++) {
+        final day = base.add(Duration(days: i));
+        final z = await _zikirRepo.getZikirForDate(day);
+        table[_dateKey(day)] = {'g': z.target, 't': z.turkish, 'a': z.arabic};
+      }
+      await _storage.setWidgetZikirDays(jsonEncode(table));
     } catch (_) {}
   }
+
+  // Uygulamanın "günün içeriği" formülüyle (ContentRepository: yılın günü %
+  // liste uzunluğu) birebir aynı — widget ile uygulama hep aynı içeriği
+  // gösterir.
+  int _dayOfYear(DateTime date) =>
+      date.difference(DateTime(date.year, 1, 1)).inDays;
 
   Future<void> _refreshDailyContent() async {
     try {
@@ -118,6 +178,32 @@ class WidgetBridgeService {
       await _storage.setWidgetAyetSource('${ayet.surah} ${ayet.ayahNumber}');
       await _storage.setWidgetHadisText(hadis.text);
       await _storage.setWidgetHadisSource(_cleanHadisSource(hadis.source));
+
+      // 30 günlük içerik tablosu.
+      final esmas = await _contentRepo.getEsmas();
+      final ayets = await _contentRepo.getAyets();
+      final hadises = await _contentRepo.getHadises();
+      if (esmas.isEmpty || ayets.isEmpty || hadises.isEmpty) return;
+      final now = DateTime.now();
+      final base = DateTime(now.year, now.month, now.day);
+      final table = <String, dynamic>{};
+      for (var i = 0; i < _tableDays; i++) {
+        final day = base.add(Duration(days: i));
+        final doy = _dayOfYear(day);
+        final e = esmas[doy % esmas.length];
+        final a = ayets[doy % ayets.length];
+        final h = hadises[doy % hadises.length];
+        table[_dateKey(day)] = {
+          'et': e.turkish,
+          'ea': e.arabic,
+          'em': e.meaning,
+          'at': a.turkish,
+          'as': '${a.surah} ${a.ayahNumber}',
+          'ht': h.text,
+          'hs': _cleanHadisSource(h.source),
+        };
+      }
+      await _storage.setWidgetContentDays(jsonEncode(table));
     } catch (_) {}
   }
 

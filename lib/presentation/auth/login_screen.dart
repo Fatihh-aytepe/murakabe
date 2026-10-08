@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/constants/legal_links.dart';
 import '../../core/services/role_service.dart';
 import '../../data/local/local_storage.dart';
 import '../../data/repositories/user_repository.dart';
@@ -46,6 +47,11 @@ class _LoginScreenState extends State<LoginScreen>
   String? _registerEmailError;
   String? _registerPassError;
   String? _registerPassConfirmError;
+  // Kayıt onayları: (1) Kullanım Koşulları + Gizlilik Politikası + KVKK
+  // aydınlatma, (2) KVKK açık rıza (özel nitelikli veri + yurt dışı aktarım).
+  bool _acceptTerms = false;
+  bool _acceptConsent = false;
+  String? _consentError;
   String? _loginEmailError;
   String? _loginPassError;
 
@@ -219,6 +225,11 @@ class _LoginScreenState extends State<LoginScreen>
         _registerPassConfirmError = 'Şifreler eşleşmiyor';
         valid = false;
       }
+      _consentError = null;
+      if (!_acceptTerms || !_acceptConsent) {
+        _consentError = 'Devam etmek için iki onay kutusunu da işaretlemelisin';
+        valid = false;
+      }
     });
     return valid;
   }
@@ -254,6 +265,18 @@ class _LoginScreenState extends State<LoginScreen>
         email: _registerEmailController.text.trim(),
         password: _registerPassController.text,
       );
+
+      // Onayın kaydı (KVKK: rızanın alındığını ispat yükü veri sorumlusunda).
+      // Best-effort: başarısız olursa kayıt akışını engellemez.
+      try {
+        final uid = FirebaseService().currentAuthUser?.uid;
+        if (uid != null) {
+          await FirebaseFirestore.instance.collection('users').doc(uid).set({
+            'consentVersion': LegalLinks.consentVersion,
+            'consentAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        }
+      } catch (_) {}
 
       if (!mounted) return;
       await Navigator.pushReplacement(
@@ -325,7 +348,7 @@ class _LoginScreenState extends State<LoginScreen>
             // durumunu kendi içinde ayırt edip kurulum butonunu gösteriyor,
             // ve nihai yetki kontrolü yine Firestore kuralında
             // (email + email_verified) yapılıyor.
-            if (authUser?.email == AppStrings.adminEmail) {
+            if (AppStrings.isOwnerEmail(authUser?.email)) {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const OwnerPanelScreen()),
@@ -404,7 +427,7 @@ class _LoginScreenState extends State<LoginScreen>
       }
 
       // Sahip hesabı normal girişi kullanamaz
-      if (authUser.email == AppStrings.adminEmail) {
+      if (AppStrings.isOwnerEmail(authUser.email)) {
         await FirebaseService().signOut();
         if (!mounted) return;
         _showErrorDialog(
@@ -727,7 +750,65 @@ class _LoginScreenState extends State<LoginScreen>
             errorText: _registerPassConfirmError,
             onChanged: (_) => setState(() => _registerPassConfirmError = null),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 18),
+          _buildConsentRow(
+            value: _acceptTerms,
+            onChanged: (v) => setState(() {
+              _acceptTerms = v;
+              _consentError = null;
+            }),
+            text: 'Kullanım Koşulları\'nı ve Gizlilik Politikası\'nı okudum ve '
+                'kabul ediyorum. KVKK Aydınlatma Metni\'ni okudum.',
+          ),
+          _buildConsentRow(
+            value: _acceptConsent,
+            onChanged: (v) => setState(() {
+              _acceptConsent = v;
+              _consentError = null;
+            }),
+            text: 'İbadet kayıtlarımın işlenmesine ve verilerimin yurt dışındaki '
+                'sunucularda saklanmasına ilişkin Açık Rıza Metni\'ni onaylıyorum.',
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 38, top: 2),
+            child: Wrap(
+              spacing: 14,
+              runSpacing: 0,
+              children: [
+                for (final link in const [
+                  ['Kullanım Koşulları', LegalLinks.terms],
+                  ['Gizlilik Politikası', LegalLinks.privacy],
+                  ['KVKK Aydınlatma Metni', LegalLinks.kvkk],
+                  ['Açık Rıza Metni', LegalLinks.consent],
+                ])
+                  InkWell(
+                    onTap: () => LegalLinks.open(context, link[1]),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Text(
+                        link[0],
+                        style: GoogleFonts.notoSans(
+                          color: AppColors.turquoiseLight,
+                          fontSize: 12,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.turquoiseLight,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (_consentError != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 38, top: 4),
+              child: Text(
+                _consentError!,
+                style: GoogleFonts.notoSans(
+                    color: Colors.redAccent, fontSize: 12),
+              ),
+            ),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -758,6 +839,48 @@ class _LoginScreenState extends State<LoginScreen>
             style: GoogleFonts.notoSans(color: Colors.white38, fontSize: 12),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildConsentRow({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required String text,
+  }) {
+    return InkWell(
+      onTap: () => onChanged(!value),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 32,
+              height: 32,
+              child: Checkbox(
+                value: value,
+                onChanged: (v) => onChanged(v ?? false),
+                activeColor: AppColors.gold,
+                checkColor: Colors.black,
+                side: BorderSide(
+                    color: AppColors.gold.withValues(alpha: 0.6), width: 1.4),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  text,
+                  style: GoogleFonts.notoSans(
+                      color: Colors.white70, fontSize: 12.5, height: 1.4),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

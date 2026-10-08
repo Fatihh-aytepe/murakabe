@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/legal_links.dart';
 import '../../core/services/alarm_service.dart';
 import '../../core/services/firestore_notification_service.dart';
 import '../../core/services/notification_service.dart';
@@ -422,11 +423,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 16),
                 _buildNotifCard(isDark),
                 const SizedBox(height: 16),
+                _buildLegalCard(isDark),
+                const SizedBox(height: 16),
                 _buildDangerZoneCard(isDark),
               ]),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ── Yasal metinler ───────────────────────────────────────────────────────
+  // Play Store gizlilik politikasının uygulama içinden de açılabilmesini ister.
+  Widget _buildLegalCard(bool isDark) {
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final iconColor = isDark ? Colors.white60 : AppColors.textSecondary;
+    Widget row(IconData icon, String label, String url) {
+      return InkWell(
+        onTap: () => LegalLinks.open(context, url),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+          child: Row(
+            children: [
+              Icon(icon, color: iconColor, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(label,
+                    style: GoogleFonts.notoSans(color: textColor, fontSize: 14)),
+              ),
+              Icon(Icons.open_in_new,
+                  color: isDark ? Colors.white38 : AppColors.textLight,
+                  size: 16),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return _buildCard(
+      title: 'Yasal',
+      icon: Icons.gavel_outlined,
+      isDark: isDark,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Column(
+          children: [
+            row(Icons.privacy_tip_outlined, 'Gizlilik Politikası',
+                LegalLinks.privacy),
+            row(Icons.shield_outlined, 'KVKK Aydınlatma Metni', LegalLinks.kvkk),
+            row(Icons.fact_check_outlined, 'Açık Rıza Metni',
+                LegalLinks.consent),
+            row(Icons.description_outlined, 'Kullanım Koşulları',
+                LegalLinks.terms),
+          ],
+        ),
       ),
     );
   }
@@ -456,7 +507,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: Colors.redAccent, size: 18),
               const SizedBox(width: 8),
               Text(
-                'TEHLİKELİ BÖLGE',
+                'HESABIMI SİL',
                 style: GoogleFonts.notoSans(
                   color: Colors.redAccent,
                   fontSize: 11,

@@ -2,26 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../data/repositories/content_repository.dart';
+import '../../rewards/reward_flow.dart';
 
 class ContentCard extends StatefulWidget {
   final String type;
+  // Kayıt ve "Okudum" durumunu veritabanından okuyabilmek için içeriğin id'si.
+  final int contentId;
   final String title;
   final String subtitle;
   final String tag;
   final Color color;
-  final VoidCallback onTap;
-  final VoidCallback onSave;
+  // Detay ekranı kapanana kadar tamamlanmayan bir Future döner — kart,
+  // detayda yapılan değişiklikleri (Kaydet / Okudum) dönüşte yeniden okur.
+  final Future<void> Function() onTap;
   final VoidCallback onRemind;
 
   const ContentCard({
     super.key,
     required this.type,
+    required this.contentId,
     required this.title,
     required this.subtitle,
     required this.tag,
     required this.color,
     required this.onTap,
-    required this.onSave,
     required this.onRemind,
   });
 
@@ -30,8 +35,73 @@ class ContentCard extends StatefulWidget {
 }
 
 class _ContentCardState extends State<ContentCard> {
+  final _contentRepo = ContentRepository();
   bool _isSaved = false;
   bool _isRead = false;
+
+  // ÖNCEDEN: _isSaved/_isRead yalnızca kartın kendi hafızasındaydı ve hep
+  // false başlıyordu — kaydedilen içerik ekran yenilenince "kaydedilmemiş"
+  // görünüyor, "Okudum" hiçbir yere yazılmıyordu. Artık açılışta ve detay
+  // ekranından dönüşte gerçek durum okunuyor.
+  @override
+  void initState() {
+    super.initState();
+    // initState içinde setState çağrılamaz — "Okudum" senkron okunduğu için
+    // doğrudan atanır; kayıt durumu (SQLite) asenkron yüklenir.
+    _isRead = _contentRepo.isReadToday(widget.type, widget.contentId);
+    _loadSaved();
+  }
+
+  @override
+  void didUpdateWidget(covariant ContentCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.contentId != widget.contentId ||
+        oldWidget.type != widget.type) {
+      // didUpdateWidget'tan sonra build zaten çalışır, setState gerekmez.
+      _isRead = _contentRepo.isReadToday(widget.type, widget.contentId);
+      _isSaved = false;
+      _loadSaved();
+    }
+  }
+
+  Future<void> _loadSaved() async {
+    final saved = await _contentRepo.isSaved(widget.type, widget.contentId);
+    if (mounted && saved != _isSaved) setState(() => _isSaved = saved);
+  }
+
+  Future<void> _openDetail() async {
+    await widget.onTap();
+    if (!mounted) return;
+    // Detay ekranında yapılan Kaydet / Okudum değişikliklerini yansıt.
+    setState(() =>
+        _isRead = _contentRepo.isReadToday(widget.type, widget.contentId));
+    _loadSaved();
+  }
+
+  void _markRead() {
+    if (_isRead) return;
+    setState(() => _isRead = true);
+    _contentRepo.markReadToday(widget.type, widget.contentId);
+    // Seri + tebrik + rozet kontrolü anında (bkz. RewardFlow).
+    RewardFlow.afterRead(Navigator.of(context), widget.type);
+  }
+
+  // Önce ekran ANINDA güncellenir, kayıt arkadan yapılır. Hata olursa geri
+  // alınır. ÖNCEDEN ikinci dokunuş görüntüde kaydı kaldırıyor ama
+  // veritabanına tekrar KAYDEDİYORDU.
+  Future<void> _toggleSave() async {
+    final wasSaved = _isSaved;
+    setState(() => _isSaved = !wasSaved);
+    try {
+      if (wasSaved) {
+        await _contentRepo.unsaveContent(widget.type, widget.contentId);
+      } else {
+        await _contentRepo.saveContent(widget.type, widget.contentId);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isSaved = wasSaved);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +110,7 @@ class _ContentCardState extends State<ContentCard> {
     final subColor = isDark ? Colors.white54 : AppColors.textSecondary;
 
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: _openDetail,
       child: Container(
         decoration: BoxDecoration(
           color: cardColor,
@@ -128,9 +198,7 @@ class _ContentCardState extends State<ContentCard> {
                           color: AppColors.success,
                           isActive: _isRead,
                           isDark: isDark,
-                          onTap: () {
-                            setState(() => _isRead = true);
-                          },
+                          onTap: _markRead,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -164,10 +232,7 @@ class _ContentCardState extends State<ContentCard> {
                           color: widget.color,
                           isActive: _isSaved,
                           isDark: isDark,
-                          onTap: () {
-                            setState(() => _isSaved = !_isSaved);
-                            widget.onSave();
-                          },
+                          onTap: _toggleSave,
                         ),
                       ),
                     ],

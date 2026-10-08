@@ -36,3 +36,25 @@
 # cihazda kayıt/giriş, bildirimler ve widget'ları test et — bir şey
 # bozulursa hatayı (adb logcat çıktısıyla birlikte) paylaş, eksik kuralı
 # buraya ekleriz.
+
+# ── Gson (flutter_local_notifications) ─────────────────────────────────────
+# flutter_local_notifications planlı bildirimleri cihazda Gson ile JSON
+# olarak saklar (zonedSchedule / cancel / yeniden başlatma sonrası geri
+# yükleme). Eklentinin kullandığı Gson 2.8.9 kendi R8 kurallarını TAŞIMIYOR
+# ve eklenti de consumer proguard dosyası eklemiyor. AGP 8+ ile varsayılan
+# olan R8 "full mode", TypeToken'ın jenerik tip bilgisini silebiliyor —
+# sonuç: SADECE release derlemede "Missing type parameter" hatası, planlı
+# bildirimler kurulamıyor ya da cihaz yeniden başlayınca kayboluyor.
+# Kurallar Gson'un resmi android-proguard-example dosyasından.
+-keepattributes Signature
+-keepattributes *Annotation*
+-dontwarn sun.misc.**
+-keep class * extends com.google.gson.TypeAdapter
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonSerializer
+-keep class * implements com.google.gson.JsonDeserializer
+-keepclassmembers,allowobfuscation class * {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep,allowobfuscation,allowshrinking class com.google.gson.reflect.TypeToken
+-keep,allowobfuscation,allowshrinking class * extends com.google.gson.reflect.TypeToken

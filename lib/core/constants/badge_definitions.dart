@@ -134,9 +134,12 @@ const BadgeDef kBadgeHadisAy1 = BadgeDef(
 );
 
 const BadgeDef kBadgeHadisAy3 = BadgeDef(
-  id: 'Hadim-i Sünnet',
+  // DÜZELTME: rozet adı yanlışlıkla id alanına yazılmıştı ('Hadim-i
+  // Sünnet'); id, rozetin kayıt/eşleştirme anahtarıdır ve 'hadis_ay_3'
+  // olmalı. Ad, name alanına taşındı.
+  id: 'hadis_ay_3',
   emoji: '📜⭐',
-  name: '3 Aylık Sünnet Yolcusu',
+  name: 'Hâdim-i Sünnet',
   description: '90 gün kesintisiz hadis okudun.',
   primaryColor: Color(0xFF33691E),
   secondaryColor: Color(0xFF8BC34A),
@@ -144,7 +147,9 @@ const BadgeDef kBadgeHadisAy3 = BadgeDef(
 );
 
 const BadgeDef kBadgeHadisAy6 = BadgeDef(
-  id: 'Sıddık...',
+  // DÜZELTME: id alanına yanlışlıkla 'Sıddık...' yazılmıştı — bu yüzden
+  // 180 günlük hadis rozeti testi düşüyordu. id 'hadis_ay_6' olmalı.
+  id: 'hadis_ay_6',
   emoji: '📜💎',
   name: '6 Aylık Hadis Dostu',
   description: '180 gün kesintisiz hadis okudun.',

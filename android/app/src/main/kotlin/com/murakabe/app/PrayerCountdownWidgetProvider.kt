@@ -176,8 +176,8 @@ class PrayerCountdownWidgetProvider : AppWidgetProvider() {
     private fun readPrayerData(context: Context): Triple<List<String>, List<LocalDateTime>, PrayerCalc.Window?>? {
         val names = WidgetPrefs.getString(context, "widget_prayer_names")
             .split(",").filter { it.isNotBlank() }
-        val timesIso = WidgetPrefs.getString(context, "widget_prayer_times_iso")
-            .split(",").filter { it.isNotBlank() }
+        // Bugünün vakitleri 30 günlük tablodan (bkz. WidgetPrefs.prayerTimesIsoToday).
+        val timesIso = WidgetPrefs.prayerTimesIsoToday(context)
         val parsed = timesIso.mapNotNull { PrayerCalc.parseLocal(it) }
         if (names.size != 6 || parsed.size != 6) return null
         val window = PrayerCalc.compute(parsed, LocalDateTime.now())

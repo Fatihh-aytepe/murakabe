@@ -74,15 +74,19 @@ class QuranAyahTile extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
+            // Medine Mushafı hattı: KFGQPC UthmanicHafs + text_qpc_hafs.
+            // Ayet sonu işareti (süslü daire içinde numara) metnin sonundaki
+            // Arapça rakamdan fontun kendisi tarafından çizilir.
             Text(
-              ayah.arabic,
-              textAlign: TextAlign.right,
+              ayah.displayArabic,
+              textAlign: TextAlign.justify,
               textDirection: TextDirection.rtl,
               style: TextStyle(
-                fontFamily: 'NotoNaskhArabic',
+                fontFamily: 'UthmanicHafs',
                 fontSize: arabicFontSize,
                 color: arabicColor,
-                height: 2.6,
+                // Harekelerin üst/alt satırla çakışmaması için.
+                height: 2.1,
               ),
             ),
             if (showMeal) ...[

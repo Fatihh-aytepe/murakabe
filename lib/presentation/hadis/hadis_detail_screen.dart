@@ -6,6 +6,7 @@ import '../../data/models/hadis_model.dart';
 import '../../data/repositories/content_repository.dart';
 import '../notes/notes_screen.dart';
 import '../notes/note_quote_builder.dart';
+import '../rewards/reward_flow.dart';
 
 class HadisDetailScreen extends StatefulWidget {
   final HadisModel hadis;
@@ -208,7 +209,7 @@ class _HadisDetailScreenState extends State<HadisDetailScreen> {
                               label: 'Okudum',
                               icon: Icons.check_circle_outline,
                               color: const Color(0xFF4CAF50),
-                              onTap: () => Navigator.pop(context),
+                              onTap: _markReadAndClose,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -342,13 +343,30 @@ class _HadisDetailScreenState extends State<HadisDetailScreen> {
     );
   }
 
+  // Önce ekran ANINDA güncellenir, kayıt arkadan yapılır. Kayıt hata
+  // verirse eski duruma geri dönülür.
   Future<void> _toggleSave() async {
-    if (_isSaved) {
-      await _contentRepo.unsaveContent('hadis', _currentHadis.id);
-    } else {
-      await _contentRepo.saveContent('hadis', _currentHadis.id);
+    final wasSaved = _isSaved;
+    setState(() => _isSaved = !wasSaved);
+    try {
+      if (wasSaved) {
+        await _contentRepo.unsaveContent('hadis', _currentHadis.id);
+      } else {
+        await _contentRepo.saveContent('hadis', _currentHadis.id);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isSaved = wasSaved);
     }
-    if (mounted) setState(() => _isSaved = !_isSaved);
+  }
+
+  void _markReadAndClose() {
+    final nav = Navigator.of(context);
+    final alreadyRead = _contentRepo.isReadToday('hadis', _currentHadis.id);
+    _contentRepo.markReadToday('hadis', _currentHadis.id);
+    nav.pop();
+    // Seri + tebrik + rozet kontrolü anında; aynı içerik bugün zaten
+    // okunduysa tekrar sayılmaz.
+    if (!alreadyRead) RewardFlow.afterRead(nav, 'hadis');
   }
 
   Future<void> _scheduleRemind() async {

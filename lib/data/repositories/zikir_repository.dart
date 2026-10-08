@@ -39,21 +39,43 @@ class ZikirRepository {
 
   String _todayStr() => DateTime.now().toIso8601String().substring(0, 10);
 
+  /// Süreli özel zikir (7/30/90 gün) aktif mi? Bu modda hedef, sürenin
+  /// TAMAMI için toplam hedeftir: sayaç günler boyunca birikir, gece
+  /// sıfırlanmaz. Süresiz özel zikir ve varsayılan zikirler günlük
+  /// sıfırlanmaya devam eder.
+  /// NOT: android/.../ZikirWidgetProvider.kt aynı kuralı uygular — anahtar
+  /// isimleri değişirse orayı da güncelle.
+  bool get isTimedCustomActive {
+    if (_storage.zikirMode != 'custom') return false;
+    final endDate = _storage.customZikirEndDate;
+    return endDate != null &&
+        endDate.isNotEmpty &&
+        _todayStr().compareTo(endDate) <= 0;
+  }
+
   Future<void> _checkCustomExpiry() async {
     if (_storage.zikirMode != 'custom') return;
     final endDate = _storage.customZikirEndDate;
     if (endDate == null || endDate.isEmpty) return;
     if (_todayStr().compareTo(endDate) > 0) {
+      // Süre doldu: varsayılan (günlük) zikirlere dönülür ve birikmiş
+      // toplam sayaç sıfırlanır.
       await _storage.setZikirMode('default');
       await _storage.clearCustomZikirEndDate();
+      await resetCount();
+      await _storage.setZikirProgressDate(_todayStr());
     }
   }
 
   Future<void> _checkProgressRollover() async {
     final today = _todayStr();
     if (_storage.zikirProgressDate == today) return;
-    await _storage.setZikirCurrentCount(0);
-    await _storage.setZikirCelebrationShown(false);
+    // Süreli özel zikirde sayaç gece SIFIRLANMAZ (toplam hedef) — yalnızca
+    // tarih güncellenir ki widget tarafı da sıfırlamaya kalkmasın.
+    if (!isTimedCustomActive) {
+      await _storage.setZikirCurrentCount(0);
+      await _storage.setZikirCelebrationShown(false);
+    }
     await _storage.setZikirProgressDate(today);
   }
 
@@ -95,7 +117,9 @@ class ZikirRepository {
     await _storage.setCustomZikirTarget(target);
 
     if (durationDays != null) {
-      final end = DateTime.now().add(Duration(days: durationDays));
+      // Bugün dahil [durationDays] gün: "7 gün" = bugün + 6 gün sonrası.
+      // (Önceden bugün + 7 alınıyordu, süre fiilen 8 gün sürüyordu.)
+      final end = DateTime.now().add(Duration(days: durationDays - 1));
       await _storage
           .setCustomZikirEndDate(end.toIso8601String().substring(0, 10));
     } else {

@@ -9,6 +9,14 @@ import 'package:murakabe/data/repositories/reward_repository.dart';
 // Geri kalanlar Fake.noSuchMethod aracılığıyla UnimplementedError fırlatır.
 
 class FakeLocalStorage extends Fake implements LocalStorage {
+  // Oturum yok (null): BadgeService/RewardService ödül sonrası Firestore'a
+  // yedekleme yaparken `userId`'yi okuyor; null olduğunda yedeklemeyi
+  // atlıyorlar — testlerde Firebase'e hiç dokunulmamış olur. Önceden bu alan
+  // tanımlı olmadığı için tüm rozet/ödül testleri UnimplementedError ile
+  // düşüyordu.
+  @override
+  String? userId;
+
   // Kuran ödül streak izleyici
   @override
   int lastRewardedStreak = 0;

@@ -23,6 +23,16 @@ service firebase.storage {
         && request.resource.contentType.matches('audio/.*');
     }
 
+    // Kullanıcı KENDİ notes/{uid} klasörünü (her seviyede) LİSTELEYEBİLİR.
+    // Hesap silmede FirebaseService._deleteStorageFolder('notes/{uid}')
+    // listAll() çağırıyor; yukarıdaki kurallar yalnızca en alt seviyedeki
+    // dosya yollarıyla eşleştiğinden üst klasörü listeleme reddediliyor ve
+    // ekler Storage'da kalıyordu. Bu kural yalnızca LİSTELEME izni verir —
+    // okuma/yazma/silme yine yukarıdaki dosya kurallarına bağlı.
+    match /notes/{uid}/{path=**} {
+      allow list: if request.auth != null && request.auth.uid == uid;
+    }
+
     // Tanımlı olmayan her yol varsayılan olarak kapalı.
     match /{allPaths=**} {
       allow read, write: if false;

@@ -267,6 +267,8 @@ class FirebaseService {
       // listede yoktu — hesap silindikten sonra Firestore'da kalıcı olarak
       // kalıyordu.
       'quranProgress',
+      // blocked: topluluklarda engellenen kişiler (bkz. RoleService.blockUser).
+      'blocked',
     ];
     for (final col in subcollections) {
       await _deleteAllDocsIn(_sub(uid, col));

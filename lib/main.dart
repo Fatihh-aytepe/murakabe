@@ -73,10 +73,14 @@ void main() async {
   await _safeInit(
     'FirebaseAppCheck.activate',
     () => FirebaseAppCheck.instance.activate(
-      androidProvider:
-          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      appleProvider:
-          kDebugMode ? AppleProvider.debug : AppleProvider.appAttest,
+      // androidProvider/appleProvider (enum) kullanımdan kaldırıldı; yeni
+      // sağlayıcı sınıfları birebir aynı davranışı verir.
+      providerAndroid: kDebugMode
+          ? const AndroidDebugProvider()
+          : const AndroidPlayIntegrityProvider(),
+      providerApple: kDebugMode
+          ? const AppleDebugProvider()
+          : const AppleAppAttestProvider(),
     ),
   );
   await _safeInit('LocalStorage.init', () => LocalStorage().init());

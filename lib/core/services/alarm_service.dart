@@ -37,18 +37,34 @@ class AlarmService {
 
   // ── Kullanılabilir alarm sesleri ──────────────────────────────────────────
   // Dosyalar android/app/src/main/res/raw/ klasörüne kopyalanmalı (küçük harf, rakam, _ kabul edilir)
+  // Tüm sesler Pixabay İçerik Lisansı'yla alınmış, kesilip düzenlenmiş
+  // kayıtlardır — kaynaklar ve lisans bağlantıları: ses_lisanslari.md
   static const List<AlarmSound> availableSounds = [
-    AlarmSound(id: 'alarm_fajr', label: 'Mehter Marşı'),
-    AlarmSound(id: 'alarm_ney', label: 'Karadeniz'),
-    AlarmSound(id: 'alarm_kuran', label: 'Namaz uykudan daha hayırlıdır'),
-    AlarmSound(id: 'alarm_sala', label: 'Zikir'),
-    AlarmSound(id: 'alarm_tesbih', label: 'Ezan'),
-    AlarmSound(id: 'alarm_soft', label: 'Pala'),
-    AlarmSound(id: 'alarm_default', label: 'Ramiz dayı'),
+    AlarmSound(id: 'alarm_default', label: 'Sabah Kuşları'),
+    AlarmSound(id: 'alarm_klasik', label: 'Klasik Türk'),
+    AlarmSound(id: 'alarm_ney', label: 'Ney'),
+    AlarmSound(id: 'alarm_ud', label: 'Ud'),
+    AlarmSound(id: 'alarm_kanun', label: 'Ud ve Kanun'),
+    AlarmSound(id: 'alarm_anadolu', label: 'Anadolu'),
+    AlarmSound(id: 'alarm_darbuka', label: 'Ney ve Darbuka'),
+    AlarmSound(id: 'alarm_zil', label: 'Klasik Zil'),
+    AlarmSound(id: 'alarm_dijital', label: 'Dijital Alarm'),
   ];
 
   static const AlarmSound defaultSound =
-      AlarmSound(id: 'alarm_default', label: 'Varsayılan');
+      AlarmSound(id: 'alarm_default', label: 'Sabah Kuşları');
+
+  /// Telif nedeniyle kaldırılan eski hazır seslerin kimlikleri. Bu sesleri
+  /// seçmiş kullanıcılar varsayılana taşınır; daha önce kurulmuş alarmlar
+  /// sessiz kalmasın diye bu kimliklerin bildirim kanalları varsayılan sesle
+  /// yeniden oluşturulur (bkz. createSoundChannels).
+  static const List<String> _legacySoundIds = [
+    'alarm_fajr',
+    'alarm_kuran',
+    'alarm_sala',
+    'alarm_tesbih',
+    'alarm_soft',
+  ];
 
   static const _audioChannel = MethodChannel('com.murakabe.app/audio');
 
@@ -272,7 +288,8 @@ class AlarmService {
   // ── Ses kanallarını oluştur (uygulama başlangıcında çağır) ───────────────
   // Android kanalları bir kez oluşturulunca ses ayarı güncellenemez.
   // Bu yüzden kanal sürümünü SharedPreferences'ta tutuyoruz; değişince sil+yeniden oluştur.
-  static const int _channelVersion = 2;
+  // 3: telifli sesler kaldırıldı, yeni 9 ses eklendi (Ekim 2026).
+  static const int _channelVersion = 3;
 
   Future<void> createSoundChannels() async {
     final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
@@ -283,9 +300,37 @@ class AlarmService {
     if (savedVersion >= _channelVersion) return;
 
     // Eski kanalları sil (ses güncellenmesi için zorunlu)
-    for (final sound in availableSounds) {
+    for (final id in [
+      ...availableSounds.map((s) => s.id),
+      ..._legacySoundIds,
+    ]) {
       try {
-        await androidPlugin.deleteNotificationChannel('tahajjud_${sound.id}');
+        await androidPlugin.deleteNotificationChannel('tahajjud_$id');
+      } catch (_) {}
+    }
+
+    // Kaldırılan bir sesi seçmiş kullanıcıyı varsayılana taşı.
+    final savedId = LocalStorage().alarmSoundId;
+    if (savedId != null && _legacySoundIds.contains(savedId)) {
+      await setSelectedSound(defaultSound);
+    }
+
+    // Güncellemeden ÖNCE kurulmuş alarmlar eski kanal kimliğiyle
+    // planlanmış durumda. O kanallar varsayılan sesle yeniden oluşturulur
+    // ki alarm çaldığında sessiz kalmasın.
+    for (final id in _legacySoundIds) {
+      try {
+        await androidPlugin.createNotificationChannel(
+          AndroidNotificationChannel(
+            'tahajjud_$id',
+            'Teheccüd — ${defaultSound.label}',
+            description: 'Teheccüd alarmı (önceki sürümden kalan alarmlar)',
+            importance: Importance.max,
+            enableVibration: true,
+            playSound: true,
+            sound: RawResourceAndroidNotificationSound(defaultSound.id),
+          ),
+        );
       } catch (_) {}
     }
 

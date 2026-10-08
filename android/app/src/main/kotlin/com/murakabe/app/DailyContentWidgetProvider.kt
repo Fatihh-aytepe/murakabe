@@ -66,12 +66,13 @@ class DailyContentWidgetProvider : AppWidgetProvider() {
         // Rozet/düğme zeminleri: hangi vurgu rengi seçilirse seçilsin göze
         // batmayacak, sabit düşük alfalı bir dolgu — "dengeyi koru" isteği.
         val chipFill = WidgetPrefs.withAlpha(accent, 38)
-        // ‹ › ok butonlarının ARKA PLAN halkası tamamen saydam olmalı —
-        // kullanıcı isteği: "arkaplanı şeffaflaştır, buton (ok ikonu) görünür
-        // kalsın". Önceki denemede yanlışlıkla okun kendisi soluklaşmıştı;
-        // bu yüzden burada SADECE zemin (…_bg) için alfa düşürülüyor, ok
-        // ikonu aşağıda ayrıca ve her zaman TAM OPAK bırakılıyor.
-        val navFill = WidgetPrefs.withAlpha(dim, 0)
+        // ‹ › ok butonlarının ARKA PLAN halkası: çok hafif görünür olmalı.
+        // HATA BURADAYDI: ImageView.setColorFilter(int) SRC_ATOP modunda
+        // çalışır — alfa=0 bir renk resmi HİÇ DEĞİŞTİRMEZ, bu yüzden
+        // widget_chip_bg'nin düz beyaz dairesi olduğu gibi görünüyordu; beyaz
+        // ok da beyaz dairenin üstünde kaybolmuştu. Çözüm: daireyi ok ile
+        // aynı (tam opak) renge boyayıp saydamlığı setImageAlpha ile vermek.
+        val navBgColor = WidgetPrefs.withAlpha(primary, 255)
         // Ok ikonlarının rengi — alfa kanalı ne olursa olsun (primary rengin
         // kendisi widget saydamlık ayarından etkilenmiş olabilir) 255'e
         // sabitleniyor, böylece ok her zaman net görünür.
@@ -88,13 +89,19 @@ class DailyContentWidgetProvider : AppWidgetProvider() {
         // Zemin (arka plan halkası) tamamen saydam; ok ikonunun kendisi tam
         // opak ve setImageAlpha ile de garanti altına alınıyor — sadece
         // arka plan şeffaflaşsın, buton (ok) her zaman görünür kalsın.
-        views.setInt(R.id.btn_content_prev_bg, "setColorFilter", navFill)
-        views.setInt(R.id.btn_content_next_bg, "setColorFilter", navFill)
+        views.setInt(R.id.btn_content_prev_bg, "setColorFilter", navBgColor)
+        views.setInt(R.id.btn_content_next_bg, "setColorFilter", navBgColor)
+        // ~%12 opaklık: zeminde zar zor seçilen bir halka.
+        views.setInt(R.id.btn_content_prev_bg, "setImageAlpha", 30)
+        views.setInt(R.id.btn_content_next_bg, "setImageAlpha", 30)
         views.setInt(R.id.btn_content_prev, "setColorFilter", navIconColor)
         views.setInt(R.id.btn_content_next, "setColorFilter", navIconColor)
         views.setInt(R.id.btn_content_prev, "setImageAlpha", 255)
         views.setInt(R.id.btn_content_next, "setImageAlpha", 255)
 
+        // Metinler 30 günlük tablodan BUGÜNÜN tarihine göre okunur (bkz.
+        // WidgetPrefs.dayString) — uygulama açılmasa da gün değişince
+        // içerik kendiliğinden yenilenir (widget en geç 30 dk'da bir çizilir).
         val index = ((WidgetPrefs.getInt(context, "widget_content_index") % TYPE_COUNT) + TYPE_COUNT) % TYPE_COUNT
 
         if (index == 0) {
@@ -104,10 +111,10 @@ class DailyContentWidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.tv_content_type, context.getString(R.string.widget_content_type_esma))
             views.setTextViewText(
                 R.id.tv_esma_tr,
-                WidgetPrefs.getString(context, "widget_esma_tr").ifEmpty { "—" }
+                WidgetPrefs.dayString(context, "widget_content_days", "et", "widget_esma_tr").ifEmpty { "—" }
             )
-            views.setTextViewText(R.id.tv_esma_ar, WidgetPrefs.getString(context, "widget_esma_ar"))
-            views.setTextViewText(R.id.tv_esma_meaning, WidgetPrefs.getString(context, "widget_esma_meaning"))
+            views.setTextViewText(R.id.tv_esma_ar, WidgetPrefs.dayString(context, "widget_content_days", "ea", "widget_esma_ar"))
+            views.setTextViewText(R.id.tv_esma_meaning, WidgetPrefs.dayString(context, "widget_content_days", "em", "widget_esma_meaning"))
 
             views.setViewVisibility(R.id.esma_group, View.VISIBLE)
             views.setViewVisibility(R.id.tv_content_primary, View.GONE)
@@ -116,14 +123,14 @@ class DailyContentWidgetProvider : AppWidgetProvider() {
             val (typeLabel, primaryText, secondaryText) = if (index == 1) {
                 Triple(
                     context.getString(R.string.widget_content_type_ayet),
-                    WidgetPrefs.getString(context, "widget_ayet_text"),
-                    WidgetPrefs.getString(context, "widget_ayet_source")
+                    WidgetPrefs.dayString(context, "widget_content_days", "at", "widget_ayet_text"),
+                    WidgetPrefs.dayString(context, "widget_content_days", "as", "widget_ayet_source")
                 )
             } else {
                 Triple(
                     context.getString(R.string.widget_content_type_hadis),
-                    WidgetPrefs.getString(context, "widget_hadis_text"),
-                    WidgetPrefs.getString(context, "widget_hadis_source")
+                    WidgetPrefs.dayString(context, "widget_content_days", "ht", "widget_hadis_text"),
+                    WidgetPrefs.dayString(context, "widget_content_days", "hs", "widget_hadis_source")
                 )
             }
 

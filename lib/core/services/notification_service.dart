@@ -168,7 +168,6 @@ class NotificationService {
   // seferlik olarak planlanıyor.
   static const int _dailyContentIdBase = 10000;
   static const int _scheduleWindowDays = 30;
-  static const int _cancelWindowPadding = 40;
 
   int _dayOfYear(DateTime date) =>
       date.difference(DateTime(date.year, 1, 1)).inDays;
@@ -260,6 +259,15 @@ class NotificationService {
     }
   }
 
+  /// Bir bildirim planlama hatasını teşhis için saklar ve loglar. Hata
+  /// metni LocalStorage'da 'notif_last_error' anahtarında durur.
+  void _recordError(String where, Object e) {
+    final stamp = DateTime.now().toIso8601String().substring(0, 16);
+    // ignore: avoid_print
+    print('[NotificationService] $where: $e');
+    LocalStorage().setNotifLastError('$stamp | $where: $e').catchError((_) {});
+  }
+
   Future<void> _scheduleOne({
     required int id,
     required tz.TZDateTime when,
@@ -272,6 +280,28 @@ class NotificationService {
   }) async {
     final now = tz.TZDateTime.now(tz.local);
     if (!when.isAfter(now)) return; // geçmiş saate kurma
+    // Tek bir bildirimin hatası 30 günlük planın GERİ KALANINI durdurmasın
+    // — önceden ilk hatada döngü kırılıyor, o andan sonraki hiçbir
+    // bildirim (ve ardından gelen teheccüd/cuma/Kur'an/görev planları)
+    // kurulmuyordu.
+    try {
+      await _zonedScheduleRaw(id, title, body, when, channelId, channelName,
+          bigText, subText);
+    } catch (e) {
+      _recordError('zonedSchedule #$id', e);
+    }
+  }
+
+  Future<void> _zonedScheduleRaw(
+    int id,
+    String title,
+    String body,
+    tz.TZDateTime when,
+    String channelId,
+    String channelName,
+    String bigText,
+    String? subText,
+  ) async {
     await _plugin.zonedSchedule(
       id,
       title,
@@ -293,30 +323,39 @@ class NotificationService {
     );
   }
 
+  // Günlük içerik ID aralığı: 10000 + gün(0–365)*10 + tür(1–4) → [10000, 13660).
+  static const int _dailyContentIdEnd = _dailyContentIdBase + 366 * 10;
+
+  bool _isDailyContentId(int id) =>
+      id >= _dailyContentIdBase && id < _dailyContentIdEnd;
+
+  // ÖNCEDEN: 110 gün × 4 tür = 440 ayrı cancel() çağrısı yapılıyordu. Her
+  // cancel() native tarafta planlı bildirim listesinin TAMAMINI okuyup
+  // yeniden yazıyor — açılışta saniyeler süren bir yük. Artık planlı
+  // bildirimler bir kez sorgulanıp yalnızca GERÇEKTEN var olanlar iptal
+  // ediliyor (genelde ~120 adet, çoğu zaman daha az).
   Future<void> _cancelDailyContentIds() async {
-    final today = DateTime.now();
-    for (int offset = -_cancelWindowPadding;
-        offset < _scheduleWindowDays + _cancelWindowPadding;
-        offset++) {
-      final date = DateTime(today.year, today.month, today.day)
-          .add(Duration(days: offset));
-      final id = _dailyContentIdBase + _dayOfYear(date) * 10;
-      await _plugin.cancel(id + 1);
-      await _plugin.cancel(id + 2);
-      await _plugin.cancel(id + 3);
-      await _plugin.cancel(id + 4);
+    try {
+      final pending = await _plugin.pendingNotificationRequests();
+      for (final p in pending) {
+        if (_isDailyContentId(p.id)) await _plugin.cancel(p.id);
+      }
+    } catch (e) {
+      _recordError('cancelDailyContent', e);
     }
   }
 
   Future<void> _cancelDailyContentType(int typeOffset) async {
-    final today = DateTime.now();
-    for (int offset = -_cancelWindowPadding;
-        offset < _scheduleWindowDays + _cancelWindowPadding;
-        offset++) {
-      final date = DateTime(today.year, today.month, today.day)
-          .add(Duration(days: offset));
-      final id = _dailyContentIdBase + _dayOfYear(date) * 10 + typeOffset;
-      await _plugin.cancel(id);
+    try {
+      final pending = await _plugin.pendingNotificationRequests();
+      for (final p in pending) {
+        if (_isDailyContentId(p.id) &&
+            (p.id - _dailyContentIdBase) % 10 == typeOffset) {
+          await _plugin.cancel(p.id);
+        }
+      }
+    } catch (e) {
+      _recordError('cancelDailyContentType', e);
     }
   }
 

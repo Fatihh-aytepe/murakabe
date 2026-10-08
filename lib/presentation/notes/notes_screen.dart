@@ -10,6 +10,7 @@ import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/permission_helper.dart';
 import '../../data/models/note_model.dart';
 import '../../data/repositories/note_repository.dart';
 import '../../data/local/local_storage.dart';
@@ -101,42 +102,47 @@ Future<void> showNoteEditor(
       prefillDocument: prefillDocument,
       prefillTags: prefillTags,
       onSave: (draft) async {
-        if (note != null) {
-          await repo.updateNote(NoteModel(
-            id: note.id,
-            title: draft.title,
-            content: draft.content,
-            contentDelta: draft.contentDelta,
-            tags: draft.tags,
-            color: draft.color,
-            isPinned: draft.isPinned,
-            imagePaths: draft.imagePaths,
-            audioPaths: draft.audioPaths,
-            // Önceki Storage yedek linkleri korunur (bkz.
-            // NoteRepository.reconcileAttachmentUrls) — aksi halde her
-            // düzenlemede bu linkler sıfırlanıp ekler yedeksiz kalıyordu.
-            imageUrls: NoteRepository.reconcileAttachmentUrls(
-                note.imagePaths, note.imageUrls, draft.imagePaths),
-            audioUrls: NoteRepository.reconcileAttachmentUrls(
-                note.audioPaths, note.audioUrls, draft.audioPaths),
-            reminderAt: draft.reminderAt,
-            createdAt: note.createdAt,
-            updatedAt: DateTime.now(),
-          ));
-        } else {
-          await repo.addNote(
-            title: draft.title,
-            content: draft.content,
-            contentDelta: draft.contentDelta,
-            tags: draft.tags,
-            color: draft.color,
-            isPinned: draft.isPinned,
-            imagePaths: draft.imagePaths,
-            audioPaths: draft.audioPaths,
-            reminderAt: draft.reminderAt,
-          );
+        // try/finally: hatırlatıcı planlanamasa bile (not yine de
+        // kaydedilmiş olur) liste yenilensin.
+        try {
+          if (note != null) {
+            await repo.updateNote(NoteModel(
+              id: note.id,
+              title: draft.title,
+              content: draft.content,
+              contentDelta: draft.contentDelta,
+              tags: draft.tags,
+              color: draft.color,
+              isPinned: draft.isPinned,
+              imagePaths: draft.imagePaths,
+              audioPaths: draft.audioPaths,
+              // Önceki Storage yedek linkleri korunur (bkz.
+              // NoteRepository.reconcileAttachmentUrls) — aksi halde her
+              // düzenlemede bu linkler sıfırlanıp ekler yedeksiz kalıyordu.
+              imageUrls: NoteRepository.reconcileAttachmentUrls(
+                  note.imagePaths, note.imageUrls, draft.imagePaths),
+              audioUrls: NoteRepository.reconcileAttachmentUrls(
+                  note.audioPaths, note.audioUrls, draft.audioPaths),
+              reminderAt: draft.reminderAt,
+              createdAt: note.createdAt,
+              updatedAt: DateTime.now(),
+            ));
+          } else {
+            await repo.addNote(
+              title: draft.title,
+              content: draft.content,
+              contentDelta: draft.contentDelta,
+              tags: draft.tags,
+              color: draft.color,
+              isPinned: draft.isPinned,
+              imagePaths: draft.imagePaths,
+              audioPaths: draft.audioPaths,
+              reminderAt: draft.reminderAt,
+            );
+          }
+        } finally {
+          onSaved?.call();
         }
-        onSaved?.call();
       },
     ),
   );
@@ -1129,6 +1135,23 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
   Future<void> _handleSave() async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
+    // İleri tarihli bir hatırlatıcı varsa önce bildirim izni kontrol edilir.
+    // İzin verilmezse kayıt yapılmaz, editör açık kalır — kullanıcı izni
+    // açabilir ya da hatırlatıcıyı kaldırıp öyle kaydedebilir.
+    final reminder = _reminderAt;
+    if (reminder != null && reminder.isAfter(DateTime.now())) {
+      final granted =
+          await PermissionHelper.ensureNotificationPermissionForReminder(
+              context);
+      if (!granted) {
+        if (mounted) setState(() => _isSaving = false);
+        return;
+      }
+    }
+    if (!mounted) return;
+    // Editör kapandıktan sonra da mesaj gösterebilmek için önceden alınır.
+    final messenger = ScaffoldMessenger.of(context);
+    String? reminderError;
     final title = _titleCtrl.text.trim();
     final plainText = _quillController.document.toPlainText().trim();
     final deltaJson = jsonEncode(_quillController.document.toDelta().toJson());
@@ -1147,10 +1170,23 @@ class _NoteEditorSheetState extends State<NoteEditorSheet> {
         audioPaths: _audioPaths,
         reminderAt: _reminderAt,
       ));
+    } on ReminderScheduleException catch (e) {
+      // Not kaydedildi; yalnızca hatırlatıcı kurulamadı.
+      reminderError = '$e';
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
     if (mounted) Navigator.pop(context);
+    if (reminderError != null) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+              'Not kaydedildi ama hatırlatıcı kurulamadı: $reminderError'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    }
   }
 
   @override

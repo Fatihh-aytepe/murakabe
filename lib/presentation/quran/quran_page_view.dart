@@ -312,13 +312,14 @@ class _QuranPageViewState extends State<QuranPageView> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '${ayah.surahNumber}:${ayah.number} — ${ayah.arabic}',
+                  ayah.displayArabic,
                   textAlign: TextAlign.right,
                   textDirection: TextDirection.rtl,
                   style: const TextStyle(
-                    fontFamily: 'NotoNaskhArabic',
+                    fontFamily: 'UthmanicHafs',
                     color: AppColors.gold,
                     fontSize: 18,
+                    height: 2.1,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
